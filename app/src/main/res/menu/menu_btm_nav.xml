@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<item
+    android:id="@+id/nav_chat"
+    android:title="@string/txt_chats"
+    android:enabled="true"
+    android:icon="@drawable/ic_chat"/>
+
+    <item
+        android:id="@+id/nav_group"
+        android:title="@string/txt_group"
+        android:enabled="true"
+        android:icon="@drawable/ic_group"/>
+
+    <item
+        android:id="@+id/nav_search"
+        android:title="@string/txt_search"
+        android:enabled="true"
+        android:icon="@drawable/ic_search_nav"/>
+
+    <item
+        android:id="@+id/nav_profile"
+        android:title="@string/txt_profile"
+        android:enabled="true"
+        android:icon="@drawable/ic_account_circle"/>
+</menu>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+       style="@style/StyleRoot">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list_group"
+            style="@style/StyleList"
+            tools:listitem="@layout/row_group_chat"
+            />
+
+        <ImageView
+            android:id="@+id/image_empty"
+            style="@style/WView"
+            android:visibility="gone"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_group_msg"/>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

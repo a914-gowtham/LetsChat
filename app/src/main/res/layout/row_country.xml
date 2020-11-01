@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+        <variable
+            name="country"
+            type="com.gowtham.letschat.models.Country" />
+    </data>
+
+        <LinearLayout
+            style="@style/LView"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="16dp"
+            android:id="@+id/view_root"
+            android:background="?attr/selectableItemBackground"
+            >
+
+            <TextView
+                android:id="@+id/txt_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:fontFamily="@font/font_semi"
+                android:singleLine="true"
+                android:text="@{country.name}"
+                android:textColor="@color/colorTxt"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/txt_code"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="10dp"
+                android:text="@{country.noCode}"
+                android:fontFamily="@font/font_semi"
+                android:textColor="@color/colorTxt"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+</layout>

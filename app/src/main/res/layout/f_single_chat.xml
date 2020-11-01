@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:bind="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="chatUser"
+            type="com.gowtham.letschat.db.data.ChatUser" />
+
+        <variable
+            name="viewmodel"
+            type="com.gowtham.letschat.fragments.single_chat.SingleChatViewModel" />
+    </data>
+
+        <LinearLayout style="@style/FView"
+            android:focusable="true"
+            android:fitsSystemWindows="true"
+            android:focusableInTouchMode="true">
+
+            <include
+                android:id="@+id/view_chat_header"
+                bind:chatUser="@{chatUser}"
+                bind:viewmodel="@{viewmodel}"
+                layout="@layout/view_chat_toolbar" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list_message"
+                tools:listitem="@layout/row_sent_message"
+                style="@style/VWView" />
+
+            <include
+                android:id="@+id/view_chat_btm"
+                bind:viewmodel="@{viewmodel}"
+                layout="@layout/view_chat_btm" />
+
+        </LinearLayout>
+
+</layout>

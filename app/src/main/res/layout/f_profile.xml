@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+
+        <variable
+            name="viewmodel"
+            type="com.gowtham.letschat.fragments.profile.ProfileViewModel" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout style="@style/StyleRoot">
+
+        <LinearLayout
+            style="@style/VView"
+            android:layout_marginTop="35dp"
+            android:gravity="center_horizontal"
+            android:padding="12dp">
+
+
+            <RelativeLayout
+                android:layout_width="110dp"
+                android:layout_height="110dp">
+
+                <ImageView
+                    android:id="@+id/img_pro_pic"
+                    style="@style/FView"
+                    android:src="@drawable/ic_other_user"
+                    app:imageUrl="@{viewmodel.profilePicUrl}"/>
+
+                <ProgressBar
+                    android:id="@+id/progress_pro"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_centerInParent="true"
+                    android:visibility="@{viewmodel.progressProPic ? View.VISIBLE : View.GONE}" />
+
+            </RelativeLayout>
+
+            <EditText
+                android:id="@+id/edt_name"
+                style="@style/VView"
+                android:layout_marginTop="35dp"
+                android:background="@android:color/transparent"
+                android:fontFamily="@font/font_semi"
+                android:hint="@string/txt_user_name"
+                android:inputType="textPersonName"
+                android:padding="8dp"
+                android:text="@={viewmodel.name}"
+                android:textColor="@color/colorBlack"
+                android:textSize="20sp" />
+
+            <View style="@style/LineView" />
+
+            <TextView
+                style="@style/TxtRgStyle"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginEnd="10dp"
+                android:fontFamily="@font/font_semi"
+                android:text="@string/txt_pic_name_desc" />
+
+        </LinearLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab"
+            style="@style/StyleFab"
+            android:src="@drawable/ic_arrow_r8" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="item_click_support" type="id" />
+    <item name="view_root" type="id" />
+    <item name="toolbar" type="id" />
+    <item name="btn_gps" type="id" />
+    <item name="list_view" type="id" />
+    <item name="view_container" type="id" />
+    <item name="txt_frag" type="id" />
+</resources>

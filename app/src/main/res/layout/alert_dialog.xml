@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/VView"
+    android:padding="20dp">
+
+    <TextView
+        style="@style/TxtSemiSmallStyle"
+        android:textSize="18sp"
+        android:paddingTop="8dp"
+        android:text="@string/txt_logged_in_head"/>
+
+    <TextView
+      style="@style/TxtRgStyle"
+        android:maxLines="3"
+        android:textSize="16sp"
+        android:layout_marginTop="5dp"
+        android:text="@string/txt_login_again"/>
+
+    <TextView
+        android:id="@+id/txt_log_out"
+        style="@style/TxtSemiSmallStyle"
+        android:textSize="15sp"
+        android:layout_marginTop="10dp"
+        android:layout_gravity="end"
+        android:textColor="@color/colorTheme"
+        android:padding="8dp"
+        android:text="@string/txt_logout"/>
+</LinearLayout>

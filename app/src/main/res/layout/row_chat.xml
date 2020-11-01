@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="chatUser"
+            type="com.gowtham.letschat.db.data.ChatUserWithMessages" />
+    </data>
+    <LinearLayout
+        android:id="@+id/view_root"
+        style="@style/VView"
+        android:background="?attr/selectableItemBackground"
+        android:paddingStart="8dp"
+        android:paddingTop="5dp"
+        android:paddingEnd="8dp"
+        tools:ignore="ContentDescription">
+
+        <LinearLayout
+            style="@style/LView">
+
+            <RelativeLayout style="@style/WView">
+
+                <ImageView
+                    android:id="@+id/image_profile"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/ic_other_user"
+                    app:imageUrl="@{chatUser.user.user.image}" />
+
+                <TextView
+                    android:visibility="@{(chatUser.user.user.image==null || chatUser.user.user.image.isEmpty) ? View.VISIBLE : View.GONE}"
+                    android:text="@{chatUser.user.localName}"
+                    style="@style/TxtNoImageUrlStyle" />
+            </RelativeLayout>
+
+
+            <LinearLayout
+                style="@style/LWView"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="10dp">
+
+                <TextView
+                    style="@style/TxtSemiSmallStyle"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textSize="16sp"
+                    android:text="@{chatUser.user.localName}" />
+
+                <LinearLayout style="@style/WLView"
+                    android:layout_width="match_parent">
+
+                    <TextView
+                        style="@style/LWView"
+                        android:maxLines="1"
+                        lastMessage="@{chatUser.messages}"
+                        android:textColor="@color/colorGrey"
+                        android:ellipsize="end"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        style="@style/TxtRgStyle"
+                        android:gravity="start"
+                        android:maxLines="1"
+                        android:layout_marginStart="7dp"
+                        messageSendTime="@{chatUser.messages}"
+                        android:textColor="@color/colorGreyLt"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+
+            <TextView
+                style="@style/TxtRgStyle"
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="1dp"
+                android:background="@drawable/shape_unread_count"
+                android:paddingStart="7dp"
+                android:paddingEnd="7dp"
+                android:paddingBottom="2dp"
+                setUnReadCount2="@{chatUser.user.unRead}"
+                android:textColor="@color/colorWhite"
+                android:textSize="15sp" />
+
+
+        </LinearLayout>
+
+        <View
+            style="@style/LineView"
+            android:layout_marginStart="65dp"
+            android:layout_marginTop="10dp"
+            android:background="@color/colorGreyLt" />
+
+    </LinearLayout>
+</layout>

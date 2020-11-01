@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/shape_menu_active" android:state_selected="true" />
+    <item android:drawable="@drawable/shape_menu_active" android:state_activated="true" />
+    <item android:drawable="@drawable/shape_menu_non_active" />
+</selector>

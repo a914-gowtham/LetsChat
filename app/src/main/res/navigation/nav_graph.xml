@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/FLogIn">
+
+    <fragment
+        android:id="@+id/FLogIn"
+        android:name="com.gowtham.letschat.fragments.login.FLogin"
+        android:label="FLogIn"
+        tools:layout="@layout/f_login">
+        <action
+            android:id="@+id/action_FLogIn_to_FCountries"
+            app:destination="@id/FCountries"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
+        <action
+            android:id="@+id/action_FLogIn_to_FVerify"
+            app:destination="@id/FVerify" />
+        <action
+            android:id="@+id/action_FLogIn_to_FProfile"
+            app:destination="@id/FProfile"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/nav_graph"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_FLogIn_to_FSingleChatHome"
+            app:destination="@id/FSingleChatHome"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/nav_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/FCountries"
+        android:name="com.gowtham.letschat.fragments.countries.FCountries"
+        android:label="FCountries"
+        tools:layout="@layout/f_countries">
+        <action
+            android:id="@+id/action_FCountries_to_FLogIn"
+            app:destination="@id/FLogIn" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/FVerify"
+        android:name="com.gowtham.letschat.fragments.login.FVerify"
+        android:label="FVerify"
+        tools:layout="@layout/f_verify">
+        <action
+            android:id="@+id/action_FVerify_to_FProfile"
+            app:destination="@id/FProfile"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/nav_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/FProfile"
+        android:name="com.gowtham.letschat.fragments.profile.FProfile"
+        android:label="FProfile"
+        tools:layout="@layout/f_profile">
+        <action
+            android:id="@+id/action_FProfile_to_FSingleChatHome"
+            app:destination="@id/FSingleChatHome"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/nav_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/FSingleChatHome"
+        android:name="com.gowtham.letschat.fragments.single_chat_home.FSingleChatHome"
+        android:label="FSingleChatHome"
+        tools:layout="@layout/f_single_chat_home">
+        <action
+            android:id="@+id/action_FSingleChatHome_to_FContacts"
+            app:destination="@id/FContacts"
+           />
+       <action
+            android:id="@+id/action_FSingleChat_to_FChat"
+            app:destination="@id/FSingleChat" />
+        <action
+            android:id="@+id/action_FSingleChatHome_to_FGroupChat"
+            app:destination="@id/FGroupChat" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/FGroupChatHome"
+        android:name="com.gowtham.letschat.fragments.group_chat_home.FGroupChatHome"
+        android:label="FGroupChatHome"
+        tools:layout="@layout/f_group_chat_home" >
+        <action
+            android:id="@+id/action_FGroupChatHome_to_FAddGroupMembers"
+            app:destination="@id/FAddGroupMembers" />
+        <action
+            android:id="@+id/action_FGroupChatHome_to_FGroupChat"
+            app:destination="@id/FGroupChat" />
+    </fragment>
+    <fragment
+        android:id="@+id/FSearch"
+        android:name="com.gowtham.letschat.fragments.FSearch"
+        android:label="FSearch"
+        tools:layout="@layout/f_search" />
+    <fragment
+        android:id="@+id/FMyProfile"
+        android:name="com.gowtham.letschat.fragments.FMyProfile"
+        android:label="FMyProfile"
+        tools:layout="@layout/f_my_profile" />
+    <fragment
+        android:id="@+id/FContacts"
+        android:name="com.gowtham.letschat.fragments.contacts.FContacts"
+        android:label="FContacts"
+        tools:layout="@layout/f_contacts">
+        <action
+            android:id="@+id/action_FContacts_to_Chat"
+            app:destination="@id/FSingleChat"
+            app:popUpTo="@id/FSingleChatHome" >
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/FSingleChat"
+        android:name="com.gowtham.letschat.fragments.single_chat.FSingleChat"
+        android:label="FSingleChat"
+        tools:layout="@layout/f_single_chat" >
+        <argument
+            android:defaultValue="@null"
+            app:nullable="true"
+            android:name="chatUserProfile"
+            app:argType="com.gowtham.letschat.db.data.ChatUser"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/FAddGroupMembers"
+        android:name="com.gowtham.letschat.fragments.add_group_members.FAddGroupMembers"
+        android:label="FAddGroupMembers"
+        tools:layout="@layout/f_add_group_members">
+        <action
+            android:id="@+id/action_FAddGroupMembers_to_FCreateGroup"
+            app:destination="@id/FCreateGroup" />
+    </fragment>
+    <fragment
+        android:id="@+id/FCreateGroup"
+        android:name="com.gowtham.letschat.fragments.create_group.FCreateGroup"
+        android:label="f_create_group"
+        tools:layout="@layout/f_create_group" >
+        <argument
+            android:name="memberList"
+            app:argType="com.gowtham.letschat.db.data.ChatUser[]"/>
+        <action
+            android:id="@+id/action_FCreateGroup_to_FGroupChat"
+            app:destination="@id/FGroupChat"
+            app:popUpTo="@id/FGroupChatHome"/>
+    </fragment>
+    <fragment
+        android:id="@+id/FGroupChat"
+        android:name="com.gowtham.letschat.fragments.group_chat.FGroupChat"
+        android:label="FGroupChat" >
+
+        <argument
+            android:name="group"
+            app:argType="com.gowtham.letschat.db.data.Group"/>
+
+    </fragment>
+</navigation>

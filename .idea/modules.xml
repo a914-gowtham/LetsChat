@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LetsChat.iml" filepath="$PROJECT_DIR$/.idea/modules/LetsChat.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/LetsChat.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/LetsChat.app.iml" />
+    </modules>
+  </component>
+</project>

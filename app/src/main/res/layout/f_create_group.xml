@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="ContentDescription,Autofill">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="viewmodel"
+            type="com.gowtham.letschat.fragments.create_group.CreateGroupViewModel" />
+
+        <variable
+            name="memberCount"
+            type="String" />
+
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+       style="@style/FView">
+
+
+    <LinearLayout style="@style/FView">
+
+        <com.google.android.material.appbar.AppBarLayout style="@style/VView">
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                style="@style/CustomToolBar"
+                app:title="Create Group" />
+        </com.google.android.material.appbar.AppBarLayout>
+
+
+        <LinearLayout
+            style="@style/LView"
+            android:padding="12dp">
+
+            <RelativeLayout
+                android:layout_width="60dp"
+                android:layout_height="60dp">
+
+                <ImageView
+                    android:id="@+id/image_add_image"
+                    style="@style/FView"
+                    imageUrl="@{viewmodel.imageUrl}"
+                    android:padding="16dp"
+                    android:background="@drawable/shape_circle_blue"
+                    android:src="@drawable/ic_add_pic"
+                    app:tint="@color/colorWhite" />
+
+                <ProgressBar
+                    android:id="@+id/progress_circular"
+                    style="@style/VView"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_centerInParent="true"
+                    android:theme="@style/progressColor"
+                    android:visibility="@{viewmodel.progressProPic ? View.VISIBLE : View.GONE}" />
+
+            </RelativeLayout>
+
+            <EditText
+                android:id="@+id/edt_group_name"
+                style="@style/LWView"
+                android:text="@={viewmodel.groupName}"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="10dp"
+                android:fontFamily="@font/font_semi"
+                android:hint="@string/txt_group_name"
+                android:imeOptions="actionDone"
+                android:inputType="textCapWords|text"
+                android:maxLength="35"
+                android:padding="12dp"
+                android:textColor="@color/colorTxt"
+                android:textColorHint="@color/colorHint"
+                android:textSize="18sp" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:background="@color/colorPrimaryLt" />
+
+
+        <TextView
+            style="@style/TxtSemiSmallStyle"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="10dp"
+            android:text="@{memberCount}"
+            android:textColor="@color/colorAccent"
+            android:textSize="16sp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list_members"
+            style="@style/StyleList"
+            tools:listitem="@layout/row_add_member" />
+
+    </LinearLayout>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab"
+            style="@style/StyleFab"
+            app:srcCompat="@drawable/ic_action_arrow_right" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:ignore="ContentDescription">
+
+    <data>
+        <import type="android.view.View" />
+
+        <variable
+            name="group"
+            type="com.gowtham.letschat.db.data.Group" />
+
+        <variable
+            name="viewmodel"
+            type="com.gowtham.letschat.fragments.group_chat.GroupChatViewModel" />
+    </data>
+
+    <com.google.android.material.appbar.AppBarLayout
+        style="@style/VView">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            style="@style/CustomToolBar"
+            app:contentInsetStart="10dp"
+            app:navigationIcon="@null"
+            app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+            <LinearLayout style="@style/LView">
+
+                <LinearLayout
+                    style="@style/WView"
+                    android:id="@+id/view_back">
+
+                    <ImageView
+                        style="@style/WView"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="5dp"
+                        android:src="@drawable/ic_arrow_back"
+                        />
+
+                    <RelativeLayout style="@style/WView">
+
+                        <ImageView
+                            android:layout_width="45dp"
+                            android:layout_height="45dp"
+                            android:src="@drawable/ic_other_user"
+                            app:imageUrl="@{group.image}" />
+
+                        <TextView
+                            android:layout_width="45dp"
+                            android:layout_height="45dp"
+                            android:visibility="@{(group.image==null || group.image.isEmpty) ? View.VISIBLE : View.GONE}"
+                            android:text="@{group.id}"
+                            style="@style/TxtNoImageUrlStyle" />
+                    </RelativeLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    style="@style/LWView"
+                    android:layout_marginStart="10dp">
+
+                    <TextView
+                        android:id="@+id/txt_local_name"
+                        style="@style/TxtSemiSmallStyle"
+                        setGroupName="@{group}"
+                        android:textColor="@color/colorWhite"
+                        android:maxLines="1"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/txt_members"
+                        style="@style/TxtRgStyle"
+                        android:textColor="@color/colorWhite"
+                        android:maxLines="1"
+                        setMemberNames="@{group}"
+                        android:textSize="15sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+        </androidx.appcompat.widget.Toolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
+</layout>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="viewmodel"
+            type="com.gowtham.letschat.fragments.login.LogInViewModel" />
+    </data>
+
+    <androidx.core.widget.NestedScrollView style="@style/ScrollRoot">
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            style="@style/StyleRoot"
+            android:id="@+id/view_holder">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_chat_bg" />
+
+            <LinearLayout style="@style/FView"
+                android:focusable="true"
+                android:focusableInTouchMode="true">
+
+                <LinearLayout
+                    style="@style/VWView"
+                    android:layout_marginTop="190dp"
+                    android:background="@drawable/shape_home_bg"
+                    android:elevation="5dp"
+                    android:padding="20dp">
+
+                    <TextView
+                        style="@style/TxtSemiStyle"
+                        android:layout_marginTop="15dp"
+                        android:text="@string/txt_welcome" />
+
+                    <TextView
+                        style="@style/TxtRgStyle"
+                        android:layout_marginTop="15dp"
+                        android:gravity="start"
+                        android:text="@string/txt_will_send_otp" />
+
+                    <TextView
+                        style="@style/TxtRgStyle"
+                        android:layout_marginTop="30dp"
+                        android:text="@string/txt_enter_mob_no" />
+
+                    <LinearLayout
+                        style="@style/LView"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/shape_edit_bg">
+
+                        <TextView
+                            style="@style/WView"
+                            android:layout_marginStart="5dp"
+                            app:drawableEndCompat="@drawable/ic_arrow_down"
+                            android:fontFamily="@font/font_semi"
+                            android:gravity="center"
+                            android:padding="6dp"
+                            android:id="@+id/txt_country_code"
+                            android:text="@{viewmodel.country.noCode}"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="20sp" />
+
+                        <EditText
+                            style="@style/LWView"
+                            android:id="@+id/edt_mobile"
+                            android:background="@android:color/transparent"
+                            android:fontFamily="@font/font_semi"
+                            android:inputType="number"
+                            android:padding="10dp"
+                            android:text="@={viewmodel.mobile}"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="20sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        style="@style/BtnStyle"
+                        android:id="@+id/btn_get_otp"
+                        android:layout_marginTop="80dp"
+                        android:text="@string/txt_get_otp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </androidx.core.widget.NestedScrollView>
+</layout>

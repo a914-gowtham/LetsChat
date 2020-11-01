@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+    <variable
+        name="chatUser"
+        type="com.gowtham.letschat.db.data.ChatUser"/>
+    </data>
+
+    <RelativeLayout
+        style="@style/WView">
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@{chatUser.localName}"
+        app:chipIcon="@drawable/ic_other_user"
+        app:chipIconSize="34dp"
+        app:chipBackgroundColor="@color/colorPrimary2"
+        android:layout_marginEnd="5dp"
+        android:layout_centerVertical="true"
+        android:checkable="false"
+        loadAsDrawable="@{chatUser}"
+        app:chipStartPadding="0dp"
+        app:closeIconTint="@color/colorWhite"
+        style="@style/Widget.MaterialComponents.Chip.Entry"
+        android:textColor="@color/colorWhite" />
+
+        <TextView
+            android:id="@+id/txtUrl"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            showTxtView="@{chatUser}"
+            android:textSize="16sp"
+            android:layout_centerVertical="true"
+            style="@style/TxtNoImageUrlStyle"/>
+
+    </RelativeLayout>
+
+</layout>

@@ -1,0 +1,50 @@
+<resources>
+    <string name="app_name">LetsChat</string>
+    <string name="txt_otp_verification">OTP Verification</string>
+    <string name="txt_will_send_otp">We will send you an <b> One Time Password </b>to this mobile number</string>
+    <string name="txt_enter_otp">Enter the OTP sent to </string>
+    <string name="txt_enter_mob_no">Enter Mobile Number</string>
+    <string name="txt_get_otp">Get otp</string>
+    <string name="txt_dont_receive">Don\'t receive the OTP?</string>
+    <string name="txt_welcome">Welcome!</string>
+    <string name="txt_search_here">Search here</string>
+    <string name="txt_select_coun">Select a country</string>
+    <string name="err_no_net">No Internet Connection</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="txt_verify">Verify</string>
+    <string name="txt_resend">Resend</string>
+    <string name="txt_name">Name</string>
+    <string name="txt_pic_name_desc">This user name and picture will be visible to your Letschat users.Other users can find you by searching.</string>
+    <string name="txt_options">Options</string>
+
+    <string name="take_photo">Take Photo</string>
+    <string name="txt_gallery">Open Gallery</string>
+    <string name="txt_file_p_error">Permission Denied. Please enable permission !</string>
+    <string name="txt_profile">Profile</string>
+    <string name="txt_search">Search</string>
+    <string name="txt_group">Groups</string>
+    <string name="txt_chats">Chats</string>
+    <string name="txt_letschat_contact">Letschat Contacts</string>
+    <string name="txt_refresh">Refresh</string>
+    <string name="txt_contacts">Contacts</string>
+    <string name="txt_select_a_contact">Select Contact</string>
+    <string name="txt_invite_friends">Invite friends</string>
+    <string name="txt_add_contact">Add Contact</string>
+    <string name="txt_logout">Logout</string>
+    <string name="txt_login_again">Please,login again to verify your number</string>
+    <string name="txt_logged_in_head">This number is logged in another device!</string>
+    <string name="default_notification_channel_id">default</string>
+
+    <string name="txt_notifications">Notifications</string>
+    <string name="txt_not_description">Enable Notification</string>
+    <string name="txt_message">Message</string>
+    <string name="txt_user_name">User Name</string>
+    <string name="txt_add_contacts">Add contacts</string>
+    <string name="txt_add_group_mems">Add Group Members</string>
+    <string name="txt_group_name">Enter group name</string>
+    <string name="txt_add_a_friend">Add a friend</string>
+    <string name="txt_select_a_option">Select a option</string>
+    <string name="txt_log_out">Log Out</string>
+
+</resources>

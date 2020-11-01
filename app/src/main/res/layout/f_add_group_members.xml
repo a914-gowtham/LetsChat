@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        style="@style/StyleRoot"
+        tools:ignore="ContentDescription">
+
+        <LinearLayout style="@style/VView">
+
+            <com.google.android.material.appbar.AppBarLayout style="@style/VView">
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    style="@style/CustomToolBar"
+                    app:title="Add Friends" />
+            </com.google.android.material.appbar.AppBarLayout>
+
+            <LinearLayout
+                android:id="@+id/view_holder"
+                style="@style/VView">
+
+            <RelativeLayout
+                style="@style/VView"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/list_chip"
+                    style="@style/StyleList"
+                    android:orientation="horizontal"
+                    tools:listitem="@layout/row_chip" />
+
+                <TextView
+                    android:id="@+id/txt_empty_members"
+                    style="@style/TxtSemiSmallStyle"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="10dp"
+                    android:gravity="center_vertical"
+                    android:text="@string/txt_add_a_friend"
+                    android:textSize="18sp" />
+
+            </RelativeLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list_contact"
+                style="@style/StyleList"
+                tools:listitem="@layout/row_add_member" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab"
+            style="@style/StyleFab"
+            android:visibility="gone"
+            app:srcCompat="@drawable/ic_action_arrow_right" />
+
+        <ProgressBar
+            android:id="@+id/progress"
+            style="@style/WView"
+            android:visibility="gone"
+            android:layout_gravity="center" />
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/view_empty"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:layout_gravity="center"
+            app:lottie_rawRes="@raw/empty_state"/>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>
