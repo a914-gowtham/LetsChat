@@ -7,8 +7,12 @@ LetsChat is a Sample Messaging Android application built to demonstrate the use 
 [![LetsChat App](https://img.shields.io/badge/LetsChat-APK-blue.svg?style=for-the-badge&logo=android)](https://github.com/a914-gowtham/LetsChat/blob/master/app/app-debug.apk)
 
 <p float="center">
-  <img src="demo_video.mp4" width="250" />
+  <img src="demo_video.gif" />
 </p>
+
+### Status: 🚧 In progress 🚧
+
+LetsChat is still under development and some screens are not yet implemented.
 
 ## Built With 🛠
 - [Kotlin](https://kotlinlang.org/) - First class and official programming language for Android development.
@@ -30,6 +34,4 @@ LetsChat is a Sample Messaging Android application built to demonstrate the use 
 - [Kotlin Serializer](https://github.com/Kotlin/kotlinx.serialization) - Convert Specific Classes to and from JSON.Runtime library with core serialization API and support libraries with various serialization formats.
 - [Coil-kt](https://coil-kt.github.io/coil/) - An image loading library for Android backed by Kotlin Coroutines.
 
-### Status: 🚧 In progress 🚧
 
-LetsChat is still under development and some screens are not yet implemented.
