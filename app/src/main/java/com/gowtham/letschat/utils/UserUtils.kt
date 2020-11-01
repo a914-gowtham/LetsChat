@@ -224,7 +224,6 @@ object UserUtils {
 
     fun logOut(context: Activity, preference: MPreference,db: ChatUserDatabase) {
         try {
-            db.clearAllTables()
             preference.clearAll()
             ChatHandler.removeListeners()
             GroupChatHandler.removeListener()
@@ -232,6 +231,9 @@ object UserUtils {
             EventBus.getDefault().post(UserStatus("offline"))
             FirebaseAuth.getInstance().signOut()
             Utils.startNewActivity(context, ActSplash::class.java)
+            CoroutineScope(Dispatchers.IO).launch {
+                db.clearAllTables()
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }

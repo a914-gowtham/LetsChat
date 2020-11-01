@@ -123,14 +123,17 @@ dependencies {
     implementation 'com.airbnb.android:lottie:3.4.2'
 
     //firebase
-    implementation 'com.google.firebase:firebase-database:19.5.0'
-    implementation 'com.google.firebase:firebase-core:17.5.0'
-    implementation 'com.google.firebase:firebase-analytics:17.5.0'
-    implementation 'com.google.firebase:firebase-crashlytics:17.2.2'
-    implementation 'com.google.firebase:firebase-auth:19.4.0'
-    implementation 'com.google.firebase:firebase-firestore-ktx:22.0.0'
-    implementation 'com.google.firebase:firebase-storage-ktx:19.2.0'
-    implementation 'com.google.firebase:firebase-messaging:21.0.0'
+    //By using the Firebase Android BoM, your app will always use compatible versions of the Firebase Android libraries.
+    implementation platform('com.google.firebase:firebase-bom:26.0.0')
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-auth-ktx'
+    implementation 'com.google.firebase:firebase-firestore-ktx'
+    implementation 'androidx.browser:browser:1.2.0'  //
+    implementation 'com.google.firebase:firebase-storage-ktx'
+    implementation 'com.google.firebase:firebase-messaging-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.google.firebase:firebase-database-ktx'
 
     implementation 'com.jakewharton.timber:timber:4.7.1'
 

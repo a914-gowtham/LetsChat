@@ -2,6 +2,7 @@ package com.gowtham.letschat.fragments.login
 
 import android.content.Context
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -30,26 +31,27 @@ class LoginRepo @Inject constructor(@ActivityRetainedScoped val actContxt: MainA
 
     private val failedState: MutableLiveData<LogInFailedState> = MutableLiveData()
 
+    private val auth = FirebaseAuth.getInstance()
+
     init {
         "LoginRepo init".printMeD()
     }
 
     fun setMobile(country: Country, mobile: String) {
         val number = country.noCode + " " + mobile
-        "LoginRepo:: $number".printMeD()
-        PhoneAuthProvider.getInstance().verifyPhoneNumber(
-            number,
-            60,
-            TimeUnit.SECONDS,
-            actContxt,
-            this
-        )
+        val options = PhoneAuthOptions.newBuilder(auth)
+            .setPhoneNumber(number)
+            .setTimeout(60L, TimeUnit.SECONDS)
+            .setActivity(actContxt)
+            .setCallbacks(this)
+            .build()
+        PhoneAuthProvider.verifyPhoneNumber(options)
     }
 
     override fun onVerificationCompleted(credential: PhoneAuthCredential) {
         Log.d("TAG", "onVerificationCompleted:$credential")
         this.credential.value = credential
-        Handler().postDelayed({
+        Handler(Looper.getMainLooper()).postDelayed({
             signInWithPhoneAuthCredential(credential)
         }, 1000)
     }

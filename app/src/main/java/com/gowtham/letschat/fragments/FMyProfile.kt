@@ -61,9 +61,7 @@ class FMyProfile : Fragment(R.layout.f_my_profile){
 
 
         binding.button.setOnClickListener {
-            lifecycleScope.launch(Dispatchers.IO) {
                 UserUtils.logOut(requireActivity(),preferenec,db)
-            }
         }
     }
 
