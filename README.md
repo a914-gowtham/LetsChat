@@ -34,4 +34,7 @@ LetsChat is still under development and some screens are not yet implemented.
 - [Kotlin Serializer](https://github.com/Kotlin/kotlinx.serialization) - Convert Specific Classes to and from JSON.Runtime library with core serialization API and support libraries with various serialization formats.
 - [Coil-kt](https://coil-kt.github.io/coil/) - An image loading library for Android backed by Kotlin Coroutines.
 
+## If this project helps you in anyway, show your love :heart: by putting a :star: on this project :v:
+
+
 
