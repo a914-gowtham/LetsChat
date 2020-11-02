@@ -42,8 +42,6 @@ constructor(@ApplicationContext private val context: Context,
         }
     }
 
-    fun getChats() = userDao.getChatUserWithMessages()
-
     override fun onCleared() {
         super.onCleared()
         "onCleared SharedViewModel".printMeD()

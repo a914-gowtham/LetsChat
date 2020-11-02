@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.data.ChatUserWithMessages
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ChatUserDao {
@@ -31,7 +32,7 @@ interface ChatUserDao {
 
     @Transaction
     @Query("SELECT * FROM ChatUser")
-    fun getChatUserWithMessages(): LiveData<List<ChatUserWithMessages>>
+    fun getChatUserWithMessages(): Flow<List<ChatUserWithMessages>>
 
     @Transaction
     @Query("SELECT * FROM ChatUser")

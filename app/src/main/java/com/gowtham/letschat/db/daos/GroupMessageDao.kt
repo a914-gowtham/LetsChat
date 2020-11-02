@@ -8,6 +8,7 @@ import androidx.room.Query
 import com.gowtham.letschat.db.data.GroupMessage
 import com.gowtham.letschat.db.data.GroupWithMessages
 import com.gowtham.letschat.db.data.Message
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface GroupMessageDao {
@@ -25,10 +26,10 @@ interface GroupMessageDao {
     fun getMessageList(): List<GroupMessage>
 
     @Query("SELECT * FROM GroupMessage WHERE groupId=:groupId")
-    fun getChatsOfGroup(groupId: String): LiveData<List<GroupMessage>>
+    fun getChatsOfGroupList(groupId: String): List<GroupMessage>
 
     @Query("SELECT * FROM GroupMessage WHERE groupId=:groupId")
-    fun getChatsOfGroupList(groupId: String): List<GroupMessage>
+    fun getChatsOfGroup(groupId: String): Flow<List<GroupMessage>>
 
     @Query("DELETE FROM GroupMessage  WHERE createdAt=:createdAt")
     suspend fun deleteMessageByCreatedAt(createdAt: Long)

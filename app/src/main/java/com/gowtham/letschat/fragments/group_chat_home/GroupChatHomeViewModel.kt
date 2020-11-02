@@ -19,6 +19,4 @@ class GroupChatHomeViewModel @ViewModelInject constructor(
 
     fun getGroupMessages() = groupDao.getGroupWithMessages()
 
-
-
 }

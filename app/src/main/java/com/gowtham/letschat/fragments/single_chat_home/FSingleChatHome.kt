@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.gowtham.letschat.R
 import com.gowtham.letschat.core.ChatHandler
@@ -21,6 +22,9 @@ import com.gowtham.letschat.models.UserProfile
 import com.gowtham.letschat.ui.activities.SharedViewModel
 import com.gowtham.letschat.utils.*
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -78,23 +82,22 @@ class FSingleChatHome : Fragment(),ItemClickListener {
         binding.lifecycleOwner = viewLifecycleOwner
         profile = preference.getUserProfile()!!
         setDataInView()
-        subscribeObservers()
-    }
 
-    private fun subscribeObservers() {
-        viewModel.getChatUsers().observe(viewLifecycleOwner, { list ->
-            val filteredList = list.filter { it.messages.isNotEmpty() }
-            if (filteredList.isNotEmpty()) {
-                binding.imageEmpty.gone()
-                chatList = filteredList as MutableList<ChatUserWithMessages>
-                //sort by recent message
-                chatList = filteredList.sortedByDescending { it.messages.last().createdAt }
-                    .toMutableList()
-                adChat.submitList(chatList)
-                Timber.v("Userss ${chatList.first().user.unRead}")
-            }else
-                binding.imageEmpty.show()
-        })
+        lifecycleScope.launch {
+            viewModel.getChatUsersAsFlow().collect { list ->
+                val filteredList = list.filter { it.messages.isNotEmpty() }
+                if (filteredList.isNotEmpty()) {
+                    binding.imageEmpty.gone()
+                    chatList = filteredList as MutableList<ChatUserWithMessages>
+                    //sort by recent message
+                    chatList = filteredList.sortedByDescending { it.messages.last().createdAt }
+                        .toMutableList()
+                    adChat.submitList(chatList)
+                    Timber.v("Userss ${chatList.first().user.unRead}")
+                }else
+                    binding.imageEmpty.show()
+            }
+        }
     }
 
     private fun setDataInView() {

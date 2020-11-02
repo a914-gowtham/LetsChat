@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -25,6 +26,8 @@ import com.gowtham.letschat.db.data.TextMessage
 import com.gowtham.letschat.models.UserProfile
 import com.gowtham.letschat.utils.*
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -93,6 +96,23 @@ class FSingleChat : Fragment(), ItemClickListener {
         viewModel.canScroll(false)
         setDataInView()
         subscribeObservers()
+
+        lifecycleScope.launch {
+            viewModel.getMessagesByChatUserId(chatUserId).collect { mMessagesList ->
+                messageList = mMessagesList as MutableList<Message>
+                AdChat.messageList = messageList
+                adChat.submitList(mMessagesList)
+                //scroll to last items in recycler (recent messages)
+                if (messageList.isNotEmpty()) {
+                    viewModel.setChatsOfThisUser(messageList)
+                    if (viewModel.getCanScroll())  //scroll only if new message arrived
+                        binding.listMessage.smoothScrollToPos(messageList.lastIndex)
+                    else
+                        viewModel.canScroll(true)
+                    LogMessage.v("Last Message ${messageList.last().createdAt}")
+                }
+            }
+        }
     }
 
     private fun openSaveIntent() {
@@ -123,20 +143,6 @@ class FSingleChat : Fragment(), ItemClickListener {
 
     private fun subscribeObservers() {
         //pass messages list for recycler to show
-        viewModel.getMessagesByChatUserId(chatUserId).observe(viewLifecycleOwner, { mMessagesList ->
-            messageList = mMessagesList as MutableList<Message>
-            AdChat.messageList = messageList
-            adChat.submitList(mMessagesList)
-            //scroll to last items in recycler (recent messages)
-            if (messageList.isNotEmpty()) {
-                viewModel.setChatsOfThisUser(messageList)
-                if (viewModel.getCanScroll())  //scroll only if new message arrived
-                  binding.listMessage.smoothScrollToPos(messageList.lastIndex)
-                else
-                    viewModel.canScroll(true)
-                LogMessage.v("Last Message ${messageList.last().createdAt}")
-            }
-        })
           viewModel.chatUserOnlineStatus.observe(viewLifecycleOwner, {
               Utils.setOnlineStatus(binding.viewChatHeader.txtLastSeen, it, localUserId)
           })

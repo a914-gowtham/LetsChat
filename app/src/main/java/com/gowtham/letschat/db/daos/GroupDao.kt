@@ -5,6 +5,7 @@ import androidx.room.*
 import com.gowtham.letschat.db.data.ChatUserWithMessages
 import com.gowtham.letschat.db.data.Group
 import com.gowtham.letschat.db.data.GroupWithMessages
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface GroupDao {
@@ -32,10 +33,10 @@ interface GroupDao {
 
     @Transaction
     @Query("SELECT * FROM `Group`")
-    fun getGroupWithMessages(): LiveData<List<GroupWithMessages>>
+    fun getGroupWithMessagesList(): List<GroupWithMessages>
 
     @Transaction
     @Query("SELECT * FROM `Group`")
-    fun getGroupWithMessagesList(): List<GroupWithMessages>
+    fun getGroupWithMessages(): Flow<List<GroupWithMessages>>
 
 }

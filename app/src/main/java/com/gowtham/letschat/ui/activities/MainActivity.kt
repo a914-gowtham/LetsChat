@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.Navigation
@@ -17,6 +18,8 @@ import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.data.Group
 import com.gowtham.letschat.fragments.single_chat_home.FSingleChatHomeDirections
 import com.gowtham.letschat.utils.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 
@@ -48,26 +51,46 @@ class MainActivity : ActBase() {
 
     private fun subscribeObservers() {
         val badge = binding.bottomNav.getOrCreateBadge(R.id.nav_chat)
-        chatUserDao.getChatUserWithMessages().observe(this, { list->
+        badge.isVisible=false
+        /*chatUserDao.getChatUserWithMessages().observe(this, { list->
             val count=list.filter { it.user.unRead!=0 }
             badge.isVisible = count.isNotEmpty() //hide if 0
             badge.number=count.size
-/*
+*//*
         val badgeDrawable = binding.bottomNav.getBadge(R.id.nav_chat)
         if (badgeDrawable != null) {
             badgeDrawable.isVisible = false
             badgeDrawable.clearNumber()
             binding.bottomNav.removeBadge(R.id.nav_chat)
         }
-*/
+*//*
         })
-
-        val groupChatBadge = binding.bottomNav.getOrCreateBadge(R.id.nav_group)
+*/
+    /*    val groupChatBadge = binding.bottomNav.getOrCreateBadge(R.id.nav_group)
+        groupChatBadge.isVisible=false
         groupDao.getGroupWithMessages().observe(this, { list->
             val count=list.filter { it.group.unRead!=0 }
             groupChatBadge.isVisible = count.isNotEmpty() //hide if 0
             groupChatBadge.number=count.size
-        })
+        })*/
+        val groupChatBadge = binding.bottomNav.getOrCreateBadge(R.id.nav_group)
+        groupChatBadge.isVisible=false
+        lifecycleScope.launch {
+            groupDao.getGroupWithMessages().collect { list->
+                val count=list.filter { it.group.unRead!=0 }
+                groupChatBadge.isVisible = count.isNotEmpty() //hide if 0
+                groupChatBadge.number=count.size
+            }
+        }
+
+        lifecycleScope.launch {
+            chatUserDao.getChatUserWithMessages().collect { list->
+                val count=list.filter { it.user.unRead!=0 }
+                badge.isVisible = count.isNotEmpty() //hide if 0
+                badge.number=count.size
+            }
+        }
+
     }
 
     private fun setDataInView() {
