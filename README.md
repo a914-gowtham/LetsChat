@@ -22,6 +22,7 @@ LetsChat is still under development and some screens are not yet implemented.
   - [LiveData](https://developer.android.com/topic/libraries/architecture/livedata) - Data objects that notify views when the underlying database changes.
   - [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel) - Stores UI-related data that isn't destroyed on UI changes. 
   - [DataBinding](https://github.com/android/databinding-samples) - Generates a binding class for each XML layout file present in that module and allows you to more easily write code that interacts with views.Declaratively bind observable data to UI elements.
+   - [WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager) - WorkManager is an API that makes it easy to schedule deferrable, asynchronous tasks that are expected to run even if the app exits or the device restarts.
   - [Room](https://developer.android.com/topic/libraries/architecture/room) - SQLite object mapping library.
 - [Dependency Injection](https://developer.android.com/training/dependency-injection) - 
   - [Dagger-Hilt](https://dagger.dev/hilt/) - Standard library to incorporate Dagger dependency injection into an Android application.
