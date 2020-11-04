@@ -16,7 +16,7 @@ LetsChat is still under development and some screens are not yet implemented.
 
 ## Built With 🛠
 - [Kotlin](https://kotlinlang.org/) - First class and official programming language for Android development.
-- [Coroutines](https://kotlinlang.org/docs/reference/coroutines-overview.html) - For asynchronous and more..
+- [Coroutines & Flow](https://kotlinlang.org/docs/reference/coroutines-overview.html) - For asynchronous and more..
 - [Android Architecture Components](https://developer.android.com/topic/libraries/architecture) - Collection of libraries that help you design quality, robust, testable, and maintainable apps.
   - [Navigation Component](https://developer.android.com/guide/navigation/navigation-getting-started) - Handle everything needed for in-app navigation with a single Activity.
   - [LiveData](https://developer.android.com/topic/libraries/architecture/livedata) - Data objects that notify views when the underlying database changes.
@@ -33,8 +33,6 @@ LetsChat is still under development and some screens are not yet implemented.
   - [Authentication](https://firebase.google.com/docs/auth) - For Creating account with mobile number
 - [Kotlin Serializer](https://github.com/Kotlin/kotlinx.serialization) - Convert Specific Classes to and from JSON.Runtime library with core serialization API and support libraries with various serialization formats.
 - [Coil-kt](https://coil-kt.github.io/coil/) - An image loading library for Android backed by Kotlin Coroutines.
-
-## If this project helps you in anyway, show your love :heart: by putting a :star: on this project :v:
 
 
 
