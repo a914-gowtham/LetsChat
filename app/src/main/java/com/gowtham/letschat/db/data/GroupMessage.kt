@@ -20,7 +20,7 @@ data class GroupMessage(@PrimaryKey
                         val status: ArrayList<Int>,//0 th index is status of from user
                         val deliveryTime: ArrayList<Long>,
                         val seenTime: ArrayList<Long>,
-                        val type: String="text",//0=text,1=audio,2=image,3=video,4=file,5=s_image
+                        var type: String="text",//0=text,1=audio,2=image,3=video,4=file,5=s_image
                         var textMessage: TextMessage?=null,
                         var imageMessage: ImageMessage?=null,
                         var audioMessage: AudioMessage?=null,

@@ -2,38 +2,41 @@ package com.gowtham.letschat.fragments.single_chat
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.provider.ContactsContract
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toFile
+import androidx.core.view.inputmethod.InputContentInfoCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.gowtham.letschat.databinding.FSingleChatBinding
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.data.ChatUser
+import com.gowtham.letschat.db.data.ImageMessage
 import com.gowtham.letschat.db.data.Message
 import com.gowtham.letschat.db.data.TextMessage
 import com.gowtham.letschat.models.UserProfile
 import com.gowtham.letschat.utils.*
+import com.gowtham.letschat.views.CustomEditText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.io.File
 import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class FSingleChat : Fragment(), ItemClickListener {
+class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCallbackListener {
 
     private lateinit var binding: FSingleChatBinding
 
@@ -94,6 +97,7 @@ class FSingleChat : Fragment(), ItemClickListener {
         if(!chatUser.locallySaved)
             binding.viewChatHeader.imageAddContact.show()
         viewModel.canScroll(false)
+        binding.viewChatBtm.edtMsg.setKeyBoardInputCallbackListener(this)
         setDataInView()
         subscribeObservers()
 
@@ -125,20 +129,24 @@ class FSingleChat : Fragment(), ItemClickListener {
     }
 
     private fun sendMessage() {
-        val msg = binding.viewChatBtm.edtMsg.text.trim().toString()
+        val msg = binding.viewChatBtm.edtMsg.text!!.trim().toString()
         if (msg.isEmpty())
             return
         binding.viewChatBtm.lottieSend.playAnimation()
-        val messageData = TextMessage(msg)
-        val message = Message(
-            System.currentTimeMillis(),
-            from = preference.getUid()!!,
-            chatUserId=chatUserId,
-            to = toUser.uId!!, senderName = fromUser.userName,
-            senderImage = fromUser.image, textMessage = messageData
-        )
+        val message = createMessage()
+        message.textMessage=TextMessage(msg)
         viewModel.sendMessage(message)
         binding.viewChatBtm.edtMsg.setText("")
+    }
+
+    private fun createMessage(): Message {
+       return Message(
+            System.currentTimeMillis(),
+            from = preference.getUid().toString(),
+            chatUserId=chatUserId,
+            to = toUser.uId!!, senderName = fromUser.userName,
+            senderImage = fromUser.image
+        )
     }
 
     private fun subscribeObservers() {
@@ -241,5 +249,21 @@ class FSingleChat : Fragment(), ItemClickListener {
         super.onDestroy()
     }
 
+    override fun onCommitContent(inputContentInfo: InputContentInfoCompat?,
+        flags: Int,
+        opts: Bundle?) {
+        val f=Uri.fromFile(File(inputContentInfo?.contentUri.toString()))
+        val uri=inputContentInfo?.contentUri.toString()
+        val uu=FileUtils.getPath(requireContext(),inputContentInfo?.contentUri!!)
+
+        val imageMsg=createMessage()
+        val image=ImageMessage("${inputContentInfo.contentUri}")
+        image.imageType=if(uu.endsWith(".png")) "sticker" else "gif"
+        imageMsg.apply {
+            type="image"
+            imageMessage=image
+        }
+        viewModel.sendStickerOrGif(imageMsg)
+    }
 }
 

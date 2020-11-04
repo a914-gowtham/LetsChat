@@ -39,7 +39,7 @@ constructor(@ApplicationContext private val context: Context,
         LogMessage.v("SingleChatHomeVModel init $toUser")
     }
 
-    fun getChatUsersAsFlow() = userDao.getChatUserWithMessages()
+    fun getChatUsers() = userDao.getChatUserWithMessages()
 
     override fun onCleared() {
         LogMessage.v("SingleChatHOME cleared")

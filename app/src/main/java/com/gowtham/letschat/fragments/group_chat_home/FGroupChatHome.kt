@@ -67,8 +67,8 @@ class FGroupChatHome : Fragment(),ItemClickListener{
                     val groupHasMsgsList=groupWithmsgs.filter { it.messages.isNotEmpty() }.
                     sortedBy { it.messages.last().createdAt }
 
-                    for (a in groupHasMsgsList)
-                        list1.add(0,a)
+                for (a in groupHasMsgsList)
+                    list1.add(0,a)
 
                     adGroupHome.submitList(list1)
                     AdGroupChatHome.chatList=list1

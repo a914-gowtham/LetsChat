@@ -88,7 +88,7 @@ class ChatUserProfileListener @Inject
         CoroutineScope(Dispatchers.IO).launch {
             chatUserDao.insertUser(chatUser)
             //updating in groups
-           /* val groups=groupDao.getGroupList()
+            val groups=groupDao.getGroupList()
             val containingList= mutableListOf<Group>()
             for (group in groups){
                 val members=group.members
@@ -99,7 +99,7 @@ class ChatUserProfileListener @Inject
                     containingList.add(group)
                 }
             }
-          groupDao.insertMultipleGroup(containingList)*/
+          groupDao.insertMultipleGroup(containingList)
         }
     }
 

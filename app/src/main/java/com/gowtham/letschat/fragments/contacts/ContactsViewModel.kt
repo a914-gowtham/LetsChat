@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.CollectionReference
 import com.gowtham.letschat.core.QueryCompleteListener
 import com.gowtham.letschat.db.data.ChatUser
@@ -34,7 +35,7 @@ class ContactsViewModel @ViewModelInject constructor(
 
     init {
         LogMessage.v("ContactsViewModel init")
-        CoroutineScope(Dispatchers.IO).launch{
+        viewModelScope.launch(Dispatchers.IO) {
             chatUsers=usersDao.getChatUserList()
         }
     }
@@ -54,6 +55,10 @@ class ContactsViewModel @ViewModelInject constructor(
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    inline fun sd(){
+        
     }
 
     private val onQueryCompleted=object : QueryCompleteListener {

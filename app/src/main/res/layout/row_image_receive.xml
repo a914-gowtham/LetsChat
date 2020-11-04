@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+        <variable
+            name="message"
+            type="com.gowtham.letschat.db.data.Message" />
+    </data>
+
+    <LinearLayout style="@style/VView"
+        android:layout_marginEnd="60dp"
+        android:layout_marginStart="5dp">
+
+        <ImageView
+            style="@style/WView"
+            loadImage="@{message}"
+            android:layout_gravity="start"
+            android:minHeight="130dp"
+            android:minWidth="130dp"
+            android:id="@+id/image_msg" />
+
+        <LinearLayout
+            style="@style/WLView"
+            android:layout_marginStart="2dp"
+            android:layout_gravity="start">
+
+            <TextView
+                android:id="@+id/txt_msg_time"
+                style="@style/TxtRgStyle"
+                android:textSize="16sp"
+                showMsgTime="@{message}" />
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+</layout>

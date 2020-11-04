@@ -84,7 +84,7 @@ class FSingleChatHome : Fragment(),ItemClickListener {
         setDataInView()
 
         lifecycleScope.launch {
-            viewModel.getChatUsersAsFlow().collect { list ->
+            viewModel.getChatUsers().collect { list ->
                 val filteredList = list.filter { it.messages.isNotEmpty() }
                 if (filteredList.isNotEmpty()) {
                     binding.imageEmpty.gone()

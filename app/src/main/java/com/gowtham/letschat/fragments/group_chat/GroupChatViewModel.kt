@@ -7,6 +7,10 @@ import android.text.TextUtils
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.CollectionReference
@@ -25,6 +29,9 @@ import com.gowtham.letschat.db.data.Group
 import com.gowtham.letschat.db.data.GroupMessage
 import com.gowtham.letschat.di.GroupCollection
 import com.gowtham.letschat.fragments.single_chat.toDataClass
+import com.gowtham.letschat.services.GroupUploadWorker
+import com.gowtham.letschat.services.UploadWorker
+import com.gowtham.letschat.utils.Constants
 import com.gowtham.letschat.utils.LogMessage
 import com.gowtham.letschat.utils.MPreference
 import com.gowtham.letschat.utils.UserUtils
@@ -214,7 +221,8 @@ class GroupChatViewModel @ViewModelInject constructor(
 
     private suspend fun updateCacheMessges(chatsOfGroup: List<GroupMessage>) {
         withContext(Dispatchers.Main) {
-            val nonSendMsgs = chatsOfGroup.filter { it.from == fromUser && it.status[0] == 0 }
+            val nonSendMsgs = chatsOfGroup.filter { it.from == fromUser
+                    && it.status[0] == 0 && it.type=="text"}
             LogMessage.v("nonSendMsgs Group Size ${nonSendMsgs.size}")
             for (cachedMsg in nonSendMsgs) {
                 val messageSender = GroupMsgSender(groupCollection, groupDao)
@@ -237,11 +245,27 @@ class GroupChatViewModel @ViewModelInject constructor(
         UserUtils.insertGroupMsg(groupMsgDao, message)
     }
 
+    fun sendStickerOrGif(message: GroupMessage) {
+        UserUtils.insertGroupMsg(groupMsgDao, message)
+        removeTypingCallbacks()
+        val messageData=Json.encodeToString(message)
+        val groupData=Json.encodeToString(group)
+        val data= Data.Builder()
+            .putString(Constants.MESSAGE_DATA,messageData)
+            .putString(Constants.GROUP_DATA,groupData)
+            .build()
+        val uploadWorkRequest: WorkRequest =
+            OneTimeWorkRequestBuilder<GroupUploadWorker>()
+                .setInputData(data)
+                .build()
+        WorkManager.getInstance(context).enqueue(uploadWorkRequest)
+    }
+
     private val messageListener = object : OnGrpMessageResponse {
         override fun onSuccess(message: GroupMessage) {
             LogMessage.v("messageListener OnSuccess ${message.textMessage?.text}")
             UserUtils.insertGroupMsg(groupMsgDao, message)
-            val users = group.members?.filter { !it.user.token.isNullOrEmpty() }?.map {
+            val users = group.members?.filter { !it.user.token.isEmpty() }?.map {
                 it.user.token
                 it
             }

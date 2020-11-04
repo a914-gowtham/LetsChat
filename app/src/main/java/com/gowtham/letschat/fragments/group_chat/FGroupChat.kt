@@ -1,11 +1,13 @@
 package com.gowtham.letschat.fragments.group_chat
 
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.inputmethod.InputContentInfoCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -16,17 +18,20 @@ import com.gowtham.letschat.databinding.FGroupChatBinding
 import com.gowtham.letschat.db.daos.GroupDao
 import com.gowtham.letschat.db.data.Group
 import com.gowtham.letschat.db.data.GroupMessage
+import com.gowtham.letschat.db.data.ImageMessage
 import com.gowtham.letschat.db.data.TextMessage
 import com.gowtham.letschat.models.UserProfile
 import com.gowtham.letschat.utils.*
+import com.gowtham.letschat.views.CustomEditText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class FGroupChat : Fragment(),ItemClickListener {
+class FGroupChat : Fragment(),ItemClickListener, CustomEditText.KeyBoardInputCallbackListener {
 
     @Inject
     lateinit var groupDao: GroupDao
@@ -74,6 +79,7 @@ class FGroupChat : Fragment(),ItemClickListener {
         binding.viewChatBtm.lottieSend.setOnClickListener {
             sendMessage()
         }
+        binding.viewChatBtm.edtMsg.setKeyBoardInputCallbackListener(this)
         UserUtils.setUnReadCountGroup(groupDao, group)
         setDataInView()
         subscribeObservers()
@@ -96,7 +102,7 @@ class FGroupChat : Fragment(),ItemClickListener {
     }
 
     private fun sendMessage() {
-        val msg = binding.viewChatBtm.edtMsg.text.trim().toString()
+        val msg = binding.viewChatBtm.edtMsg.text?.trim().toString()
         if (msg.isEmpty())
             return
         binding.viewChatBtm.lottieSend.playAnimation()
@@ -117,7 +123,7 @@ class FGroupChat : Fragment(),ItemClickListener {
             deliveryTimeList.add(0L)
         }
       return GroupMessage(System.currentTimeMillis(), group.id, from = localUserId,
-            to = toUsers, fromUser.userName, fromUser.image.toString(), statusList, deliveryTimeList,
+            to = toUsers, fromUser.userName, fromUser.image, statusList, deliveryTimeList,
             deliveryTimeList)
     }
 
@@ -191,6 +197,21 @@ class FGroupChat : Fragment(),ItemClickListener {
     override fun onDestroy() {
         super.onDestroy()
         Utils.closeKeyBoard(requireActivity())
+    }
+
+    override fun onCommitContent(
+        inputContentInfo: InputContentInfoCompat?,
+        flags: Int,
+        opts: Bundle?) {
+        val uu=FileUtils.getPath(requireContext(),inputContentInfo?.contentUri!!)
+        val imageMsg=createMessage()
+        val image= ImageMessage("${inputContentInfo.contentUri}")
+        image.imageType=if(uu.endsWith(".png")) "sticker" else "gif"
+        imageMsg.apply {
+            type="image"
+            imageMessage=image
+        }
+        viewModel.sendStickerOrGif(imageMsg)
     }
 
 }

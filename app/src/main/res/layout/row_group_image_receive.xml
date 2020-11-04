@@ -15,15 +15,13 @@
 
     <LinearLayout
         style="@style/VView"
-        android:layout_marginStart="5dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp">
 
         <LinearLayout
-            style="@style/VView"
+            style="@style/WVView"
             android:layout_marginEnd="90dp"
-            android:background="@drawable/shape_receive_msg"
-            android:paddingStart="12dp"
+            android:paddingStart="5dp"
             android:paddingTop="5dp"
             android:paddingEnd="10dp"
             android:paddingBottom="5dp">
@@ -49,21 +47,18 @@
 
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/txt_msg"
+            <ImageView
                 style="@style/WView"
-                android:hint="This is received message"
-                android:text="@{message.textMessage.text}"
-                android:textColor="@color/colorWhite"
-                android:textSize="18sp" />
-
-
+                loadGroupMsgImage="@{message}"
+                android:minHeight="130dp"
+                android:minWidth="130dp"
+                android:id="@+id/image_msg" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/txt_msg_time"
             style="@style/TxtRgStyle"
-            android:layout_marginStart="2dp"
+            android:layout_marginStart="5dp"
             showGrpMsgTime="@{message}"
             android:textSize="16sp" />
 

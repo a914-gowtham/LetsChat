@@ -6,6 +6,10 @@ import android.os.Looper
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import com.google.firebase.database.*
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ListenerRegistration
@@ -20,10 +24,10 @@ import com.gowtham.letschat.db.data.Message
 import com.gowtham.letschat.db.daos.MessageDao
 import com.gowtham.letschat.di.MessageCollection
 import com.gowtham.letschat.models.UserStatus
-import com.gowtham.letschat.utils.LogMessage
-import com.gowtham.letschat.utils.MPreference
-import com.gowtham.letschat.utils.UserUtils
-import com.gowtham.letschat.utils.Utils
+import com.gowtham.letschat.services.UploadWorker
+import com.gowtham.letschat.utils.*
+import com.gowtham.letschat.utils.Constants.CHAT_USER_DATA
+import com.gowtham.letschat.utils.Constants.MESSAGE_DATA
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -117,7 +121,6 @@ class SingleChatViewModel @ViewModelInject
                     }
                     if (!messagesList.isNullOrEmpty()) {
                         chatUser.documentId = doc1
-                        Timber.v("Check state one")
                         CoroutineScope(Dispatchers.IO).launch {
                             messageDao.insertMultipleMessage(messagesList)
                             chatUserDao.insertUser(chatUser)
@@ -153,7 +156,6 @@ class SingleChatViewModel @ViewModelInject
                     }
                     if (!messagesList.isNullOrEmpty()) {
                         chatUser.documentId = doc2
-                        Timber.v("Check state two")
                         CoroutineScope(Dispatchers.IO).launch {
                             messageDao.insertMultipleMessage(messagesList)
                             chatUserDao.insertUser(chatUser)
@@ -283,6 +285,22 @@ class SingleChatViewModel @ViewModelInject
         removeTypingCallbacks()
     }
 
+    fun sendStickerOrGif(message: Message){
+        UserUtils.insertMessage(messageDao,message)
+        removeTypingCallbacks()
+        val messageData=Json.encodeToString(message)
+        val chatUserData=Json.encodeToString(chatUser)
+        val data= Data.Builder()
+            .putString(MESSAGE_DATA,messageData)
+            .putString(CHAT_USER_DATA,chatUserData)
+            .build()
+        val uploadWorkRequest: WorkRequest =
+            OneTimeWorkRequestBuilder<UploadWorker>()
+                .setInputData(data)
+                .build()
+        WorkManager.getInstance(context).enqueue(uploadWorkRequest)
+    }
+
     fun sendCachedMesssages(){
         //Send msg that is not sent succesfully in last time
         CoroutineScope(Dispatchers.IO).launch{
@@ -292,7 +310,8 @@ class SingleChatViewModel @ViewModelInject
 
     private suspend fun updateCacheMessges(listOfMessage: List<Message>) {
         withContext(Dispatchers.Main){
-            val nonSendMsgs=listOfMessage.filter { it.from==fromUser && it.status==0 }
+            val nonSendMsgs=listOfMessage.filter { it.from==fromUser
+                    && it.status==0  && it.type=="text"}
             LogMessage.v("nonSendMsgs Size ${nonSendMsgs.size}")
             if (nonSendMsgs.isNotEmpty()){
                for(cachedMsg in nonSendMsgs){
@@ -312,9 +331,9 @@ class SingleChatViewModel @ViewModelInject
         override fun onSuccess(message: Message) {
             LogMessage.v("messageListener OnSuccess ${message.textMessage?.text}")
             UserUtils.insertMessage(messageDao,message)
-            if(!chatUser.user.token.isNullOrEmpty())
+            if(chatUser.user.token.isNotEmpty())
                UserUtils.sendPush(context, TYPE_NEW_MESSAGE, Json.encodeToString(message)
-                   ,chatUser.user.token.toString(),message.to)
+                   , chatUser.user.token,message.to)
         }
 
         override fun onFailed(message: Message) {

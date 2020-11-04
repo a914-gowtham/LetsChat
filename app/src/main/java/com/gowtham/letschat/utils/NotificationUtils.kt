@@ -141,7 +141,7 @@ object NotificationUtils {
         val messages=user.messages.filter { it.status<3 && it.from!=MPreference(context).getUid()}
         for (message in messages) {
             FirebasePush.messageCount +=1
-            style.addMessage(message.textMessage?.text, message.createdAt, chatPerson)
+            style.addMessage(BindingAdapters.getLastMsgTxt(message), message.createdAt, chatPerson)
         }
         return style
     }
@@ -165,8 +165,7 @@ object NotificationUtils {
     }
 
     private fun getGroupMsg(members: ArrayList<ChatUser>,
-                            msg: GroupMessage
-    ): String {
+                            msg: GroupMessage): String {
         val user=members.first { it.id==msg.from }.localName
         return "$user : ${BindingAdapters.getLastMsgTxt(msg)}"
     }

@@ -106,6 +106,6 @@ fun <T, VH : RecyclerView.ViewHolder> ListAdapter<T, VH>.updateList(list: List<T
 }
 
 fun  <T, VH : RecyclerView.ViewHolder> ListAdapter<T,VH>.addRestorePolicy(){
-    this.stateRestorationPolicy =
+    stateRestorationPolicy =
         RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
 }

@@ -1,8 +1,8 @@
 package com.gowtham.letschat.utils
 
-import android.content.Context
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.TextUtils
@@ -14,18 +14,24 @@ import androidx.core.view.setPadding
 import androidx.core.widget.ImageViewCompat
 import androidx.databinding.BindingAdapter
 import coil.ImageLoader
+import coil.decode.GifDecoder
+import coil.load
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import coil.transform.CircleCropTransformation
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.chip.Chip
 import com.gowtham.letschat.MApplication
+import com.gowtham.letschat.R
 import com.gowtham.letschat.db.data.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.io.File
+import java.util.*
 
 object BindingAdapters {
 
@@ -65,6 +71,51 @@ object BindingAdapters {
         txtView.text= getLastMsgTxt(lastMsg)
     }
 
+    @BindingAdapter("loadImage")
+    @JvmStatic
+    fun loadImage(imgView: ImageView, message: Message) {
+        val url=message.imageMessage?.uri
+        val imageType=message.imageMessage?.imageType
+        loadMsgImage(imgView,url!!,imageType!!)
+    }
+
+    @BindingAdapter("loadGroupMsgImage")
+    @JvmStatic
+    fun loadGrpMsgImage(imgView: ImageView, message: GroupMessage) {
+        val url=message.imageMessage?.uri
+        val imageType=message.imageMessage?.imageType
+        loadMsgImage(imgView,url.toString(),imageType.toString())
+    }
+
+    private fun loadMsgImage(imgView: ImageView, url: String, imageType: String) {
+        try {
+            if (imageType=="gif") {
+                val imageLoader = ImageLoader.Builder(imgView.context)
+                    .componentRegistry {
+                        add(GifDecoder())
+                    }
+                    .build()
+                imgView.load(url,imageLoader){
+                    crossfade(true)
+                    crossfade(300)
+                    diskCachePolicy(CachePolicy.ENABLED)
+                    placeholder(R.drawable.gif)
+                    error(R.drawable.gif)
+                }
+            }else {
+                val placeHolder=if(imageType=="sticker") R.drawable.ic_sticker else R.drawable.ic_other_user
+                imgView.load(url) {
+                    crossfade(true)
+                    crossfade(300)
+                    diskCachePolicy(CachePolicy.ENABLED)
+                    placeholder(placeHolder)
+                    error(placeHolder)
+                }}
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     fun getLastMsgTxt(msg: Message) : String{
         return when(msg.type){
             "text" -> {
@@ -74,7 +125,7 @@ object BindingAdapters {
                 "Audio"
             }
             "image" -> {
-                "Image"
+                msg.imageMessage?.imageType.toString().capitalize(Locale.getDefault())
             }
             "video" -> {
                 "Video"
@@ -82,7 +133,7 @@ object BindingAdapters {
             "file" -> {
                 "File"
             }
-            else->{ "Steotho image" }
+            else->{ "Steotho Image" }
         }
     }
 
@@ -95,7 +146,7 @@ object BindingAdapters {
                 "Audio"
             }
             "image" -> {
-                "Image"
+                msg.imageMessage?.imageType.toString().capitalize(Locale.getDefault())
             }
             "video" -> {
                 "Video"
@@ -267,30 +318,9 @@ object BindingAdapters {
         else{
             val message=messages.last()
             val localName=group.group.members?.first { it.id==message.from }?.localName
-            val txtMsg="$localName : ${getLastGroupMsgTxt(message)}"
+            val txtMsg="$localName : ${getLastMsgTxt(message)}"
             txtView.text=txtMsg
         }
-    }
-
-    private fun getLastGroupMsgTxt(msg: GroupMessage) : String{
-           return when(msg.type){
-               "text" -> {
-                   msg.textMessage?.text.toString()
-               }
-               "audio" -> {
-                   "Audio"
-               }
-               "image" -> {
-                   "Image"
-               }
-               "video" -> {
-                   "Video"
-               }
-               "file" -> {
-                   "File"
-               }
-               else->{ "Steotho image" }
-           }
     }
 
     @BindingAdapter("setGroupMessageSendTime")

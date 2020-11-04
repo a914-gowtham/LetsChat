@@ -2,8 +2,10 @@ package com.gowtham.letschat
 
 import android.app.Application
 import android.content.Context
+import androidx.hilt.work.HiltWorkerFactory
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.work.Configuration
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.CollectionReference
 import com.gowtham.letschat.db.daos.ChatUserDao
@@ -17,7 +19,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltAndroidApp
-class MApplication : Application(), LifecycleObserver {
+class MApplication : Application(), LifecycleObserver,Configuration.Provider {
 
     @Inject
     lateinit var preference: MPreference
@@ -30,6 +32,8 @@ class MApplication : Application(), LifecycleObserver {
 
     @Inject
     lateinit var userCollection: CollectionReference
+
+    @Inject lateinit var workerFactory: HiltWorkerFactory
 
     companion object {
         lateinit var instance: MApplication
@@ -51,6 +55,12 @@ class MApplication : Application(), LifecycleObserver {
         if (preference.isLoggedIn())
             checkLastDevice()   //looking for does user is logged in another device.if yes,need to shoe dialog for log in again
     }
+
+
+    override fun getWorkManagerConfiguration() =
+        Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
 
     private fun initTimber() {
         if (BuildConfig.DEBUG) {

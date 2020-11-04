@@ -2,12 +2,15 @@ package com.gowtham.letschat.utils
 
 import android.Manifest
 import android.app.Activity
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.text.TextUtils
+import android.webkit.MimeTypeMap
 import android.widget.ImageView
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
@@ -19,7 +22,8 @@ import com.gowtham.letschat.fragments.FImageSrcSheet
 import com.gowtham.letschat.fragments.SheetListener
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
-import java.io.File
+import java.io.*
+import kotlin.random.Random
 
 object ImageUtils {
 
@@ -34,14 +38,14 @@ object ImageUtils {
             showCameraOptions(context)
     }
 
-    fun loadUserImage(imageView: ImageView,imgUrl: String){
+    fun loadUserImage(imageView: ImageView, imgUrl: String){
         imageView.load(imgUrl) {
             crossfade(true)
             crossfade(300)
             diskCachePolicy(CachePolicy.ENABLED)
             placeholder(R.drawable.ic_other_user)
             error(R.drawable.ic_other_user)
-            transformations(CircleCropTransformation())
+              transformations(CircleCropTransformation())
         }
     }
 
@@ -54,15 +58,15 @@ object ImageUtils {
 
     private fun showCameraOptions(context: Fragment) {
         photoUri = null
-        val builder = FImageSrcSheet(object :SheetListener{
+        val builder = FImageSrcSheet(object : SheetListener {
             override fun selectedItem(index: Int) {
-                if (index==0)
+                if (index == 0)
                     takePhoto(context.requireActivity())
                 else
                     chooseGallery(context.requireActivity())
             }
         })
-        builder.show(context.childFragmentManager,"")
+        builder.show(context.childFragmentManager, "")
     }
 
     private fun chooseGallery(context: Activity) {
@@ -84,7 +88,8 @@ object ImageUtils {
         context: Activity,
         action: String,
         fileName: String,
-        reqCode: Int) {
+        reqCode: Int
+    ) {
         try {
             val intent = Intent(action)
             if (intent.resolveActivity(context.packageManager) != null) {
@@ -107,7 +112,7 @@ object ImageUtils {
         }
     }
 
-    fun cropImage(context: Activity, data: Intent?, squareCrop: Boolean=true) {
+    fun cropImage(context: Activity, data: Intent?, squareCrop: Boolean = true) {
         val imgUri: Uri? = getPhotoUri(data)
         imgUri?.let {
             val cropImage = CropImage.activity(imgUri)
@@ -160,4 +165,83 @@ object ImageUtils {
             context.requireContext().toast(R.string.txt_file_p_error)
     }
 
+    fun getUriPath(context: Context, uri: Uri, vararg data: String): String? {
+        return if (uri.toString()
+                .contains(providerPath(context))
+        ) uri.path else if (isGoogleOldPhotosUri(uri)) uri.lastPathSegment else if (isGoogleNewPhotosUri(
+                uri
+            ) || isPicasaPhotoUri(uri)
+        ) copyFile(context, uri, *data) else {
+            val result: String?
+            val cursor = context.contentResolver.query(uri, null, null, null, null)
+            if (cursor == null) result = uri.path else {
+                cursor.moveToFirst()
+                result = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DATA))
+                cursor.close()
+            }
+            result ?: ""
+        }
+    }
+
+    private fun isGoogleOldPhotosUri(uri: Uri): Boolean {
+        return "com.google.android.apps.photos.content" == uri.authority
+    }
+
+    private fun isGoogleNewPhotosUri(uri: Uri): Boolean {
+        return "com.google.android.apps.photos.contentprovider" == uri.authority
+    }
+
+    private fun isPicasaPhotoUri(uri: Uri?): Boolean {
+        return (uri != null && !TextUtils.isEmpty(uri.authority)
+                && (uri.authority!!.startsWith("com.android.gallery3d")
+                || uri.authority!!.startsWith("com.google.android.gallery3d")))
+    }
+
+    private fun copyFile(context: Context, uri: Uri, vararg data: String): String? {
+        var filePath: String
+        var inputStream: InputStream? = null
+        var outStream: BufferedOutputStream? = null
+        try {
+            val extension = getExtension(context, uri, data[1])
+            inputStream = context.contentResolver.openInputStream(uri)
+            val extDir = context.externalCacheDir
+            if (extDir == null || inputStream == null) return ""
+            filePath = (extDir.absolutePath + "/" + data[0]
+                    + "_" + Random.nextInt(100) + extension)
+            outStream = BufferedOutputStream(FileOutputStream(filePath))
+            val buf = ByteArray(2048)
+            var len: Int
+            while (inputStream.read(buf).also { len = it } > 0) {
+                outStream.write(buf, 0, len)
+            }
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+            filePath = ""
+        } finally {
+            try {
+                inputStream?.close()
+                outStream?.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+        return filePath
+    }
+
+    private fun getExtension(context: Context, uri: Uri, actual: String): String {
+        try {
+            val extension: String?
+            extension = if (uri.scheme != null && uri.scheme == ContentResolver.SCHEME_CONTENT) {
+                val mime = MimeTypeMap.getSingleton()
+                mime.getExtensionFromMimeType(context.contentResolver.getType(uri))
+            } else MimeTypeMap.getFileExtensionFromUrl(
+                Uri
+                    .fromFile(File(uri.path)).toString()
+            )
+            return if (extension == null || extension.isEmpty()) actual else extension
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
+        return actual
+    }
 }
