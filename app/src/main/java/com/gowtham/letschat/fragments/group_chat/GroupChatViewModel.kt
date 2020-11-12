@@ -225,7 +225,7 @@ class GroupChatViewModel @ViewModelInject constructor(
                     && it.status[0] == 0 && it.type=="text"}
             LogMessage.v("nonSendMsgs Group Size ${nonSendMsgs.size}")
             for (cachedMsg in nonSendMsgs) {
-                val messageSender = GroupMsgSender(groupCollection, groupDao)
+                val messageSender = GroupMsgSender(groupCollection)
                 messageSender.sendMessage(cachedMsg, group, messageListener)
             }
         }
@@ -239,7 +239,7 @@ class GroupChatViewModel @ViewModelInject constructor(
 
     fun sendMessage(message: GroupMessage) {
         Handler(Looper.getMainLooper()).postDelayed({
-            val messageSender = GroupMsgSender(groupCollection, groupDao)
+            val messageSender = GroupMsgSender(groupCollection)
             messageSender.sendMessage(message, group, messageListener)
         }, 300)
         UserUtils.insertGroupMsg(groupMsgDao, message)

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.provider.MediaStore
 import android.text.TextUtils
 import android.webkit.MimeTypeMap
@@ -58,14 +59,15 @@ object ImageUtils {
 
     private fun showCameraOptions(context: Fragment) {
         photoUri = null
-        val builder = FImageSrcSheet(object : SheetListener {
+        val builder = FImageSrcSheet.newInstance(Bundle())
+        builder.addListener(object : SheetListener {
             override fun selectedItem(index: Int) {
                 if (index == 0)
                     takePhoto(context.requireActivity())
                 else
                     chooseGallery(context.requireActivity())
             }
-        })
+        },)
         builder.show(context.childFragmentManager, "")
     }
 

@@ -18,6 +18,7 @@ import com.gowtham.letschat.TYPE_NEW_MESSAGE
 import com.gowtham.letschat.core.MessageSender
 import com.gowtham.letschat.core.MessageStatusUpdater
 import com.gowtham.letschat.core.OnMessageResponse
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.data.Message
@@ -37,58 +38,58 @@ import kotlinx.serialization.decodeFromString
 import timber.log.Timber
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-
 class SingleChatViewModel @ViewModelInject
-          constructor(@ApplicationContext private val context: Context,
-                      private val messageDao: MessageDao,
-                      private val chatUserDao: ChatUserDao,
-                      @MessageCollection
+constructor(
+    @ApplicationContext private val context: Context,
+    private val dbRepository: DbRepository,
+    @MessageCollection
     private val messageCollection: CollectionReference,
-                      private val preference: MPreference): ViewModel() {
+    private val preference: MPreference
+) : ViewModel() {
 
     private val messagesList: MutableList<Message> by lazy { mutableListOf() }
 
     private val database = FirebaseDatabase.getInstance()
 
-    private val toUser=preference.getOnlineUser()
+    private val toUser = preference.getOnlineUser()
 
-    private val fromUser=preference.getUid()
+    private val fromUser = preference.getUid()
 
-    val message=MutableLiveData<String>()
+    val message = MutableLiveData<String>()
 
-    private var listenerDoc1: ListenerRegistration?=null
+    private var listenerDoc1: ListenerRegistration? = null
 
-    private var listenerDoc2: ListenerRegistration?=null
+    private var listenerDoc2: ListenerRegistration? = null
 
-    private val statusRef: DatabaseReference= database.getReference("Users/$toUser")
+    private val statusRef: DatabaseReference = database.getReference("Users/$toUser")
 
-    private var statusListener: ValueEventListener?=null
+    private var statusListener: ValueEventListener? = null
 
-    private var isOnlineStatus=true
+    private var isOnlineStatus = true
 
-    val chatUserOnlineStatus=MutableLiveData(UserStatus())
+    val chatUserOnlineStatus = MutableLiveData(UserStatus())
 
     private lateinit var chatUser: ChatUser
 
-    private var chatsFromRoom=ArrayList<Message>()
+    private var chatsFromRoom = ArrayList<Message>()
 
-    private val typingHandler=Handler()
+    private val typingHandler = Handler()
 
-    private var isTyping=false
+    private var isTyping = false
 
-    private var canScroll=false
+    private var canScroll = false
 
-    private var statusUpdated=false
+    private var statusUpdated = false
 
-    private val doc1="${fromUser}_${toUser}"
+    private val doc1 = "${fromUser}_${toUser}"
 
-    private val doc2="${toUser}_${fromUser}"
+    private val doc2 = "${toUser}_${fromUser}"
 
-    private var firstCache=true
+    private var firstCache = true
 
-    private var cleared=false
+    private var cleared = false
 
-    private var chatUserOnline=false
+    private var chatUserOnline = false
 
     init {
         LogMessage.v("SingleChatViewModel init Doc1 $doc1")
@@ -101,10 +102,10 @@ class SingleChatViewModel @ViewModelInject
                     return@addSnapshotListener
                 val docs = snapshot?.documents
                 LogMessage.v("Snapshot 1 ${snapshot?.metadata?.isFromCache!!}")
-                if (snapshot.metadata.isFromCache){
-                    if (firstCache){
+                if (snapshot.metadata.isFromCache) {
+                    if (firstCache) {
                         callMe(doc1)
-                        firstCache=false
+                        firstCache = false
                     }
                     return@addSnapshotListener
                 }
@@ -121,10 +122,9 @@ class SingleChatViewModel @ViewModelInject
                     }
                     if (!messagesList.isNullOrEmpty()) {
                         chatUser.documentId = doc1
-                        CoroutineScope(Dispatchers.IO).launch {
-                            messageDao.insertMultipleMessage(messagesList)
-                            chatUserDao.insertUser(chatUser)
-                        }
+                        Timber.v("Check state one")
+                        dbRepository.insertMultipleMessage(messagesList)
+                        dbRepository.insertUser(chatUser)
                         updateMessagesStatus();
                     }
                 }
@@ -137,16 +137,18 @@ class SingleChatViewModel @ViewModelInject
                     return@addSnapshotListener
                 LogMessage.v("Snapshot 2 ${snapshot?.metadata?.isFromCache!!}")
                 val docs = snapshot.documents
-                if (snapshot.metadata.isFromCache){
-                        if (firstCache){
-                            callMe(doc2)
-                            firstCache=false
-                        }
-                    return@addSnapshotListener}
+                if (snapshot.metadata.isFromCache) {
+                    if (firstCache) {
+                        callMe(doc2)
+                        firstCache = false
+                    }
+                    return@addSnapshotListener
+                }
                 if (error == null) {
                     messagesList.clear()
-                    if (docs.isNullOrEmpty()){
-                        return@addSnapshotListener}
+                    if (docs.isNullOrEmpty()) {
+                        return@addSnapshotListener
+                    }
                     docs.forEach { doc ->
                         val message = doc.data?.toDataClass<Message>()
                         message?.chatUserId =
@@ -156,10 +158,9 @@ class SingleChatViewModel @ViewModelInject
                     }
                     if (!messagesList.isNullOrEmpty()) {
                         chatUser.documentId = doc2
-                        CoroutineScope(Dispatchers.IO).launch {
-                            messageDao.insertMultipleMessage(messagesList)
-                            chatUserDao.insertUser(chatUser)
-                        }
+                        Timber.v("Check state two")
+                        dbRepository.insertMultipleMessage(messagesList)
+                        dbRepository.insertUser(chatUser)
                         updateMessagesStatus();
                     }
                 }
@@ -169,7 +170,7 @@ class SingleChatViewModel @ViewModelInject
             override fun onDataChange(snapshot: DataSnapshot) {
                 val userStatus = snapshot.getValue(UserStatus::class.java)
                 chatUserOnlineStatus.value = userStatus
-                chatUserOnline=userStatus?.status=="online"
+                chatUserOnline = userStatus?.status == "online"
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -179,9 +180,9 @@ class SingleChatViewModel @ViewModelInject
 
     private fun callMe(doc: String) {
         messageCollection.document(doc)
-            .collection("messages").get().addOnSuccessListener { snapshot->
+            .collection("messages").get().addOnSuccessListener { snapshot ->
                 val docs = snapshot.documents
-                if (docs.isNotEmpty()){
+                if (docs.isNotEmpty()) {
                     messagesList.clear()
                     docs.forEach { doc ->
                         val message = doc.data?.toDataClass<Message>()
@@ -193,10 +194,8 @@ class SingleChatViewModel @ViewModelInject
 
                     if (!messagesList.isNullOrEmpty()) {
                         chatUser.documentId = doc //
-                        CoroutineScope(Dispatchers.IO).launch {
-                            messageDao.insertMultipleMessage(messagesList)
-                            chatUserDao.insertUser(chatUser)
-                        }
+                        dbRepository.insertMultipleMessage(messagesList)
+                        dbRepository.insertUser(chatUser)
                         updateMessagesStatus();
                     }
                 }
@@ -206,54 +205,54 @@ class SingleChatViewModel @ViewModelInject
     private fun updateMessagesStatus() {
         if (isOnlineStatus) {
             val updateToSeen = MessageStatusUpdater(messageCollection)
-            updateToSeen.updateToSeen(fromUser!!,toUser,chatUser.documentId!!,messagesList)
+            updateToSeen.updateToSeen(fromUser!!, toUser, chatUser.documentId!!, messagesList)
         }
     }
 
-    fun setChatUser(chatUser: ChatUser){
+    fun setChatUser(chatUser: ChatUser) {
         if (!this::chatUser.isInitialized)
-            this.chatUser=chatUser
+            this.chatUser = chatUser
     }
 
     fun setChatsOfThisUser(list: MutableList<Message>) {
         chatsFromRoom = list as ArrayList<Message>
-     /*   val filterList = chatsFromRoom
-            .filter { it.status != 3 && it.from != fromUser }
-            .map { it.status = 3
-                it
-            }
-        if (filterList.isNotEmpty()) {
-            Timber.v("Seen updated locally")
-            CoroutineScope(Dispatchers.IO).launch {
-                messageDao.insertMultipleMessage(filterList)
-            }
-        }*/
+        /*   val filterList = chatsFromRoom
+               .filter { it.status != 3 && it.from != fromUser }
+               .map { it.status = 3
+                   it
+               }
+           if (filterList.isNotEmpty()) {
+               Timber.v("Seen updated locally")
+               CoroutineScope(Dispatchers.IO).launch {
+                   messageDao.insertMultipleMessage(filterList)
+               }
+           }*/
         if (!statusUpdated) {
             statusUpdated = true
             setSeenAllMessage()  //one time only
         }
     }
 
-    fun canScroll(can: Boolean){
-        canScroll=can
+    fun canScroll(can: Boolean) {
+        canScroll = can
     }
 
-    fun getCanScroll()= canScroll
+    fun getCanScroll() = canScroll
 
     private fun updateMessageStatus(message: Message) {
-        if (isOnlineStatus){ //update message status to seen
-            message.status=3
-            val seenTime=System.currentTimeMillis()
-            message.deliveryTime=message.deliveryTime ?: seenTime
-            message.seenTime=seenTime
-        }else{    //update message status to delivered
-            message.status=2
-            message.deliveryTime=System.currentTimeMillis()
+        if (isOnlineStatus) { //update message status to seen
+            message.status = 3
+            val seenTime = System.currentTimeMillis()
+            message.deliveryTime = message.deliveryTime ?: seenTime
+            message.seenTime = seenTime
+        } else {    //update message status to delivered
+            message.status = 2
+            message.deliveryTime = System.currentTimeMillis()
         }
     }
 
-    fun setOnline(online: Boolean){
-        isOnlineStatus=online
+    fun setOnline(online: Boolean) {
+        isOnlineStatus = online
     }
 
 
@@ -268,25 +267,154 @@ class SingleChatViewModel @ViewModelInject
         }
     }*/
 
-    fun getMessagesByChatUserId(chatUserId: String)=
-        messageDao.getMessagesByChatUserId(chatUserId)
+    fun getMessagesByChatUserId(chatUserId: String) =
+        dbRepository.getMessagesByChatUserId(chatUserId)
 
     fun sendMessage(message: Message) {
         Handler(Looper.getMainLooper()).postDelayed({
             val messageSender = MessageSender(
                 messageCollection,
-                chatUserDao,
+                dbRepository,
                 chatUser,
                 messageListener
             )
             messageSender.checkAndSend(fromUser!!, toUser, message)
         }, 300)
-        UserUtils.insertMessage(messageDao,message)
+        dbRepository.insertMessage(message)
         removeTypingCallbacks()
     }
 
+    fun sendCachedMesssages() {
+        //Send msg that is not sent succesfully in last time
+        CoroutineScope(Dispatchers.IO).launch {
+            updateCacheMessges(dbRepository.getChatsOfFriend(toUser))
+        }
+    }
+
+    private suspend fun updateCacheMessges(listOfMessage: List<Message>) {
+        withContext(Dispatchers.Main) {
+            val nonSendMsgs = listOfMessage.filter { it.from == fromUser && it.status == 0 }
+            LogMessage.v("nonSendMsgs Size ${nonSendMsgs.size}")
+            if (nonSendMsgs.isNotEmpty()) {
+                for (cachedMsg in nonSendMsgs) {
+                    val messageSender = MessageSender(
+                        messageCollection,
+                        dbRepository,
+                        chatUser,
+                        messageListener
+                    )
+                    messageSender.checkAndSend(fromUser!!, toUser, cachedMsg)
+                }
+            }
+        }
+    }
+
+    private val messageListener = object : OnMessageResponse {
+        override fun onSuccess(message: Message) {
+            LogMessage.v("messageListener OnSuccess ${message.textMessage?.text}")
+            dbRepository.insertMessage(message)
+            if (!chatUser.user.token.isEmpty())
+                UserUtils.sendPush(
+                    context,
+                    TYPE_NEW_MESSAGE,
+                    Json.encodeToString(message),
+                    chatUser.user.token,
+                    message.to
+                )
+        }
+
+        override fun onFailed(message: Message) {
+            LogMessage.v("messageListener onFailed ${message.createdAt}")
+            dbRepository.insertMessage(message)
+        }
+    }
+
+    override fun onCleared() {
+        LogMessage.v("SingleChat cleared")
+        cleared = true
+        listenerDoc1?.remove()
+        listenerDoc2?.remove()
+        statusListener?.let {
+            statusRef.removeEventListener(it)
+        }
+        super.onCleared()
+    }
+
+    fun setSeenAllMessage() {
+        LogMessage.v("SetSeenAllMessage called")
+        if (!this::chatUser.isInitialized) {
+//            getChatUser()
+        } else if (chatUser.documentId.isNullOrEmpty())
+            setStatusUpdatedMsgs()
+        else if (!messagesList.isNullOrEmpty() && isOnlineStatus) {
+            val updateToSeen = MessageStatusUpdater(messageCollection)
+            updateToSeen.updateToSeen(fromUser!!, toUser, chatUser.documentId!!, messagesList)
+        } else if (!chatsFromRoom.isNullOrEmpty() && isOnlineStatus) {
+            val updateToSeen = MessageStatusUpdater(messageCollection)
+            updateToSeen.updateToSeen(fromUser!!, toUser, chatUser.documentId!!, chatsFromRoom)
+        }
+        if (isOnlineStatus)
+            UserUtils.setUnReadCountZero(dbRepository, chatUser)
+
+    }
+
+    fun sendTyping(edtValue: String) {
+        if (edtValue.isEmpty()) {
+            if (isTyping)
+                UserUtils.sendTypingStatus(database, false, fromUser!!, toUser)
+            isTyping = false
+        } else if (!isTyping) {
+            UserUtils.sendTypingStatus(database, true, fromUser!!, toUser)
+            isTyping = true
+            removeTypingCallbacks()
+            typingHandler.postDelayed(typingThread, 4000)
+        }
+    }
+
+    private val typingThread = Runnable {
+        isTyping = false
+        UserUtils.sendTypingStatus(database, false, fromUser!!, toUser)
+        removeTypingCallbacks()
+    }
+
+    private fun removeTypingCallbacks() {
+        typingHandler.removeCallbacks(typingThread)
+    }
+
+    private fun setStatusUpdatedMsgs() {
+        try {
+            messageCollection.document("${fromUser}_${toUser}").get()
+                .addOnSuccessListener { documentSnapshot ->
+                    if (documentSnapshot.exists()) {
+                        chatUser.documentId = "${fromUser}_${toUser}"
+                        dbRepository.insertUser(chatUser)
+                        setSeenAllMessage()
+                    } else {
+                        messageCollection.document("${toUser}_${fromUser}").get()
+                            .addOnSuccessListener { documentSnapshot ->
+                                if (documentSnapshot.exists()) {
+                                    chatUser.documentId = "${toUser}_${fromUser}"
+                                    dbRepository.insertUser(chatUser)
+                                    setSeenAllMessage()
+                                }
+                            }
+                    }
+                }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun setUnReadCountZero(chatUser: ChatUser) {
+        UserUtils.setUnReadCountZero(dbRepository,chatUser)
+    }
+
+    fun insertUser(chatUser: ChatUser) {
+        dbRepository.insertUser(chatUser)
+    }
+
     fun sendStickerOrGif(message: Message){
-        UserUtils.insertMessage(messageDao,message)
+        dbRepository.insertMessage(message)
         removeTypingCallbacks()
         val messageData=Json.encodeToString(message)
         val chatUserData=Json.encodeToString(chatUser)
@@ -300,128 +428,7 @@ class SingleChatViewModel @ViewModelInject
                 .build()
         WorkManager.getInstance(context).enqueue(uploadWorkRequest)
     }
-
-    fun sendCachedMesssages(){
-        //Send msg that is not sent succesfully in last time
-        CoroutineScope(Dispatchers.IO).launch{
-            updateCacheMessges(messageDao.getChatsOfFriend(toUser))
-        }
-    }
-
-    private suspend fun updateCacheMessges(listOfMessage: List<Message>) {
-        withContext(Dispatchers.Main){
-            val nonSendMsgs=listOfMessage.filter { it.from==fromUser
-                    && it.status==0  && it.type=="text"}
-            LogMessage.v("nonSendMsgs Size ${nonSendMsgs.size}")
-            if (nonSendMsgs.isNotEmpty()){
-               for(cachedMsg in nonSendMsgs){
-                   val messageSender = MessageSender(
-                       messageCollection,
-                       chatUserDao,
-                       chatUser,
-                       messageListener
-                   )
-                   messageSender.checkAndSend(fromUser!!, toUser, cachedMsg)
-               }
-            }
-        }
-    }
-
-    private val messageListener = object : OnMessageResponse {
-        override fun onSuccess(message: Message) {
-            LogMessage.v("messageListener OnSuccess ${message.textMessage?.text}")
-            UserUtils.insertMessage(messageDao,message)
-            if(chatUser.user.token.isNotEmpty())
-               UserUtils.sendPush(context, TYPE_NEW_MESSAGE, Json.encodeToString(message)
-                   , chatUser.user.token,message.to)
-        }
-
-        override fun onFailed(message: Message) {
-            LogMessage.v("messageListener onFailed ${message.createdAt}")
-            UserUtils.insertMessage(messageDao,message)
-        }
-    }
-
-    override fun onCleared() {
-        LogMessage.v("SingleChat cleared")
-        cleared=true
-        listenerDoc1?.remove()
-        listenerDoc2?.remove()
-        statusListener?.let {
-            statusRef.removeEventListener(it)
-        }
-        super.onCleared()
-    }
-
-    fun setSeenAllMessage() {
-        LogMessage.v("SetSeenAllMessage called")
-        if (!this::chatUser.isInitialized){
-//            getChatUser()
-       }  else if (chatUser.documentId.isNullOrEmpty())
-            setStatusUpdatedMsgs()
-         else if (!messagesList.isNullOrEmpty() && isOnlineStatus) {
-            val updateToSeen= MessageStatusUpdater(messageCollection)
-            updateToSeen.updateToSeen(fromUser!!,toUser,chatUser.documentId!!,messagesList)
-        }else if (!chatsFromRoom.isNullOrEmpty() && isOnlineStatus) {
-            val updateToSeen= MessageStatusUpdater(messageCollection)
-            updateToSeen.updateToSeen(fromUser!!,toUser,chatUser.documentId!!,chatsFromRoom)
-        }
-        if(isOnlineStatus)
-            UserUtils.setUnReadCountZero(chatUserDao,chatUser)
-
-    }
-
-    fun sendTyping(edtValue: String){
-        if (edtValue.isEmpty()){
-            if (isTyping)
-                UserUtils.sendTypingStatus(database,false,fromUser!!,toUser)
-             isTyping=false
-        }else if (!isTyping){
-            UserUtils.sendTypingStatus(database,true,fromUser!!,toUser)
-            isTyping=true
-            removeTypingCallbacks()
-            typingHandler.postDelayed(typingThread,4000)
-        }
-    }
-
-    private val typingThread= Runnable {
-        isTyping=false
-        UserUtils.sendTypingStatus(database,false,fromUser!!,toUser)
-        removeTypingCallbacks()
-    }
-
-    private fun removeTypingCallbacks() {
-        typingHandler.removeCallbacks(typingThread)
-    }
-
-    private fun setStatusUpdatedMsgs(){
-        try {
-            messageCollection.document("${fromUser}_${toUser}").get()
-                .addOnSuccessListener { documentSnapshot ->
-                    if (documentSnapshot.exists()) {
-                        chatUser.documentId="${fromUser}_${toUser}"
-                        UserUtils.updateChatUserDocId(chatUserDao,chatUser)
-                        setSeenAllMessage()
-                    } else {
-                        messageCollection.document("${toUser}_${fromUser}").get()
-                            .addOnSuccessListener { documentSnapshot ->
-                                if (documentSnapshot.exists()) {
-                                    chatUser.documentId="${toUser}_${fromUser}"
-                                    UserUtils.updateChatUserDocId(
-                                        chatUserDao,
-                                        chatUser)
-                                    setSeenAllMessage()
-                                }
-                            }
-                    }
-                }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
 }
-
 
 
 //convert a data class to a map

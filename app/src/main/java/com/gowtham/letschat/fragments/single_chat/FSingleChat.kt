@@ -83,7 +83,7 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
 
         binding.viewmodel=viewModel
         chatUser= args.chatUserProfile!!
-        UserUtils.setUnReadCountZero(chatUserDao, chatUser)
+        viewModel.setUnReadCountZero(chatUser)
         binding.viewChatBtm.lottieSend.setOnClickListener {
             sendMessage()
         }
@@ -228,7 +228,7 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
                     binding.viewChatHeader.txtLocalName.text=it.name
                     chatUser.localName=it.name
                     chatUser.locallySaved=true
-                    UserUtils.updateChatUserDocId(chatUserDao,chatUser)
+                    viewModel.insertUser(chatUser)
                 }
             }else if (resultCode == Activity.RESULT_CANCELED) {
                 Timber.v("Cancelled Added Contact")

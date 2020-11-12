@@ -1,6 +1,7 @@
 package com.gowtham.letschat.core
 
 import com.google.firebase.firestore.CollectionReference
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.daos.GroupDao
 import com.gowtham.letschat.db.data.ChatUser
@@ -11,8 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class GroupQuery(private val groupId: String,private val chatUserDao: ChatUserDao,
-                 private val groupDao: GroupDao,private val preference: MPreference) {
+class GroupQuery(private val groupId: String,private val dbRepository: DbRepository,private val preference: MPreference) {
 
     private val myUserId=preference.getUid()!!
 
@@ -28,16 +28,14 @@ class GroupQuery(private val groupId: String,private val chatUserDao: ChatUserDa
                profiles.removeAt(index)
                profiles.add(0,preference.getUserProfile()!!)  //moving localuser to 0 th index
                group.profiles=profiles
-               CoroutineScope(Dispatchers.IO).launch {
-                     checkAlreadySavedMember(group, chatUserDao.getChatUserList())
-               }
+               checkAlreadySavedMember(group, dbRepository.getChatUserList())
            }
        }.addOnFailureListener {
            Timber.v("GroupDataGrtting failed ${it.message}")
        }
     }
 
-    private suspend fun checkAlreadySavedMember(group: Group, list: List<ChatUser>){
+    private fun checkAlreadySavedMember(group: Group, list: List<ChatUser>){
          val chatUsers= ArrayList<ChatUser>()
         for (profile in group.profiles!!){
             if (profile.uId==myUserId) {
@@ -54,8 +52,8 @@ class GroupQuery(private val groupId: String,private val chatUserDao: ChatUserDa
         }
         group.members=chatUsers
         group.profiles= ArrayList()
-        chatUserDao.insertMultipleUser(chatUsers)
-        groupDao.insertGroup(group)
+        dbRepository.insertMultipleUser(chatUsers)
+        dbRepository.insertGroup(group)
     }
 
 }

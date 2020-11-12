@@ -23,7 +23,7 @@ interface GroupDao {
     fun getGroupList(): List<Group>
 
     @Query("SELECT * FROM `Group`  WHERE id=:groupId")
-    suspend fun getGroupById(groupId: String): Group?
+    fun getGroupById(groupId: String): Group?
 
     @Query("DELETE FROM `Group` WHERE id=:groupId")
     suspend fun deleteGroupById(groupId: String)

@@ -5,6 +5,7 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import com.gowtham.letschat.FirebasePush
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.daos.GroupDao
 import com.gowtham.letschat.db.daos.GroupMessageDao
@@ -33,9 +34,7 @@ class GroupChatHandler @Inject constructor(
     private val userCollection: CollectionReference,
     @GroupCollection
     private val groupCollection: CollectionReference,
-    private val chatUserDao: ChatUserDao,
-    private val groupDao: GroupDao,
-    private val messageDao: GroupMessageDao) {
+    private val dbRepository: DbRepository) {
 
     private val userId = preference.getUid()
 
@@ -98,7 +97,7 @@ class GroupChatHandler @Inject constructor(
 
     private fun updateGroupUnReadCount() {
         CoroutineScope(Dispatchers.IO).launch {
-            val groups=groupDao.getGroupList()
+            val groups=dbRepository.getGroupList()
             for (group in groups){
                 group.unRead=messagesList.filter {
                     val myStatus= Utils.myMsgStatus(userId.toString(),it)
@@ -115,12 +114,10 @@ class GroupChatHandler @Inject constructor(
     private fun updateInLocal(groups: List<Group>) {
         val updateToSeen = GroupMsgStatusUpdater(groupCollection)
         updateToSeen.updateToDelivery(userId!!, messagesList, *listOfGroup.toTypedArray())
-        CoroutineScope(Dispatchers.IO).launch {
-            messageDao.insertMultipleMessage(messagesList)
-            groupDao.insertMultipleGroup(groups)
-        }
+            dbRepository.insertMultipleGroupMessage(messagesList)
+            dbRepository.insertMultipleGroup(groups)
         if (groups.isNotEmpty())
-            FirebasePush.showGroupNotification(context, chatUserDao, groupDao)
+            FirebasePush.showGroupNotification(context, dbRepository)
     }
 
     private fun addGroupsSnapShotListener() {
@@ -130,7 +127,7 @@ class GroupChatHandler @Inject constructor(
                 val groups = snapshot?.get("groups")
                 val listOfGroup = if (groups == null) ArrayList() else groups as ArrayList<String>
                 CoroutineScope(Dispatchers.IO).launch {
-                    val alreadySavedGroup = groupDao.getGroupList().map { it.id }
+                    val alreadySavedGroup = dbRepository.getGroupList().map { it.id }
                     val removedGroups = alreadySavedGroup.toSet().minus(listOfGroup.toSet())
                     val newGroups = listOfGroup.toSet().minus(alreadySavedGroup.toSet())
                     withContext(Dispatchers.Main) {
@@ -144,7 +141,7 @@ class GroupChatHandler @Inject constructor(
     private fun queryNewGroups(newGroups: Set<String>) {
         Timber.v("New groups ${newGroups.size}")
         for (groupId in newGroups) {
-            val groupQuery = GroupQuery(groupId, chatUserDao, groupDao, preference)
+            val groupQuery = GroupQuery(groupId, dbRepository,preference)
             groupQuery.getGroupData(groupCollection)
         }
     }

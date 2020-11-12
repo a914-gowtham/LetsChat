@@ -3,6 +3,7 @@ package com.gowtham.letschat.core
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.SetOptions
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.data.Message
@@ -16,7 +17,7 @@ interface OnMessageResponse{
 }
 
 class MessageSender(private val msgCollection: CollectionReference,
-                    private val chatUserDao: ChatUserDao, private val chatUser: ChatUser,
+                    private val dbRepo: DbRepository, private val chatUser: ChatUser,
                     private val listener: OnMessageResponse) {
 
     fun checkAndSend(fromUser: String, toUser: String, message: Message) {
@@ -64,7 +65,7 @@ class MessageSender(private val msgCollection: CollectionReference,
     private fun send(doc: String, message: Message){
         try {
             chatUser.documentId=doc
-            UserUtils.updateChatUserDocId(chatUserDao, chatUser)
+            dbRepo.insertUser(chatUser)
             val chatUserId=message.chatUserId
             message.chatUserId=null  //chatUserId field is being used only for relation query,changing to null will ignore this field
             message.status=1

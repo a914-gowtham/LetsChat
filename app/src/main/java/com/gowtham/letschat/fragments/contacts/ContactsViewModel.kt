@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.CollectionReference
 import com.gowtham.letschat.core.QueryCompleteListener
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.models.UserProfile
@@ -20,7 +21,7 @@ import timber.log.Timber
 
 class ContactsViewModel @ViewModelInject constructor(
     @ApplicationContext private val context: Context,
-    private val usersDao: ChatUserDao,
+    private val dbRepo: DbRepository,
     private val preference: MPreference) : ViewModel() {
 
     val queryState = MutableLiveData<LoadState>()
@@ -35,12 +36,12 @@ class ContactsViewModel @ViewModelInject constructor(
 
     init {
         LogMessage.v("ContactsViewModel init")
-        viewModelScope.launch(Dispatchers.IO) {
-            chatUsers=usersDao.getChatUserList()
+        CoroutineScope(Dispatchers.IO).launch{
+            chatUsers=dbRepo.getChatUserList()
         }
     }
 
-    fun getContacts()=usersDao.getAllChatUser()
+    fun getContacts()=dbRepo.getAllChatUser()
 
     fun setContactCount(size: Int) {
         contactsCount.value="$size Contacts"
@@ -55,10 +56,6 @@ class ContactsViewModel @ViewModelInject constructor(
         } catch (e: Exception) {
             e.printStackTrace()
         }
-    }
-
-    inline fun sd(){
-        
     }
 
     private val onQueryCompleted=object : QueryCompleteListener {
@@ -81,7 +78,7 @@ class ContactsViewModel @ViewModelInject constructor(
                 contactsCount.value="${finalList.size} Contacts"
                 queryState.value=LoadState.OnSuccess(finalList)
                 CoroutineScope(Dispatchers.IO).launch {
-                    usersDao.insertMultipleUser(finalList)
+                    dbRepo.insertMultipleUser(finalList)
                 }
                 context.toast("Contacts refreshed")
                 setDefaultValues()
@@ -101,6 +98,10 @@ class ContactsViewModel @ViewModelInject constructor(
     override fun onCleared() {
         LogMessage.v("ContactsViewModel OnCleared")
         super.onCleared()
+    }
+
+    fun setUnReadCountZero(chatUser: ChatUser) {
+        UserUtils.setUnReadCountZero(dbRepo,chatUser)
     }
 
 }

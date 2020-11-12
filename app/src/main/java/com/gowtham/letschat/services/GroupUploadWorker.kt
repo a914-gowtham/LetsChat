@@ -14,6 +14,7 @@ import com.gowtham.letschat.core.GroupMsgSender
 import com.gowtham.letschat.core.MessageSender
 import com.gowtham.letschat.core.OnGrpMessageResponse
 import com.gowtham.letschat.core.OnMessageResponse
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.daos.GroupDao
 import com.gowtham.letschat.db.daos.GroupMessageDao
 import com.gowtham.letschat.db.data.ChatUser
@@ -35,8 +36,7 @@ class GroupUploadWorker @WorkerInject constructor(
     private val storageRef: StorageReference,
     @GroupCollection
     val groupCollection: CollectionReference,
-    val groupDao: GroupDao,
-    val messageDao: GroupMessageDao):
+    private val dbRepository: DbRepository):
     Worker(appContext, workerParams) {
 
     private val params=workerParams
@@ -66,7 +66,7 @@ class GroupUploadWorker @WorkerInject constructor(
                 Timber.v("TaskResult Failed ${e.message}")
                 result[0]= Result.failure()
                 message.status[0]=4
-                UserUtils.insertGroupMsg(messageDao, message)
+                dbRepository.insertMessage(message)
                 countDownLatch.countDown()
             }
         }.addOnProgressListener { taskSnapshot ->
@@ -83,7 +83,7 @@ class GroupUploadWorker @WorkerInject constructor(
         countDownLatch: CountDownLatch) {
         val group=Json.decodeFromString<Group>(params.inputData.getString(Constants.GROUP_DATA)!!)
         message.imageMessage?.uri=imgUrl
-        val messageSender = GroupMsgSender(groupCollection, groupDao)
+        val messageSender = GroupMsgSender(groupCollection)
         messageSender.sendMessage(message, group, object : OnGrpMessageResponse{
             override fun onSuccess(message: GroupMessage) {
                 sendPushToMembers(group,message)
@@ -93,7 +93,7 @@ class GroupUploadWorker @WorkerInject constructor(
 
             override fun onFailed(message: GroupMessage) {
                 result[0]= Result.failure()
-                UserUtils.insertGroupMsg(messageDao, message)
+                dbRepository.insertMessage(message)
                 countDownLatch.countDown()
             }
         })

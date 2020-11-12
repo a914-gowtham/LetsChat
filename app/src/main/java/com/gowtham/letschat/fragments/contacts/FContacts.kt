@@ -148,7 +148,7 @@ class FContacts : Fragment(), ItemClickListener {
     }
 
     override fun onItemClicked(v: View, position: Int) {
-        UserUtils.setUnReadCountZero(chatUserDao,contactList[position])
+        viewModel.setUnReadCountZero(contactList[position])
         preference.setCurrentUser(contactList[position].user.uId!!)
         val action = FContactsDirections.actionFContactsToChat(
             contactList[position]

@@ -20,6 +20,7 @@ import com.gowtham.letschat.core.ChatUserUtil
 import com.gowtham.letschat.core.GroupMsgStatusUpdater
 import com.gowtham.letschat.core.GroupQuery
 import com.gowtham.letschat.core.MessageStatusUpdater
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.daos.GroupDao
 import com.gowtham.letschat.db.daos.GroupMessageDao
@@ -47,6 +48,7 @@ import kotlinx.serialization.json.Json
 import timber.log.Timber
 import javax.inject.Inject
 
+
 const val TYPE_LOGGED_IN = "new_logged_in"
 
 const val TYPE_NEW_MESSAGE = "new_message"
@@ -68,16 +70,7 @@ class FirebasePush : FirebaseMessagingService(),OnSuccessListener {
     lateinit var preference: MPreference
 
     @Inject
-    lateinit var messageDao: MessageDao
-
-    @Inject
-    lateinit var chatUserDao: ChatUserDao
-
-    @Inject
-    lateinit var groupDao: GroupDao
-
-    @Inject
-    lateinit var groupMsgDao: GroupMessageDao
+    lateinit var dbRepository: DbRepository
 
     @Inject
     lateinit var usersCollection: CollectionReference
@@ -117,10 +110,10 @@ class FirebasePush : FirebaseMessagingService(),OnSuccessListener {
             sentTime = remoteMessage.sentTime
             val data = remoteMessage.data
             pushMsg= Json.decodeFromString(data["data"].toString())
-           /* pushMsg.to?.let {
-                if (it!=userId)
-                    return
-            }*/
+            /* pushMsg.to?.let {
+                 if (it!=userId)
+                     return
+             }*/
             handleNotification()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -154,22 +147,22 @@ class FirebasePush : FirebaseMessagingService(),OnSuccessListener {
         if(!MApplication.isAppRunning) {
             val message=Json.decodeFromString<GroupMessage>(pushMsg.message_body.toString())
             CoroutineScope(Dispatchers.IO).launch {
-                groupMsgDao.insertMessage(message)
-                val group=groupDao.getGroupById(message.groupId)
-                val messages=groupMsgDao.getChatsOfGroupList(group?.id.toString())
+                dbRepository.insertMessage(message)
+                val group=dbRepository.getGroupById(message.groupId)
+                val messages=dbRepository.getChatsOfGroupList(group?.id.toString())
                 if (group!=null) {
-                     group.unRead=messages.filter { it.from!=userId &&
-                             Utils.myIndexOfStatus(userId!!,it)<3 }.size
-                    groupDao.insertGroup(group)
+                    group.unRead=messages.filter { it.from!=userId &&
+                            Utils.myIndexOfStatus(userId!!,it)<3 }.size
+                    dbRepository.insertGroup(group)
 
                     withContext(Dispatchers.Main){
-                        showGroupNotification(this@FirebasePush, chatUserDao,groupDao)
+                        showGroupNotification(this@FirebasePush, dbRepository)
                         //update delivery status
                         val updateToSeen = GroupMsgStatusUpdater(groupCollection)
                         updateToSeen.updateToDelivery(userId!!, messages,group.id)
                     }
                 }else{
-                    val groupQuery = GroupQuery(message.groupId, chatUserDao, groupDao, preference)
+                    val groupQuery = GroupQuery(message.groupId,dbRepository, preference)
                     groupQuery.getGroupData(groupCollection)
                 }
             }
@@ -180,7 +173,7 @@ class FirebasePush : FirebaseMessagingService(),OnSuccessListener {
         //it would be updated by snapshot listeners when app is alive
         if(!MApplication.isAppRunning) {
             val group = Json.decodeFromString<Group>(pushMsg.message_body.toString())
-            val groupQuery = GroupQuery(group.id, chatUserDao, groupDao, preference)
+            val groupQuery = GroupQuery(group.id, dbRepository, preference)
             groupQuery.getGroupData(groupCollection)
         }
     }
@@ -194,14 +187,14 @@ class FirebasePush : FirebaseMessagingService(),OnSuccessListener {
         val chatUserId = UserUtils.getChatUserId(userId!!, message)  //chatUserId from message
         message.chatUserId = chatUserId
         CoroutineScope(Dispatchers.IO).launch {
-            messageDao.insertMessage(message)
-            val chatUser = chatUserDao.getChatUserById(chatUserId)
-            messagesOfChatUser=messageDao.getChatsOfFriend(chatUserId).filter { it.to==userId && it.status<3 }
+            dbRepository.insertMessage(message)
+            val chatUser = dbRepository.getChatUserById(chatUserId)
+            messagesOfChatUser=dbRepository.getChatsOfFriend(chatUserId).filter { it.to==userId && it.status<3 }
             if (chatUser != null) {
                 chatUser.unRead =messagesOfChatUser.size  //set unread msg count
-                UserUtils.updateChatUserDocId(chatUserDao, chatUser)
+                dbRepository.insertUser(chatUser)
                 withContext(Dispatchers.Main){
-                    showNotification(this@FirebasePush, chatUserDao)
+                    showNotification(this@FirebasePush, dbRepository)
                     //update delivery status
                     val statusUpdater= MessageStatusUpdater(messageCollection)
                     statusUpdater.updateToDelivery(userId!!,messagesOfChatUser, chatUser)
@@ -209,7 +202,7 @@ class FirebasePush : FirebaseMessagingService(),OnSuccessListener {
             } else{
                 withContext(Dispatchers.Main){
                     //update delivery status in listener
-                    val util= ChatUserUtil(chatUserDao, usersCollection,this@FirebasePush)
+                    val util= ChatUserUtil(dbRepository, usersCollection,this@FirebasePush)
                     util.queryNewUserProfile(this@FirebasePush, chatUserId,null)
                 }
             }
@@ -230,17 +223,17 @@ class FirebasePush : FirebaseMessagingService(),OnSuccessListener {
         var messageCount=0
         var personCount=0
 
-        fun showGroupNotification(context: Context,userDao: ChatUserDao,groupDao: GroupDao){
+        fun showGroupNotification(context: Context,dbRepository: DbRepository){
             CoroutineScope(Dispatchers.IO).launch {
-                var groupWithMsgs=groupDao.getGroupWithMessagesList()
+                var groupWithMsgs=dbRepository.getGroupWithMessagesList()
                 groupWithMsgs=groupWithMsgs.filter { it.group.unRead!=0 }
                 checkGroupMessages(context,groupWithMsgs)
             }
         }
 
-        fun showNotification(context: Context, userDao: ChatUserDao){
+        fun showNotification(context: Context, dbRepository: DbRepository){
             CoroutineScope(Dispatchers.IO).launch {
-                var chatUserWithMessages=userDao.getChatUserWithMessagesList()
+                var chatUserWithMessages=dbRepository.getChatUserWithMessagesList()
                 chatUserWithMessages=chatUserWithMessages.filter { it.user.unRead!=0 }
                 checkMessages(context, chatUserWithMessages)
             }
@@ -254,8 +247,8 @@ class FirebasePush : FirebaseMessagingService(),OnSuccessListener {
             val groupNotifications=ArrayList<Notification>()
             if (!groupWithMsgs.isNullOrEmpty()){
                 for (groupMsg in groupWithMsgs) {
-                  /*  if (groupMsg.messages.last().from==myUserId)
-                        continue*/
+                    /*  if (groupMsg.messages.last().from==myUserId)
+                          continue*/
                     personCount+=1
                     val person: Person = Person.Builder().setIcon(null)
                         .setKey(groupMsg.group.id).setName(Utils.getGroupName(groupMsg.group.id)).build()
@@ -289,34 +282,34 @@ class FirebasePush : FirebaseMessagingService(),OnSuccessListener {
             val myUserId=MPreference(context).getUid().toString()
             val manager: NotificationManagerCompat = Utils.returnNManager(context)
             val notifications=ArrayList<Notification>()
-                if (!chatUserWithMessages.isNullOrEmpty()) {
-                    for (user in chatUserWithMessages) {
-                        val messages=user.messages.filter { it.status<3 && it.from!=myUserId}
-                        if(messages.isNullOrEmpty())
-                            continue
-                        personCount+=1
-                        Timber.v("DocId ${user.user.documentId}")
-                        val person: Person = Person.Builder().setIcon(null)
-                            .setKey(user.user.id).setName(user.user.localName).build()
-                        val builder= Utils.createBuilder(context, manager)
-                            .setStyle(NotificationUtils.getStyle(context, person, user))
-                            .setContentIntent(NotificationUtils.getPIntent(context,user.user))
-                            .setGroup(GROUP_KEY)
-                        if (!user.user.documentId.isNullOrBlank()){
-                            builder.addAction(R.drawable.ic_drafts,"mark as read",NotificationUtils.getMarkAsPIntent(context,user))
-                            builder.addAction(NotificationUtils.getReplyAction(context,user))
-                        }
-                        val notification=builder.build()
-                        notifications.add(notification)
+            if (!chatUserWithMessages.isNullOrEmpty()) {
+                for (user in chatUserWithMessages) {
+                    val messages=user.messages.filter { it.status<3 && it.from!=myUserId}
+                    if(messages.isNullOrEmpty())
+                        continue
+                    personCount+=1
+                    Timber.v("DocId ${user.user.documentId}")
+                    val person: Person = Person.Builder().setIcon(null)
+                        .setKey(user.user.id).setName(user.user.localName).build()
+                    val builder= Utils.createBuilder(context, manager)
+                        .setStyle(NotificationUtils.getStyle(context, person, user))
+                        .setContentIntent(NotificationUtils.getPIntent(context,user.user))
+                        .setGroup(GROUP_KEY)
+                    if (!user.user.documentId.isNullOrBlank()){
+                        builder.addAction(R.drawable.ic_drafts,"mark as read",NotificationUtils.getMarkAsPIntent(context,user))
+                        builder.addAction(NotificationUtils.getReplyAction(context,user))
                     }
+                    val notification=builder.build()
+                    notifications.add(notification)
                 }
+            }
 
             val summaryNotification =NotificationUtils.getSummaryNotification(context,manager)
             for ((index, notification) in notifications.withIndex()) {
-                    val notIdString = chatUserWithMessages[index].user.user.createdAt.toString()
-                    val notId = notIdString.substring(notIdString.length - 4)
-                        .toInt() //last 4 digits as notificationId
-                    manager.notify(notId, notification)
+                val notIdString = chatUserWithMessages[index].user.user.createdAt.toString()
+                val notId = notIdString.substring(notIdString.length - 4)
+                    .toInt() //last 4 digits as notificationId
+                manager.notify(notId, notification)
             }
 
             if (notifications.size>1)

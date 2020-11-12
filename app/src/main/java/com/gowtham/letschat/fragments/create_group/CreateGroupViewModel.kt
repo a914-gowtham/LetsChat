@@ -12,6 +12,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.storage.StorageReference
 import com.gowtham.letschat.TYPE_NEW_GROUP
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.daos.GroupDao
 import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.data.Group
@@ -30,7 +31,7 @@ class CreateGroupViewModel @ViewModelInject constructor(
     @ApplicationContext private val context: Context,
     private val preference: MPreference, private val storageRef: StorageReference,
     private val userCollection: CollectionReference,
-    private val groupDao: GroupDao,
+    private val dbRepo: DbRepository,
     @GroupCollection
     private val groupCollection: CollectionReference) : ViewModel() {
 
@@ -75,11 +76,11 @@ class CreateGroupViewModel @ViewModelInject constructor(
             System.currentTimeMillis(),"",imageUrl.value.toString(),null,listOfProfiles)
 
         groupCollection.document(gName).set(groupData, SetOptions.merge()).
-                addOnSuccessListener {
-                    updateGroupInEveryUserProfile(groupData,memberList)
-                }.addOnFailureListener { exception->
-                    groupCreateStatus.value=LoadState.OnFailure(exception)
-                    context.toast(exception.message.toString())
+        addOnSuccessListener {
+            updateGroupInEveryUserProfile(groupData,memberList)
+        }.addOnFailureListener { exception->
+            groupCreateStatus.value=LoadState.OnFailure(exception)
+            context.toast(exception.message.toString())
         }
     }
 
@@ -98,15 +99,13 @@ class CreateGroupViewModel @ViewModelInject constructor(
         batch.commit().addOnSuccessListener {
             LogMessage.v("Batch update success for group Creation")
             groupCreateStatus.value = LoadState.OnSuccess(group)
-            CoroutineScope(Dispatchers.IO).launch {
-                groupDao.insertGroup(group)
-                val groupdata = Group(group.id)
-                for (user in group.members!!) {
-                    val token = user.user.token
-                    if (!token.isNullOrEmpty())
-                        UserUtils.sendPush(context, TYPE_NEW_GROUP,
-                            Json.encodeToString(groupdata), token, user.id)
-                }
+            dbRepo.insertGroup(group)
+            val groupdata = Group(group.id)
+            for (user in group.members!!) {
+                val token = user.user.token
+                if (token.isNotEmpty())
+                    UserUtils.sendPush(context, TYPE_NEW_GROUP,
+                        Json.encodeToString(groupdata), token, user.id)
             }
         }.addOnFailureListener { exception ->
             LogMessage.v("Batch update failure ${exception.message}  for group Creation")

@@ -21,6 +21,7 @@ import com.google.firebase.storage.ktx.storage
 import com.gowtham.letschat.MApplication
 import com.gowtham.letschat.core.*
 import com.gowtham.letschat.db.ChatUserDatabase
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.daos.GroupDao
@@ -161,7 +162,7 @@ object UserUtils {
         val hashMap=getCountryCodeRemovedList(context, contacts)
         contacts.clear()
         for (number in hashMap.keys){
-              contacts.add(Contact(hashMap[number].toString(), number))
+            contacts.add(Contact(hashMap[number].toString(), number))
         }
         return contacts.sortedWith(compareBy { it.name })
     }
@@ -224,6 +225,9 @@ object UserUtils {
 
     fun logOut(context: Activity, preference: MPreference,db: ChatUserDatabase) {
         try {
+            CoroutineScope(Dispatchers.IO).launch {
+                db.clearAllTables()
+            }
             preference.clearAll()
             ChatHandler.removeListeners()
             GroupChatHandler.removeListener()
@@ -231,9 +235,6 @@ object UserUtils {
             EventBus.getDefault().post(UserStatus("offline"))
             FirebaseAuth.getInstance().signOut()
             Utils.startNewActivity(context, ActSplash::class.java)
-            CoroutineScope(Dispatchers.IO).launch {
-                db.clearAllTables()
-            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -266,23 +267,13 @@ object UserUtils {
         }
     }
 
-    fun updateChatUserDocId(chatUserDao: ChatUserDao, chatUser: ChatUser) {
-        try {
-            CoroutineScope(Dispatchers.IO).launch {
-                 chatUserDao.insertUser(chatUser)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    fun setUnReadCountZero(chatUserDao: ChatUserDao, chatUser: ChatUser) {
+    fun setUnReadCountZero(repo: DbRepository, chatUser: ChatUser) {
         try {
             val time= measureNanoTime {
                 chatUser.unRead=0
-                updateChatUserDocId(chatUserDao,chatUser)
+                repo.insertUser(chatUser)
             }
-            Timber.v("Time taken to ${time}")
+            Timber.v("Time taken to $time")
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -290,19 +281,7 @@ object UserUtils {
 
 
     fun getChatUserId(fromUser: String, message: Message)= if (message.from != fromUser) message.from
-          else message.to
-
-    fun insertMessage(messageDao: MessageDao, message: Message) {
-        CoroutineScope(Dispatchers.IO).launch {
-            messageDao.insertMessage(message)
-        }
-    }
-
-    fun insertMessages(messages: List<Message>) {
-        CoroutineScope(Dispatchers.IO).launch {
-            MApplication.messageDaoo.insertMultipleMessage(messages)
-        }
-    }
+    else message.to
 
     fun sendTypingStatus(database: FirebaseDatabase, isTyping: Boolean, vararg users: String) {
         try {
@@ -326,7 +305,7 @@ object UserUtils {
         }
         if(listOfMobiles.isEmpty())
             return false
-         return makeQueryRecursively(listOfMobiles, 1,listener ?: onQueryCompleted)
+        return makeQueryRecursively(listOfMobiles, 1,listener ?: onQueryCompleted)
     }
 
     private tailrec fun makeQueryRecursively(listOfMobNos: ArrayList<String>, position: Int
@@ -373,16 +352,16 @@ object UserUtils {
                 val finalList = ArrayList<ChatUser>()
                 //set localsaved name to queried users
                 CoroutineScope(Dispatchers.IO).launch {
-                     val chatUsers=MApplication.userDaoo.getChatUserList()
+                    val chatUsers=MApplication.userDaoo.getChatUserList()
                     withContext(Dispatchers.Main){
-                    for(doc in queriedList){
-                       val savedNumber=localContacts.firstOrNull { it.mobile == doc.mobile?.number }
-                        if(savedNumber!=null){
-                            val chatUser=getChatUser(doc,chatUsers,savedNumber.name)
-                            Timber.v("Contact ${chatUser.documentId}")
-                            finalList.add(chatUser)
+                        for(doc in queriedList){
+                            val savedNumber=localContacts.firstOrNull { it.mobile == doc.mobile?.number }
+                            if(savedNumber!=null){
+                                val chatUser=getChatUser(doc,chatUsers,savedNumber.name)
+                                Timber.v("Contact ${chatUser.documentId}")
+                                finalList.add(chatUser)
+                            }
                         }
-                     }
                         setDefaultValues()
                         withContext(Dispatchers.IO){
                             MApplication.userDaoo.insertMultipleUser(finalList)

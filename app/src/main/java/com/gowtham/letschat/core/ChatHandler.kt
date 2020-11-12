@@ -7,6 +7,7 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import com.gowtham.letschat.FirebasePush
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.data.Message
@@ -27,7 +28,7 @@ import javax.inject.Singleton
 @Singleton
 class ChatHandler @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val userDao: ChatUserDao, private val messageDao: MessageDao,
+    private val dbRepository: DbRepository,
     private val usersCollection: CollectionReference,
     @MessageCollection
     private val messageCollection: CollectionReference,
@@ -64,7 +65,7 @@ class ChatHandler @Inject constructor(
         messageCollectionGroup=UserUtils.getMessageSubCollectionRef()
         preference.clearCurrentUser()
         CoroutineScope(Dispatchers.IO).launch{
-            chatUsers=userDao.getChatUserList()
+            chatUsers=dbRepository.getChatUserList()
         }
 
         listenerDoc1= messageCollectionGroup.whereEqualTo("from",fromUser)
@@ -128,7 +129,7 @@ class ChatHandler @Inject constructor(
                 val list=ArrayList<ChatUser>()
                 val unSavedUsersId=ArrayList<String>()  //message from new user not saved in localdb yet
                 val locallySaved=ArrayList<String>()    //already saved in local db,not saved to mobile contacts
-                chatUsers=userDao.getChatUserList()
+                chatUsers=dbRepository.getChatUserList()
                 for ((index, doc) in listOfDoc.withIndex()) {
                     val chatUser = chatUsers.firstOrNull() { it.id == listOfIds[index] }
                     if (chatUser==null){
@@ -150,23 +151,23 @@ class ChatHandler @Inject constructor(
     }
 
     private fun isNotOnlineUser(message: Message): Boolean {
-           return preference.getOnlineUser()
-               .isEmpty() || preference.getOnlineUser() != message.chatUserId
-       }
+        return preference.getOnlineUser()
+            .isEmpty() || preference.getOnlineUser() != message.chatUserId
+    }
 
     private fun updateOnDb(list: ArrayList<ChatUser>,
                            unSavedUsersId: ArrayList<String>,
                            locallySaved: ArrayList<String>) {
-            val statusUpdater= MessageStatusUpdater(messageCollection)
-            statusUpdater.updateToDelivery(fromUser!!,messagesList,*chatUsers.toTypedArray())
-            CoroutineScope(Dispatchers.IO).launch {
-                messageDao.insertMultipleMessage(messagesList)
-                userDao.insertMultipleUser(list)
-                val lastMessage=messageDao.getMessageList()
-                withContext(Dispatchers.Main) {
-                    showNotification(unSavedUsersId,locallySaved,lastMessage)
-                }
+        val statusUpdater= MessageStatusUpdater(messageCollection)
+        statusUpdater.updateToDelivery(fromUser!!,messagesList,*chatUsers.toTypedArray())
+        CoroutineScope(Dispatchers.IO).launch {
+            dbRepository.insertMultipleMessage(messagesList)
+            dbRepository.insertMultipleUser(list)
+            val lastMessage=dbRepository.getMessageList()
+            withContext(Dispatchers.Main) {
+                showNotification(unSavedUsersId,locallySaved,lastMessage)
             }
+        }
         Timber.v("UnsavedUser count ${unSavedUsersId.size}")
     }
 
@@ -174,12 +175,12 @@ class ChatHandler @Inject constructor(
         unSavedUsersId: ArrayList<String>,
         locallySaved: ArrayList<String>,
         lastMessage: List<Message>) {
-     /*   val ignoreNoti=(isFirstTime && unSavedUsersId.isEmpty())
-        if (ignoreNoti) {
-            isFirstTime=false
-            return
-        }
-*/
+        /*   val ignoreNoti=(isFirstTime && unSavedUsersId.isEmpty())
+           if (ignoreNoti) {
+               isFirstTime=false
+               return
+           }
+   */
         lastMessage.lastOrNull()?.let {
             if (it.from==fromUser)
                 return
@@ -187,11 +188,11 @@ class ChatHandler @Inject constructor(
 
         if (unSavedUsersId.isEmpty() && locallySaved.isEmpty()) {
 //            Utils.removeNotification(context)
-            FirebasePush.showNotification(context, userDao)
+            FirebasePush.showNotification(context, dbRepository)
         } else {
             //unsaved new user
             for (userId in unSavedUsersId) {
-                val util = ChatUserUtil(userDao, usersCollection, null)
+                val util = ChatUserUtil(dbRepository, usersCollection, null)
                 util.queryNewUserProfile(
                     context,
                     userId,
@@ -203,7 +204,7 @@ class ChatHandler @Inject constructor(
                     it.from == it.chatUserId &&
                             it.status < 3
                 }.size
-                val util = ChatUserUtil(userDao, usersCollection, null)
+                val util = ChatUserUtil(dbRepository, usersCollection, null)
                 util.queryNewUserProfile(
                     context,
                     userId,

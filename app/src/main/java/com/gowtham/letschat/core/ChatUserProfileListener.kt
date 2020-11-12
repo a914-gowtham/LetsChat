@@ -3,6 +3,7 @@ package com.gowtham.letschat.core
 import android.content.Context
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ListenerRegistration
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.daos.GroupDao
 import com.gowtham.letschat.db.data.ChatUser
@@ -22,11 +23,11 @@ import javax.inject.Singleton
 
 @Singleton
 class ChatUserProfileListener @Inject
-                constructor( @ApplicationContext val context: Context,
-                            private val userCollectionRef: CollectionReference,
-                            private val preference: MPreference,
-                            private val chatUserDao: ChatUserDao,
-                            private val groupDao: GroupDao){
+constructor( @ApplicationContext val context: Context,
+             private val userCollectionRef: CollectionReference,
+             private val preference: MPreference,
+             private val dbRepository: DbRepository
+){
 
 
     init {
@@ -47,13 +48,11 @@ class ChatUserProfileListener @Inject
     private fun getChatUsers() {
         Timber.v("ChatUser's listener called")
         CoroutineScope(Dispatchers.IO).launch {
-            val users=chatUserDao.getChatUserList()
-
+            val users=dbRepository.getChatUserList()
             withContext(Dispatchers.Main){
                 addSnapShotListener(users)
             }
         }
-
     }
 
     private fun addSnapShotListener(users: List<ChatUser>) {
@@ -61,7 +60,7 @@ class ChatUserProfileListener @Inject
         for (user in users){
             if (user.id==myUserId)
                 continue
-          val listener=  userCollectionRef.document(user.id).addSnapshotListener { profile, error ->
+            val listener=  userCollectionRef.document(user.id).addSnapshotListener { profile, error ->
                 if (error!=null) {
                     Timber.v(error)
                     return@addSnapshotListener
@@ -70,11 +69,11 @@ class ChatUserProfileListener @Inject
                 Timber.v("ChatUser listener ${userProfile?.uId}")
                 userProfile?.let { pro->
                     val chatUser=users.firstOrNull { it.id== pro.uId }
-                     if (chatUser!=null){
-                         chatUser.user=pro
-                         checkforContactSaved(chatUser,pro.mobile?.number!!)
-                         updateInLocal(chatUser)
-                     }
+                    if (chatUser!=null){
+                        chatUser.user=pro
+                        checkforContactSaved(chatUser,pro.mobile?.number!!)
+                        updateInLocal(chatUser)
+                    }
                 }
             }
             listOfListeners.add(listener)
@@ -85,22 +84,20 @@ class ChatUserProfileListener @Inject
 
     private fun updateInLocal(chatUser: ChatUser) {
         val chatUserId=chatUser.id
-        CoroutineScope(Dispatchers.IO).launch {
-            chatUserDao.insertUser(chatUser)
-            //updating in groups
-            val groups=groupDao.getGroupList()
-            val containingList= mutableListOf<Group>()
-            for (group in groups){
-                val members=group.members
-                val isContains= members?.any { it.id == chatUserId } ?: false
-                if (isContains){
-                    val index=members?.indexOfFirst { it.id==chatUserId }
-                    members!![index!!]=chatUser
-                    containingList.add(group)
-                }
-            }
-          groupDao.insertMultipleGroup(containingList)
-        }
+        dbRepository.insertUser(chatUser)
+        //updating in groups
+        /* val groups=groupDao.getGroupList()
+         val containingList= mutableListOf<Group>()
+         for (group in groups){
+             val members=group.members
+             val isContains= members?.any { it.id == chatUserId } ?: false
+             if (isContains){
+                 val index=members?.indexOfFirst { it.id==chatUserId }
+                 members!![index!!]=chatUser
+                 containingList.add(group)
+             }
+         }
+       groupDao.insertMultipleGroup(containingList)*/
     }
 
     private fun checkforContactSaved(chatUser: ChatUser,mobileNo: String) {

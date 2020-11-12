@@ -15,7 +15,7 @@ interface MessageDao {
     suspend fun insertMultipleMessage(users: List<Message>)
 
     @Query("SELECT * FROM Message")
-    fun getAllMessages(): LiveData<List<Message>>
+    fun getAllMessages(): Flow<List<Message>>
 
     @Query("SELECT * FROM Message")
     fun getMessageList(): List<Message>
@@ -32,7 +32,7 @@ interface MessageDao {
     @Query("DELETE FROM Message  WHERE createdAt=:createdAt")
     suspend fun deleteMessageByCreatedAt(createdAt: Long)
 
-    @Query("DELETE FROM Message  WHERE `to`=:userId")
+    @Query("DELETE FROM Message WHERE `to`=:userId")
     suspend fun deleteMessagesByUserId(userId: String)
 
     @Query("DELETE FROM Message")

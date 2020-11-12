@@ -10,9 +10,23 @@ import com.gowtham.letschat.databinding.FImageSrcSheetBinding
 interface SheetListener{
     fun selectedItem(index: Int)
 }
-class FImageSrcSheet constructor(val listener: SheetListener) : BottomSheetDialogFragment() {
+class FImageSrcSheet constructor() : BottomSheetDialogFragment() {
 
     private lateinit var binding: FImageSrcSheetBinding
+
+    private lateinit var listener: SheetListener
+
+    companion object{
+        fun newInstance(bundle : Bundle) : FImageSrcSheet{
+            val fragment = FImageSrcSheet()
+            fragment.arguments=bundle
+            return fragment
+        }
+    }
+
+    fun addListener(listener: SheetListener){
+        this.listener=listener
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

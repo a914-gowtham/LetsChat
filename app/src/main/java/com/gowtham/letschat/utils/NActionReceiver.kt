@@ -12,6 +12,7 @@ import com.gowtham.letschat.TYPE_NEW_MESSAGE
 import com.gowtham.letschat.core.MessageSender
 import com.gowtham.letschat.core.MessageStatusUpdater
 import com.gowtham.letschat.core.OnMessageResponse
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.daos.MessageDao
 import com.gowtham.letschat.db.data.ChatUserWithMessages
 import com.gowtham.letschat.db.data.Message
@@ -37,6 +38,9 @@ class NActionReceiver : HiltBroadcastReceiver(), OnMessageResponse {
 
     @Inject
     lateinit var messageDao: MessageDao
+
+    @Inject
+    lateinit var dbRepo: DbRepository
 
     @MessageCollection
     @Inject
@@ -79,7 +83,7 @@ class NActionReceiver : HiltBroadcastReceiver(), OnMessageResponse {
                     val message = createMessage(reply, myUserId, chatUserId)
                     message.chatUserId=chatUserId
                     val messageSender = MessageSender(messageCollection,
-                        MApplication.userDaoo,
+                        dbRepo,
                         chatUser.user,
                         this)
                     messageSender.checkAndSend(myUserId, chatUserId, message)
@@ -97,8 +101,8 @@ class NActionReceiver : HiltBroadcastReceiver(), OnMessageResponse {
             it
         }
         //seen message other message of this user
-        UserUtils.setUnReadCountZero(MApplication.userDaoo, chatUser.user)
-        UserUtils.insertMessages(list)
+        UserUtils.setUnReadCountZero(dbRepo, chatUser.user)
+        dbRepo.insertMultipleMessage(list as MutableList<Message>)
     }
 
     private fun createMessage(reply: String, myUserId: String,
@@ -131,13 +135,12 @@ class NActionReceiver : HiltBroadcastReceiver(), OnMessageResponse {
         }
         updateOnDb()
         val token=chatUser.user.user.token
-        if (!token.isNullOrBlank())
-         UserUtils.sendPush(context, TYPE_NEW_MESSAGE,Json.encodeToString(message)
-                ,token,message.to)
-        UserUtils.insertMessage(messageDao,message)
+        if (token.isNotBlank())
+            UserUtils.sendPush(context, TYPE_NEW_MESSAGE,Json.encodeToString(message),token,message.to)
+        dbRepo.insertMessage(message)
     }
 
     override fun onFailed(message: Message) {
-        UserUtils.insertMessage(messageDao,message)
+        dbRepo.insertMessage(message)
     }
 }

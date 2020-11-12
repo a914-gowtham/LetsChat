@@ -111,26 +111,25 @@ object Utils {
     }
 
     fun askContactPermission(context: Fragment): Boolean {
-       return checkPermission(
-           context, android.Manifest.permission.READ_CONTACTS,
-           android.Manifest.permission.WRITE_CONTACTS
-       )
+        return checkPermission(
+            context, android.Manifest.permission.READ_CONTACTS,
+            android.Manifest.permission.WRITE_CONTACTS
+        )
     }
 
     fun isContactPermissionOk(context: Context): Boolean{
-      return (ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_CONTACTS)
+        return (ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_CONTACTS)
                 == PackageManager.PERMISSION_GRANTED) &&
-              (ContextCompat.checkSelfPermission(
-                  context,
-                  android.Manifest.permission.WRITE_CONTACTS
-              )
-              == PackageManager.PERMISSION_GRANTED)
+                (ContextCompat.checkSelfPermission(
+                    context,
+                    android.Manifest.permission.WRITE_CONTACTS
+                )
+                        == PackageManager.PERMISSION_GRANTED)
     }
 
     fun showLoggedInAlert(
         context: Activity, preference: MPreference,
-        db: ChatUserDatabase
-    ) {
+        db: ChatUserDatabase) {
         try {
             val dialog = Dialog(context)
             dialog.setCancelable(false)
@@ -239,7 +238,7 @@ object Utils {
         return notBuilder
     }
 
-     fun returnNManager(context: Context): NotificationManagerCompat {
+    fun returnNManager(context: Context): NotificationManagerCompat {
         return NotificationManagerCompat.from(context)
     }
 
@@ -280,26 +279,26 @@ object Utils {
         return msg.to.indexOf(myUserId)
     }
 
-     @SuppressLint("SimpleDateFormat")
-     fun getTime(sentTime: Long): String{
-         val currentTime=System.currentTimeMillis()
-         val difference = currentTime - sentTime
-         val calender= java.util.Calendar.getInstance()
-         calender.timeInMillis=sentTime
-         val date=calender.time
+    @SuppressLint("SimpleDateFormat")
+    fun getTime(sentTime: Long): String{
+        val currentTime=System.currentTimeMillis()
+        val difference = currentTime - sentTime
+        val calender= java.util.Calendar.getInstance()
+        calender.timeInMillis=sentTime
+        val date=calender.time
         return when{
-             difference> WEEK -> {
-                 //DD/MM format
+            difference> WEEK -> {
+                //DD/MM format
                 SimpleDateFormat("dd:MM").format(date)
-             }
-             difference== DAY -> {
-                 "Yesterday"
-             }
-             else->{
-                 //hh:mm aa
-                 SimpleDateFormat("hh:mm aa").format(date)
-             }
-         }
-      }
+            }
+            difference== DAY -> {
+                "Yesterday"
+            }
+            else->{
+                //hh:mm aa
+                SimpleDateFormat("hh:mm aa").format(date)
+            }
+        }
+    }
 }
 

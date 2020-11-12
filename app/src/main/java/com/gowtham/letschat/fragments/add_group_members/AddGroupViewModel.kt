@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.gowtham.letschat.core.QueryCompleteListener
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.models.UserProfile
@@ -20,8 +21,9 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class AddGroupViewModel @ViewModelInject
-              constructor(@ApplicationContext context: Context,
-                          private val usersDao: ChatUserDao) : ViewModel() {
+constructor(@ApplicationContext context: Context,
+            private val dbRepository: DbRepository
+) : ViewModel() {
 
     private val chipList= MutableLiveData<ArrayList<ChatUser>>()
 
@@ -36,16 +38,16 @@ class AddGroupViewModel @ViewModelInject
     init {
         Timber.v("AddGroupViewModel init")
         CoroutineScope(Dispatchers.IO).launch{
-            chatUsers=usersDao.getChatUserList().filter { it.locallySaved }
+            chatUsers=dbRepository.getChatUserList().filter { it.locallySaved }
             if (chatUsers.isNullOrEmpty())
                 startQuery()
         }
     }
 
-    fun getChatList() = usersDao.getAllChatUser()
+    fun getChatList() = dbRepository.getAllChatUser()
 
     fun getChipList(): LiveData<ArrayList<ChatUser>>{
-       return chipList
+        return chipList
     }
 
     fun setChipList(list: List<ChatUser>){
@@ -98,7 +100,7 @@ class AddGroupViewModel @ViewModelInject
                 }
                 queryState.value=LoadState.OnSuccess(finalList)
                 CoroutineScope(Dispatchers.IO).launch {
-                    usersDao.insertMultipleUser(finalList)
+                    dbRepository.insertMultipleUser(finalList)
                 }
                 setDefaultValues()
             } catch (e: Exception) {
@@ -113,7 +115,5 @@ class AddGroupViewModel @ViewModelInject
         UserUtils.resultCount=0
         UserUtils.queriedList.clear()
     }
-
-
 
 }

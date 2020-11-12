@@ -3,6 +3,7 @@ package com.gowtham.letschat.core
 import android.content.Context
 import com.google.firebase.firestore.CollectionReference
 import com.gowtham.letschat.FirebasePush
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.models.UserProfile
@@ -10,7 +11,7 @@ import com.gowtham.letschat.utils.OnSuccessListener
 import com.gowtham.letschat.utils.UserUtils
 import com.gowtham.letschat.utils.Utils
 
-class ChatUserUtil(private val chatUserDao: ChatUserDao,
+class ChatUserUtil(private val dbRepository: DbRepository,
                    private val usersCollection: CollectionReference,
                    private val listener: OnSuccessListener?) {
 
@@ -34,10 +35,10 @@ class ChatUserUtil(private val chatUserDao: ChatUserDao,
                                 chatUser.locallySaved=true
                             }
                         }
-                        UserUtils.updateChatUserDocId(chatUserDao,chatUser)
+                        dbRepository.insertUser(chatUser)
                         listener?.onResult(true,chatUser)
 //                      Utils.removeNotification(context)
-                        FirebasePush.showNotification(context,chatUserDao)
+                        FirebasePush.showNotification(context,dbRepository)
                     }
                 }
         } catch (e: Exception) {

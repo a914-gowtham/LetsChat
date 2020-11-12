@@ -12,8 +12,7 @@ interface OnGrpMessageResponse{
     fun onFailed(message: GroupMessage)
 }
 
-class GroupMsgSender(private val groupCollection: CollectionReference,
-                     private val groupDao: GroupDao) {
+class GroupMsgSender(private val groupCollection: CollectionReference) {
 
     fun sendMessage(message: GroupMessage,group: Group,listener: OnGrpMessageResponse){
         message.status[0]=1

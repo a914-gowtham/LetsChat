@@ -11,6 +11,7 @@ import com.google.firebase.storage.StorageReference
 import com.gowtham.letschat.TYPE_NEW_MESSAGE
 import com.gowtham.letschat.core.MessageSender
 import com.gowtham.letschat.core.OnMessageResponse
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.daos.MessageDao
 import com.gowtham.letschat.db.data.ChatUser
@@ -30,8 +31,7 @@ class UploadWorker @WorkerInject constructor(
     private val storageRef: StorageReference,
     @MessageCollection
     val msgCollection: CollectionReference,
-    val chatUserDao: ChatUserDao,
-    val messageDao: MessageDao):
+    val dbRepository: DbRepository):
     Worker(appContext, workerParams) {
 
     private val params=workerParams
@@ -61,7 +61,7 @@ class UploadWorker @WorkerInject constructor(
                 Timber.v("TaskResult Failed ${e.message}")
                 result[0]= Result.failure()
                 message.status=4
-                UserUtils.insertMessage(messageDao,message)
+                dbRepository.insertMessage(message)
                 countDownLatch.countDown()
             }
         }.addOnProgressListener { taskSnapshot ->
@@ -78,7 +78,7 @@ class UploadWorker @WorkerInject constructor(
         message.imageMessage?.uri=imgUrl
         val messageSender = MessageSender(
             msgCollection,
-            chatUserDao,
+            dbRepository,
             chatUser,object : OnMessageResponse{
                 override fun onSuccess(message: Message) {
                     UserUtils.sendPush(applicationContext, TYPE_NEW_MESSAGE, Json.encodeToString(message)
@@ -89,7 +89,7 @@ class UploadWorker @WorkerInject constructor(
 
                 override fun onFailed(message: Message) {
                     result[0]= Result.failure()
-                    UserUtils.insertMessage(messageDao,message)
+                    dbRepository.insertMessage(message)
                     countDownLatch.countDown()
                 }
             }

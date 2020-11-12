@@ -22,7 +22,7 @@ interface ChatUserDao {
     fun getChatUserList(): List<ChatUser>
 
     @Query("SELECT * FROM ChatUser  WHERE id=:id")
-    suspend fun getChatUserById(id: String): ChatUser?
+    fun getChatUserById(id: String): ChatUser?
 
     @Query("DELETE FROM ChatUser WHERE id=:userId")
     suspend fun deleteUserById(userId: String)

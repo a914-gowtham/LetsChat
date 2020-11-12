@@ -77,7 +77,7 @@ class GroupMsgActionReceiver : HiltGroupBroadcastReceiver(), OnGrpMessageRespons
                 val txtMessage=TextMessage(reply)
                 val message = createMessage()
                 message.textMessage=txtMessage
-                val messageSender = GroupMsgSender(grpCollection, groupDao)
+                val messageSender = GroupMsgSender(grpCollection)
                 messageSender.sendMessage(message, group,this)
             }
         }

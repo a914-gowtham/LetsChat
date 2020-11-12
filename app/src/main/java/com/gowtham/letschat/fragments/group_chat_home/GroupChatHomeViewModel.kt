@@ -5,6 +5,7 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.daos.GroupDao
 import com.gowtham.letschat.utils.MPreference
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -13,10 +14,12 @@ class GroupChatHomeViewModel @ViewModelInject constructor(
     @ApplicationContext private val context: Context,
     private val preference: MPreference,
     private val docuRef: DocumentReference,
-    private val groupDao: GroupDao,
+    private val dbRepository: DbRepository,
     private val usersCollection: CollectionReference) : ViewModel()  {
 
 
-    fun getGroupMessages() = groupDao.getGroupWithMessages()
+    fun getGroupMessages() = dbRepository.getGroupWithMessages()
+
+
 
 }

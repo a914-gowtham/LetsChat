@@ -5,6 +5,7 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.CollectionReference
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.data.ChatUserWithMessages
 import com.gowtham.letschat.db.data.Message
@@ -18,7 +19,7 @@ import kotlinx.coroutines.flow.map
 
 class SingleChatHomeViewModel  @ViewModelInject
 constructor(@ApplicationContext private val context: Context,
-            private val userDao: ChatUserDao,
+            private val dbRepo: DbRepository,
             @MessageCollection
             private val messageCollection: CollectionReference,
             private val preference: MPreference): ViewModel() {
@@ -39,7 +40,7 @@ constructor(@ApplicationContext private val context: Context,
         LogMessage.v("SingleChatHomeVModel init $toUser")
     }
 
-    fun getChatUsers() = userDao.getChatUserWithMessages()
+    fun getChatUsers() = dbRepo.getChatUserWithMessages()
 
     override fun onCleared() {
         LogMessage.v("SingleChatHOME cleared")
