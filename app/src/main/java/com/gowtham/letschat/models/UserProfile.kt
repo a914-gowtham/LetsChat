@@ -2,6 +2,7 @@ package com.gowtham.letschat.models
 
 import android.os.Parcelable
 import androidx.annotation.Keep
+import androidx.room.Embedded
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
 import com.google.firebase.firestore.PropertyName

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <LinearLayout
+        style="@style/VView"
+        tools:ignore="ContentDescription"
+        android:padding="12dp">
+
+        <LinearLayout style="@style/LView">
+
+            <ImageView
+                android:id="@+id/img_camera"
+                style="@style/LWView"
+                android:padding="6dp"
+                android:src="@drawable/ic_camera_img" />
+
+            <ImageView
+                android:id="@+id/img_gallery"
+                style="@style/LWView"
+                android:padding="6dp"
+                android:src="@drawable/ic_gallery_img" />
+
+            <ImageView
+                android:id="@+id/video_camera"
+                style="@style/LWView"
+                android:padding="6dp"
+                android:src="@drawable/ic_gallery_video" />
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/LView">
+
+            <ImageView
+                android:id="@+id/video_gallery"
+                style="@style/LWView"
+                android:padding="6dp"
+                android:src="@drawable/ic_take_video" />
+        </LinearLayout>
+    </LinearLayout>
+</layout>

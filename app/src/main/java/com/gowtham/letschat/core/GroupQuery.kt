@@ -28,7 +28,9 @@ class GroupQuery(private val groupId: String,private val dbRepository: DbReposit
                profiles.removeAt(index)
                profiles.add(0,preference.getUserProfile()!!)  //moving localuser to 0 th index
                group.profiles=profiles
-               checkAlreadySavedMember(group, dbRepository.getChatUserList())
+               CoroutineScope(Dispatchers.IO).launch {
+                   checkAlreadySavedMember(group, dbRepository.getChatUserList())
+               }
            }
        }.addOnFailureListener {
            Timber.v("GroupDataGrtting failed ${it.message}")

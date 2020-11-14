@@ -12,10 +12,12 @@
         android:layout_marginEnd="5dp">
 
             <ImageView
+                style="@style/WView"
                 loadImage="@{message}"
                 android:layout_gravity="end"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
+                android:layout_marginStart="60dp"
+                android:minHeight="130dp"
+                android:minWidth="130dp"
                 android:id="@+id/image_msg" />
 
         <LinearLayout

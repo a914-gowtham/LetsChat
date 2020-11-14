@@ -10,6 +10,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.net.toFile
 import androidx.core.view.inputmethod.InputContentInfoCompat
 import androidx.fragment.app.Fragment
@@ -24,12 +25,17 @@ import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.data.ImageMessage
 import com.gowtham.letschat.db.data.Message
 import com.gowtham.letschat.db.data.TextMessage
+import com.gowtham.letschat.fragments.FAttachment
 import com.gowtham.letschat.models.UserProfile
 import com.gowtham.letschat.utils.*
 import com.gowtham.letschat.views.CustomEditText
+import com.theartofdev.edmodo.cropper.CropImage
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
@@ -42,9 +48,6 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
 
     @Inject
     lateinit var preference: MPreference
-
-    @Inject
-    lateinit var chatUserDao: ChatUserDao
 
     private lateinit var chatUser: ChatUser
 
@@ -94,6 +97,10 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
             if (Utils.askContactPermission(this))
                 openSaveIntent()
         }
+        binding.viewChatBtm.imageAdd.setOnClickListener {
+            val fragment=FAttachment.newInstance(Bundle())
+            fragment.show(childFragmentManager,"")
+        }
         if(!chatUser.locallySaved)
             binding.viewChatHeader.imageAddContact.show()
         viewModel.canScroll(false)
@@ -113,7 +120,6 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
                         binding.listMessage.smoothScrollToPos(messageList.lastIndex)
                     else
                         viewModel.canScroll(true)
-                    LogMessage.v("Last Message ${messageList.last().createdAt}")
                 }
             }
         }
@@ -156,21 +162,6 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
           })
     }
 
-    override fun onResume() {
-        viewModel.setOnline(true)
-        preference.setCurrentUser(chatUserId)
-        viewModel.setSeenAllMessage()
-        viewModel.sendCachedMesssages()
-        Utils.removeNotification(requireContext())
-        super.onResume()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        preference.clearCurrentUser()
-        viewModel.setOnline(false)
-    }
-
     private fun setDataInView() {
         try {
             fromUser = preference.getUserProfile()!!
@@ -204,21 +195,15 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
         }
 
         override fun afterTextChanged(s: Editable?) {
-             if (s.isNullOrEmpty())
-                 binding.viewChatBtm.imageStreography.show()
-             else
-                 binding.viewChatBtm.imageStreography.gone()
         }
     }
 
     override fun onItemClicked(v: View, position: Int) {
-
-
+       // Message click listener
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
         if (requestCode == REQ_ADD_CONTACT){
             if (resultCode == Activity.RESULT_OK) {
                 binding.viewChatHeader.imageAddContact.gone()
@@ -233,6 +218,23 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
             }else if (resultCode == Activity.RESULT_CANCELED) {
                 Timber.v("Cancelled Added Contact")
             }
+        }else if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE)
+            onCropResult(data)
+        else
+            ImageUtils.cropImage(requireActivity(), data, true)
+    }
+
+    private fun onCropResult(data: Intent?) {
+        try {
+            val imagePath: Uri? = ImageUtils.getCroppedImage(data)
+            if (imagePath!=null){
+                val message=createMessage()
+                message.type="image"
+                message.imageMessage=ImageMessage(imagePath.toString())
+                viewModel.uploadImage(message)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -252,18 +254,57 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
     override fun onCommitContent(inputContentInfo: InputContentInfoCompat?,
         flags: Int,
         opts: Bundle?) {
-        val f=Uri.fromFile(File(inputContentInfo?.contentUri.toString()))
-        val uri=inputContentInfo?.contentUri.toString()
-        val uu=FileUtils.getPath(requireContext(),inputContentInfo?.contentUri!!)
-
         val imageMsg=createMessage()
-        val image=ImageMessage("${inputContentInfo.contentUri}")
-        image.imageType=if(uu.endsWith(".png")) "sticker" else "gif"
+        val image=ImageMessage("${inputContentInfo?.contentUri}")
+        image.imageType=if(image.uri.toString().endsWith(".png")) "sticker" else "gif"
         imageMsg.apply {
             type="image"
             imageMessage=image
         }
-        viewModel.sendStickerOrGif(imageMsg)
+        viewModel.uploadImage(imageMsg)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onAttachmentItemClicked(event: BottomSheetEvent){
+        when(event.position){
+            0->{
+                ImageUtils.takePhoto(requireActivity())
+            }
+            1->{
+                ImageUtils.chooseGallery(requireActivity())
+            }
+            2->{
+                //create intent for gallery video
+            }
+            3->{
+                //create intent for camera video
+            }
+        }
+    }
+
+    override fun onResume() {
+        viewModel.setOnline(true)
+        preference.setCurrentUser(chatUserId)
+        viewModel.setSeenAllMessage()
+        viewModel.sendCachedMesssages()
+        Utils.removeNotification(requireContext())
+        super.onResume()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        preference.clearCurrentUser()
+        viewModel.setOnline(false)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        EventBus.getDefault().unregister(this)
     }
 }
 

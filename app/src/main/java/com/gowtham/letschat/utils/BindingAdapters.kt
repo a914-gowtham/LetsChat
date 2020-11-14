@@ -96,17 +96,14 @@ object BindingAdapters {
                     }
                     .build()
                 imgView.load(url,imageLoader){
-                    crossfade(true)
-                    crossfade(300)
                     diskCachePolicy(CachePolicy.ENABLED)
                     placeholder(R.drawable.gif)
                     error(R.drawable.gif)
                 }
             }else {
-                val placeHolder=if(imageType=="sticker") R.drawable.ic_sticker else R.drawable.ic_other_user
+                val isSticker=imageType=="sticker"
+                val placeHolder=if(isSticker) R.drawable.ic_sticker else R.drawable.ic_gal_pholder
                 imgView.load(url) {
-                    crossfade(true)
-                    crossfade(300)
                     diskCachePolicy(CachePolicy.ENABLED)
                     placeholder(placeHolder)
                     error(placeHolder)

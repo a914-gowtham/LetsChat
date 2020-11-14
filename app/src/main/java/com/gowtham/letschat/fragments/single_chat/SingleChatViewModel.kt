@@ -413,20 +413,24 @@ constructor(
         dbRepository.insertUser(chatUser)
     }
 
-    fun sendStickerOrGif(message: Message){
-        dbRepository.insertMessage(message)
-        removeTypingCallbacks()
-        val messageData=Json.encodeToString(message)
-        val chatUserData=Json.encodeToString(chatUser)
-        val data= Data.Builder()
-            .putString(MESSAGE_DATA,messageData)
-            .putString(CHAT_USER_DATA,chatUserData)
-            .build()
-        val uploadWorkRequest: WorkRequest =
-            OneTimeWorkRequestBuilder<UploadWorker>()
-                .setInputData(data)
+    fun uploadImage(message: Message){
+        try {
+            dbRepository.insertMessage(message)
+            removeTypingCallbacks()
+            val messageData=Json.encodeToString(message)
+            val chatUserData=Json.encodeToString(chatUser)
+            val data= Data.Builder()
+                .putString(MESSAGE_DATA,messageData)
+                .putString(CHAT_USER_DATA,chatUserData)
                 .build()
-        WorkManager.getInstance(context).enqueue(uploadWorkRequest)
+            val uploadWorkRequest: WorkRequest =
+                OneTimeWorkRequestBuilder<UploadWorker>()
+                    .setInputData(data)
+                    .build()
+            WorkManager.getInstance(context).enqueue(uploadWorkRequest)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }
 

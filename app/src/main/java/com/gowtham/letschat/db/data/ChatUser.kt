@@ -1,8 +1,6 @@
 package com.gowtham.letschat.db.data
 
 import android.os.Parcelable
-import androidx.annotation.Keep
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.firebase.firestore.IgnoreExtraProperties

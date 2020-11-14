@@ -5,17 +5,19 @@
         <import type="android.view.View" />
         <variable
             name="message"
-            type="com.gowtham.letschat.db.data.Message" />
+            type="com.gowtham.letschat.db.data.GroupMessage" />
     </data>
 
     <LinearLayout style="@style/VView"
         android:layout_marginEnd="5dp">
 
             <ImageView
-                loadImage="@{message}"
+                style="@style/WView"
+                loadGroupMsgImage="@{message}"
                 android:layout_gravity="end"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
+                android:layout_marginStart="60dp"
+                android:minHeight="130dp"
+                android:minWidth="130dp"
                 android:id="@+id/image_msg" />
 
         <LinearLayout
@@ -28,8 +30,8 @@
                 style="@style/TxtRgStyle"
                 android:textSize="14sp"
                 android:layout_marginEnd="5dp"
-                android:visibility="@{message.status==0 ? View.GONE : View.VISIBLE}"
-                messageStatus="@{message.status}" />
+                android:visibility="@{message.status[0]==0 ? View.GONE : View.VISIBLE}"
+                groupMessageStatus="@{message}" />
 
             <ProgressBar
                 style="@style/WView"
@@ -37,13 +39,13 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_gravity="center_vertical"
-                android:visibility="@{message.status==0 ? View.VISIBLE : View.GONE}" />
+                android:visibility="@{message.status[0]==0 ? View.VISIBLE : View.GONE}" />
 
             <TextView
                 android:id="@+id/txt_msg_time"
                 style="@style/TxtRgStyle"
                 android:textSize="16sp"
-                showMsgTime="@{message}" />
+                showGrpMsgTime="@{message}" />
         </LinearLayout>
 
 

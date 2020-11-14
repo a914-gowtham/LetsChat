@@ -24,6 +24,8 @@ class AdGroupChat (private val context: Context,
         private const val TYPE_TXT_RECEIVED = 1
         private const val TYPE_IMG_SENT = 2
         private const val TYPE_IMG_RECEIVE = 3
+        private const val TYPE_STICKER_SENT = 4
+        private const val TYPE_STICKER_RECEIVE = 5
         lateinit var messageList: MutableList<GroupMessage>
         lateinit var chatUserList: MutableList<ChatUser>
     }
@@ -43,23 +45,38 @@ class AdGroupChat (private val context: Context,
                 val binding = RowGroupImageSentBinding.inflate(layoutInflater, parent, false)
                 ImgSentMsgHolder(binding)
             }
-            else-> {
+            TYPE_IMG_RECEIVE->{
                 val binding = RowGroupImageReceiveBinding.inflate(layoutInflater, parent, false)
                 ImgReceivedMsgHolder(binding)
+            }
+            TYPE_STICKER_SENT -> {
+                val binding = RowGroupStickerSentBinding.inflate(layoutInflater, parent, false)
+                StickerSentMsgHolder(binding)
+            }
+            TYPE_STICKER_RECEIVE-> {
+                val binding = RowGroupStickerReceiveBinding.inflate(layoutInflater, parent, false)
+                StickerReceivedMsgHolder(binding)
+            }
+            else-> {
+                val binding = RowGroupStickerReceiveBinding.inflate(layoutInflater, parent, false)
+                StickerReceivedMsgHolder(binding)
             }
         }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when(holder){
-            is TxtSentMsgHolder ->{
+            is TxtSentMsgHolder ->
                 holder.bind(getItem(position))
-            }
             is TxtReceivedMsgHolder ->
                 holder.bind(getItem(position))
             is ImgSentMsgHolder ->
                 holder.bind(getItem(position))
             is ImgReceivedMsgHolder ->
+                holder.bind(getItem(position))
+            is StickerSentMsgHolder ->
+                holder.bind(getItem(position))
+            is StickerReceivedMsgHolder ->
                 holder.bind(getItem(position))
         }
     }
@@ -71,10 +88,16 @@ class AdGroupChat (private val context: Context,
             return TYPE_TXT_SENT
         else if (!fromMe && message.type == "text")
             return TYPE_TXT_RECEIVED
-        else if (fromMe && message.type == "image")
+        else if (fromMe && message.type == "image" && message.imageMessage?.imageType=="image")
             return TYPE_IMG_SENT
-        else if (!fromMe && message.type == "image")
+        else if (!fromMe && message.type == "image"  && message.imageMessage?.imageType=="image")
             return TYPE_IMG_RECEIVE
+        else if (fromMe && message.type == "image" && (message.imageMessage?.imageType=="sticker"
+                    || message.imageMessage?.imageType=="gif"))
+            return TYPE_STICKER_SENT
+        else if (!fromMe && message.type == "image"  && (message.imageMessage?.imageType=="sticker"
+                    || message.imageMessage?.imageType=="gif"))
+            return TYPE_STICKER_RECEIVE
         return super.getItemViewType(position)
     }
 
@@ -105,6 +128,23 @@ class AdGroupChat (private val context: Context,
     }
 
     class ImgReceivedMsgHolder(val binding: RowGroupImageReceiveBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: GroupMessage) {
+            binding.message = item
+            binding.chatUsers= chatUserList.toTypedArray()
+            binding.executePendingBindings()
+        }
+    }
+
+    class StickerSentMsgHolder(val binding: RowGroupStickerSentBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: GroupMessage) {
+            binding.message = item
+            binding.executePendingBindings()
+        }
+    }
+
+    class StickerReceivedMsgHolder(val binding: RowGroupStickerReceiveBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: GroupMessage) {
             binding.message = item

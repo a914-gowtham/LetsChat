@@ -65,12 +65,6 @@ class FProfile : Fragment() {
         binding.fab.setOnClickListener { validate() }
         subscribeObservers()
 
-/*        if (arguments != null) {
-            val bundle = FProfileArgs.fromBundle(requireArguments())
-            LogMessage.v("ss number ${bundle.mobile}")
-            LogMessage.v("Coussntry Code ${bundle.countryCode}")
-        } else
-            "argument is null".printMeD()*/
     }
 
     private fun subscribeObservers() {

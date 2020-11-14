@@ -25,6 +25,4 @@ data class GroupMessage(@PrimaryKey
                         var imageMessage: ImageMessage?=null,
                         var audioMessage: AudioMessage?=null,
                         var videoMessage: VideoMessage?=null,
-                        var fileMessage: FileMessage?=null,
-                        @set:Exclude @get:Exclude
-                        var isUploading: Boolean?=null): Parcelable
+                        var fileMessage: FileMessage?=null): Parcelable

@@ -20,7 +20,6 @@ import com.gowtham.letschat.fragments.single_chat_home.FSingleChatHomeDirections
 import com.gowtham.letschat.utils.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 
 class MainActivity : ActBase() {
@@ -51,43 +50,22 @@ class MainActivity : ActBase() {
 
     private fun subscribeObservers() {
         val badge = binding.bottomNav.getOrCreateBadge(R.id.nav_chat)
-        badge.isVisible=false
-        /*chatUserDao.getChatUserWithMessages().observe(this, { list->
-            val count=list.filter { it.user.unRead!=0 }
-            badge.isVisible = count.isNotEmpty() //hide if 0
-            badge.number=count.size
-*//*
-        val badgeDrawable = binding.bottomNav.getBadge(R.id.nav_chat)
-        if (badgeDrawable != null) {
-            badgeDrawable.isVisible = false
-            badgeDrawable.clearNumber()
-            binding.bottomNav.removeBadge(R.id.nav_chat)
-        }
-*//*
-        })
-*/
-    /*    val groupChatBadge = binding.bottomNav.getOrCreateBadge(R.id.nav_group)
-        groupChatBadge.isVisible=false
-        groupDao.getGroupWithMessages().observe(this, { list->
-            val count=list.filter { it.group.unRead!=0 }
-            groupChatBadge.isVisible = count.isNotEmpty() //hide if 0
-            groupChatBadge.number=count.size
-        })*/
+        badge.isVisible = false
         val groupChatBadge = binding.bottomNav.getOrCreateBadge(R.id.nav_group)
-        groupChatBadge.isVisible=false
+        groupChatBadge.isVisible = false
         lifecycleScope.launch {
-            groupDao.getGroupWithMessages().collect { list->
-                val count=list.filter { it.group.unRead!=0 }
+            groupDao.getGroupWithMessages().collect { list ->
+                val count = list.filter { it.group.unRead != 0 }
                 groupChatBadge.isVisible = count.isNotEmpty() //hide if 0
-                groupChatBadge.number=count.size
+                groupChatBadge.number = count.size
             }
         }
 
         lifecycleScope.launch {
-            chatUserDao.getChatUserWithMessages().collect { list->
-                val count=list.filter { it.user.unRead!=0 }
+            chatUserDao.getChatUserWithMessages().collect { list ->
+                val count = list.filter { it.user.unRead != 0 }
                 badge.isVisible = count.isNotEmpty() //hide if 0
-                badge.number=count.size
+                badge.number = count.size
             }
         }
 
@@ -104,10 +82,10 @@ class MainActivity : ActBase() {
                 .setupWithNavController(navController, appBarConfiguration)
             binding.bottomNav.setOnNavigationItemSelectedListener(onBottomNavigationListener)
 
-            val isNewMessage=intent.action== Constants.ACTION_NEW_MESSAGE
-            val isNewGroupMessage=intent.action== Constants.ACTION_GROUP_NEW_MESSAGE
-            val userData=intent.getParcelableExtra<ChatUser>(Constants.CHAT_USER_DATA)
-            val groupData=intent.getParcelableExtra<Group>(Constants.GROUP_DATA)
+            val isNewMessage = intent.action == Constants.ACTION_NEW_MESSAGE
+            val isNewGroupMessage = intent.action == Constants.ACTION_GROUP_NEW_MESSAGE
+            val userData = intent.getParcelableExtra<ChatUser>(Constants.CHAT_USER_DATA)
+            val groupData = intent.getParcelableExtra<Group>(Constants.GROUP_DATA)
 
             if (preference.isLoggedIn() && navController.isValidDestination(R.id.FLogIn)) {
                 if (preference.getUserProfile() == null)
@@ -117,13 +95,13 @@ class MainActivity : ActBase() {
             }
 
             //single chat message clicked
-            if (isNewMessage && navController.isValidDestination(R.id.FSingleChatHome)){
+            if (isNewMessage && navController.isValidDestination(R.id.FSingleChatHome)) {
                 preference.setCurrentUser(userData!!.id)
-                val action= FSingleChatHomeDirections.actionFSingleChatToFChat(userData)
+                val action = FSingleChatHomeDirections.actionFSingleChatToFChat(userData)
                 navController.navigate(action)
-            }else if (isNewGroupMessage && navController.isValidDestination(R.id.FSingleChatHome)){
+            } else if (isNewGroupMessage && navController.isValidDestination(R.id.FSingleChatHome)) {
                 preference.setCurrentGroup(groupData!!.id)
-                val action= FSingleChatHomeDirections.actionFSingleChatHomeToFGroupChat(groupData)
+                val action = FSingleChatHomeDirections.actionFSingleChatHomeToFGroupChat(groupData)
                 navController.navigate(action)
             }
 
@@ -233,15 +211,30 @@ class MainActivity : ActBase() {
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
-        grantResults: IntArray) {
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-       /* val navHostFragment = supportFragmentManager.fragments.first() as? NavHostFragment
-        if (navHostFragment != null) {
-            val childFragments = navHostFragment.childFragmentManager.fragments
-            childFragments.forEach { fragment ->
-                fragment.onRequestPermissionsResult(requestCode, permissions, grantResults)
-            }
-        }*/
+        /* val navHostFragment = supportFragmentManager.fragments.first() as? NavHostFragment
+         if (navHostFragment != null) {
+             val childFragments = navHostFragment.childFragmentManager.fragments
+             childFragments.forEach { fragment ->
+                 fragment.onRequestPermissionsResult(requestCode, permissions, grantResults)
+             }
+         }*/
     }
 
+    override fun onBackPressed() {
+        if (navController.isValidDestination(R.id.FSingleChatHome))
+            finish()
+        else if (navController.isValidDestination(R.id.FMyProfile) ||
+            navController.isValidDestination(R.id.FGroupChatHome) ||
+            navController.isValidDestination(R.id.FSearch)
+        ) {
+            val navOptions =
+                NavOptions.Builder().setPopUpTo(R.id.nav_host_fragment, true).build()
+            Navigation.findNavController(this, R.id.nav_host_fragment)
+                .navigate(R.id.FSingleChatHome, null, navOptions)
+        } else
+            super.onBackPressed()
+    }
 }

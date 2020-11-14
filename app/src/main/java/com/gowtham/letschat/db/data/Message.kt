@@ -19,15 +19,13 @@ data class Message(
     val from: String, val to: String,
     val senderName: String,
     val senderImage: String,
-    var type: String="text",//0=text,1=audio,2=image,3=video,4=file,5=s_image
+    var type: String="text",//0=text,1=audio,2=image,3=video,4=file
     var status: Int=0,//0=sending,1=sent,2=delivered,3=seen,4=failed
     var textMessage: TextMessage?=null,
     var imageMessage: ImageMessage?=null,
     var audioMessage: AudioMessage?=null,
     var videoMessage: VideoMessage?=null,
     var fileMessage: FileMessage?=null,
-    @set:Exclude @get:Exclude
-                   var isUploading: Boolean?=null,
     @set:Exclude @get:Exclude
                    var chatUserId: String?=null): Parcelable
 

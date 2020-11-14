@@ -245,7 +245,7 @@ class GroupChatViewModel @ViewModelInject constructor(
         UserUtils.insertGroupMsg(groupMsgDao, message)
     }
 
-    fun sendStickerOrGif(message: GroupMessage) {
+    fun uploadImage(message: GroupMessage) {
         UserUtils.insertGroupMsg(groupMsgDao, message)
         removeTypingCallbacks()
         val messageData=Json.encodeToString(message)

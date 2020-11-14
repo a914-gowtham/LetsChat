@@ -4,8 +4,6 @@ import android.content.Context
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ListenerRegistration
 import com.gowtham.letschat.db.DbRepository
-import com.gowtham.letschat.db.daos.ChatUserDao
-import com.gowtham.letschat.db.daos.GroupDao
 import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.data.Group
 import com.gowtham.letschat.models.UserProfile
@@ -71,36 +69,36 @@ constructor( @ApplicationContext val context: Context,
                     val chatUser=users.firstOrNull { it.id== pro.uId }
                     if (chatUser!=null){
                         chatUser.user=pro
-                        checkforContactSaved(chatUser,pro.mobile?.number!!)
+                        checkForContactSaved(chatUser,pro.mobile?.number!!)
                         updateInLocal(chatUser)
                     }
                 }
             }
             listOfListeners.add(listener)
         }
-
-
     }
 
     private fun updateInLocal(chatUser: ChatUser) {
         val chatUserId=chatUser.id
         dbRepository.insertUser(chatUser)
         //updating in groups
-        /* val groups=groupDao.getGroupList()
-         val containingList= mutableListOf<Group>()
-         for (group in groups){
-             val members=group.members
-             val isContains= members?.any { it.id == chatUserId } ?: false
-             if (isContains){
-                 val index=members?.indexOfFirst { it.id==chatUserId }
-                 members!![index!!]=chatUser
-                 containingList.add(group)
-             }
-         }
-       groupDao.insertMultipleGroup(containingList)*/
+        CoroutineScope(Dispatchers.IO).launch {
+            val groups=dbRepository.getGroupList()
+            val containingList= mutableListOf<Group>()
+            for (group in groups){
+                val members=group.members
+                val isContains= members?.any { it.id == chatUserId } ?: false
+                if (isContains){
+                    val index=members?.indexOfFirst { it.id==chatUserId }
+                    members!![index!!]=chatUser
+                    containingList.add(group)
+                }
+            }
+            dbRepository.insertMultipleGroup(containingList)
+        }
     }
 
-    private fun checkforContactSaved(chatUser: ChatUser,mobileNo: String) {
+    private fun checkForContactSaved(chatUser: ChatUser, mobileNo: String) {
         if (Utils.isContactPermissionOk(context)) {
             val contacts = UserUtils.fetchContacts(context)
             val savedContact=contacts.firstOrNull { it.mobile.contains(mobileNo) }

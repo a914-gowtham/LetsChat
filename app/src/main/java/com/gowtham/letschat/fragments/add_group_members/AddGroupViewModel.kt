@@ -5,6 +5,7 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.gowtham.letschat.core.QueryCompleteListener
 import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.daos.ChatUserDao
@@ -37,7 +38,7 @@ constructor(@ApplicationContext context: Context,
 
     init {
         Timber.v("AddGroupViewModel init")
-        CoroutineScope(Dispatchers.IO).launch{
+        viewModelScope.launch(Dispatchers.IO) {
             chatUsers=dbRepository.getChatUserList().filter { it.locallySaved }
             if (chatUsers.isNullOrEmpty())
                 startQuery()

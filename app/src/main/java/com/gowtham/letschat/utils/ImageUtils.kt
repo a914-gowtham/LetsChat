@@ -71,7 +71,7 @@ object ImageUtils {
         builder.show(context.childFragmentManager, "")
     }
 
-    private fun chooseGallery(context: Activity) {
+    public fun chooseGallery(context: Activity) {
         try {
             val intent = Intent(Intent.ACTION_PICK)
             intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*")
@@ -81,7 +81,7 @@ object ImageUtils {
         }
     }
 
-    private fun takePhoto(context: Activity) {
+    public fun takePhoto(context: Activity) {
         val fileName = "Snap_" + System.currentTimeMillis() / 1000 + ".jpg"
         openCameraIntent(context, MediaStore.ACTION_IMAGE_CAPTURE, fileName, TAKE_PHOTO)
     }
@@ -90,8 +90,7 @@ object ImageUtils {
         context: Activity,
         action: String,
         fileName: String,
-        reqCode: Int
-    ) {
+        reqCode: Int) {
         try {
             val intent = Intent(action)
             if (intent.resolveActivity(context.packageManager) != null) {

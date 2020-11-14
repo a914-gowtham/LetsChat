@@ -282,16 +282,16 @@ object Utils {
     @SuppressLint("SimpleDateFormat")
     fun getTime(sentTime: Long): String{
         val currentTime=System.currentTimeMillis()
-        val difference = currentTime - sentTime
+        val dayCount = (currentTime - sentTime)/(24 * 60 * 60 * 1000)
         val calender= java.util.Calendar.getInstance()
         calender.timeInMillis=sentTime
         val date=calender.time
         return when{
-            difference> WEEK -> {
-                //DD/MM format
-                SimpleDateFormat("dd:MM").format(date)
+            dayCount> 1L -> {
+                //DD/MM/YYYY format
+                SimpleDateFormat("dd/MMM/yyyy").format(date)
             }
-            difference== DAY -> {
+            dayCount==1L -> {
                 "Yesterday"
             }
             else->{

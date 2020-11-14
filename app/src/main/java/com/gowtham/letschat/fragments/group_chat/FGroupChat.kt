@@ -1,5 +1,6 @@
 package com.gowtham.letschat.fragments.group_chat
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
@@ -20,18 +21,22 @@ import com.gowtham.letschat.db.data.Group
 import com.gowtham.letschat.db.data.GroupMessage
 import com.gowtham.letschat.db.data.ImageMessage
 import com.gowtham.letschat.db.data.TextMessage
+import com.gowtham.letschat.fragments.FAttachment
 import com.gowtham.letschat.models.UserProfile
 import com.gowtham.letschat.utils.*
 import com.gowtham.letschat.views.CustomEditText
+import com.theartofdev.edmodo.cropper.CropImage
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
-import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class FGroupChat : Fragment(),ItemClickListener, CustomEditText.KeyBoardInputCallbackListener {
+class FGroupChat : Fragment(), ItemClickListener, CustomEditText.KeyBoardInputCallbackListener {
 
     @Inject
     lateinit var groupDao: GroupDao
@@ -56,28 +61,33 @@ class FGroupChat : Fragment(),ItemClickListener, CustomEditText.KeyBoardInputCal
     private lateinit var fromUser: UserProfile
 
     private val adChat: AdGroupChat by lazy {
-        AdGroupChat(requireContext(),this)
+        AdGroupChat(requireContext(), this)
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?): View? {
-        binding=FGroupChatBinding.inflate(layoutInflater, container, false)
+        savedInstanceState: Bundle?
+    ): View? {
+        binding = FGroupChatBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.lifecycleOwner=viewLifecycleOwner
-        binding.viewmodel=viewModel
-        group=args.group
-        binding.group=group
+        binding.lifecycleOwner = viewLifecycleOwner
+        binding.viewmodel = viewModel
+        group = args.group
+        binding.group = group
         binding.viewChatHeader.viewBack.setOnClickListener {
             findNavController().popBackStack()
         }
         binding.viewChatBtm.lottieSend.setOnClickListener {
             sendMessage()
+        }
+        binding.viewChatBtm.imageAdd.setOnClickListener {
+            val fragment= FAttachment.newInstance(Bundle())
+            fragment.show(childFragmentManager,"")
         }
         binding.viewChatBtm.edtMsg.setKeyBoardInputCallbackListener(this)
         UserUtils.setUnReadCountGroup(groupDao, group)
@@ -85,8 +95,8 @@ class FGroupChat : Fragment(),ItemClickListener, CustomEditText.KeyBoardInputCal
         subscribeObservers()
 
         lifecycleScope.launch {
-            viewModel.getGroupMessages(group.id).collect { message->
-                messageList=message as MutableList<GroupMessage>
+            viewModel.getGroupMessages(group.id).collect { message ->
+                messageList = message as MutableList<GroupMessage>
                 AdGroupChat.messageList = messageList
                 adChat.submitList(messageList)
                 //scroll to last items in recycler (recent messages)
@@ -108,47 +118,49 @@ class FGroupChat : Fragment(),ItemClickListener, CustomEditText.KeyBoardInputCal
         binding.viewChatBtm.lottieSend.playAnimation()
         val messageData = TextMessage(msg)
         val message = createMessage()
-        message.textMessage=messageData
+        message.textMessage = messageData
         viewModel.sendMessage(message)
         binding.viewChatBtm.edtMsg.setText("")
     }
 
     private fun createMessage(): GroupMessage {
-        val toUsers=group.members?.map { it.id } as ArrayList
-        val groupSize=group.members!!.size
-        val statusList=ArrayList<Int>()
-        val deliveryTimeList=ArrayList<Long>()
-        for (index in 0 until groupSize){
+        val toUsers = group.members?.map { it.id } as ArrayList
+        val groupSize = group.members!!.size
+        val statusList = ArrayList<Int>()
+        val deliveryTimeList = ArrayList<Long>()
+        for (index in 0 until groupSize) {
             statusList.add(0)
             deliveryTimeList.add(0L)
         }
-      return GroupMessage(System.currentTimeMillis(), group.id, from = localUserId,
+        return GroupMessage(
+            System.currentTimeMillis(), group.id, from = localUserId,
             to = toUsers, fromUser.userName, fromUser.image, statusList, deliveryTimeList,
-            deliveryTimeList)
+            deliveryTimeList
+        )
     }
 
     private fun subscribeObservers() {
-        viewModel.getChatUsers().observe(viewLifecycleOwner,{ chatUsers->
-            AdGroupChat.chatUserList= chatUsers.toMutableList()
+        viewModel.getChatUsers().observe(viewLifecycleOwner, { chatUsers ->
+            AdGroupChat.chatUserList = chatUsers.toMutableList()
         })
 
-        viewModel.typingUsers.observe(viewLifecycleOwner,{ typingUser->
+        viewModel.typingUsers.observe(viewLifecycleOwner, { typingUser ->
             if (typingUser.isEmpty())
-                BindingAdapters.setMemberNames(binding.viewChatHeader.txtMembers,group)
+                BindingAdapters.setMemberNames(binding.viewChatHeader.txtMembers, group)
             else
-                binding.viewChatHeader.txtMembers.text=typingUser
+                binding.viewChatHeader.txtMembers.text = typingUser
         })
     }
 
     private fun setDataInView() {
         fromUser = preference.getUserProfile()!!
-        localUserId=fromUser.uId!!
-        manager= LinearLayoutManager(context)
+        localUserId = fromUser.uId!!
+        manager = LinearLayoutManager(context)
         binding.listMessage.apply {
-            manager.stackFromEnd=true
-            layoutManager=manager
+            manager.stackFromEnd = true
+            layoutManager = manager
             setHasFixedSize(true)
-            isNestedScrollingEnabled=false
+            isNestedScrollingEnabled = false
             itemAnimator = null
         }
         binding.listMessage.adapter = adChat
@@ -157,7 +169,7 @@ class FGroupChat : Fragment(),ItemClickListener, CustomEditText.KeyBoardInputCal
         binding.viewChatBtm.edtMsg.addTextChangedListener(msgTxtChangeListener)
     }
 
-    private val msgTxtChangeListener=object : TextWatcher {
+    private val msgTxtChangeListener = object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
         }
 
@@ -166,16 +178,11 @@ class FGroupChat : Fragment(),ItemClickListener, CustomEditText.KeyBoardInputCal
         }
 
         override fun afterTextChanged(s: Editable?) {
-            if (s.isNullOrEmpty())
-                binding.viewChatBtm.imageStreography.show()
-            else
-                binding.viewChatBtm.imageStreography.gone()
         }
     }
 
     override fun onItemClicked(v: View, position: Int) {
-
-
+       // Message click listener
     }
 
     override fun onResume() {
@@ -187,6 +194,70 @@ class FGroupChat : Fragment(),ItemClickListener, CustomEditText.KeyBoardInputCal
         super.onResume()
     }
 
+    override fun onCommitContent(
+        inputContentInfo: InputContentInfoCompat?,
+        flags: Int,
+        opts: Bundle?
+    ) {
+        val imageMsg = createMessage()
+        val image = ImageMessage("${inputContentInfo?.contentUri}")
+        image.imageType = if (image.uri.toString().endsWith(".png")) "sticker" else "gif"
+        imageMsg.apply {
+            type = "image"
+            imageMessage = image
+        }
+        viewModel.uploadImage(imageMsg)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE)
+            onCropResult(data)
+        else
+            ImageUtils.cropImage(requireActivity(), data, true)
+    }
+
+    private fun onCropResult(data: Intent?) {
+        try {
+            val imagePath: Uri? = ImageUtils.getCroppedImage(data)
+            if (imagePath!=null){
+                val message=createMessage()
+                message.type="image"
+                message.imageMessage=ImageMessage(imagePath.toString())
+                viewModel.uploadImage(message)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onAttachmentItemClicked(event: BottomSheetEvent) {
+        when (event.position) {
+            0 -> {
+                ImageUtils.takePhoto(requireActivity())
+            }
+            1 -> {
+                ImageUtils.chooseGallery(requireActivity())
+            }
+            2 -> {
+                //create intent for gallery video
+            }
+            3 -> {
+                //create intent for camera video
+            }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        EventBus.getDefault().unregister(this)
+    }
 
     override fun onStop() {
         super.onStop()
@@ -197,21 +268,6 @@ class FGroupChat : Fragment(),ItemClickListener, CustomEditText.KeyBoardInputCal
     override fun onDestroy() {
         super.onDestroy()
         Utils.closeKeyBoard(requireActivity())
-    }
-
-    override fun onCommitContent(
-        inputContentInfo: InputContentInfoCompat?,
-        flags: Int,
-        opts: Bundle?) {
-        val uu=FileUtils.getPath(requireContext(),inputContentInfo?.contentUri!!)
-        val imageMsg=createMessage()
-        val image= ImageMessage("${inputContentInfo.contentUri}")
-        image.imageType=if(uu.endsWith(".png")) "sticker" else "gif"
-        imageMsg.apply {
-            type="image"
-            imageMessage=image
-        }
-        viewModel.sendStickerOrGif(imageMsg)
     }
 
 }

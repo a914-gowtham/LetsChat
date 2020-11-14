@@ -6,11 +6,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.gowtham.letschat.databinding.RowImageReceiveBinding
-import com.gowtham.letschat.databinding.RowImageSentBinding
-import com.gowtham.letschat.databinding.RowReceiveMessageBinding
-import com.gowtham.letschat.databinding.RowSentMessageBinding
+import com.gowtham.letschat.databinding.*
 import com.gowtham.letschat.db.data.Message
+import com.gowtham.letschat.fragments.group_chat.AdGroupChat
 import com.gowtham.letschat.utils.ItemClickListener
 import com.gowtham.letschat.utils.MPreference
 
@@ -24,6 +22,8 @@ class AdChat(private val context: Context, private val msgClickListener: ItemCli
         private const val TYPE_TXT_RECEIVED = 1
         private const val TYPE_IMG_SENT = 2
         private const val TYPE_IMG_RECEIVE = 3
+        private const val TYPE_STICKER_SENT = 4
+        private const val TYPE_STICKER_RECEIVE = 5
         lateinit var messageList: MutableList<Message>
     }
 
@@ -32,32 +32,48 @@ class AdChat(private val context: Context, private val msgClickListener: ItemCli
         return when (viewType) {
             TYPE_TXT_SENT -> {
                 val binding = RowSentMessageBinding.inflate(layoutInflater, parent, false)
-                SendMessageViewHolder(binding)
+                TxtSentVHolder(binding)
             }
             TYPE_TXT_RECEIVED-> {
                 val binding = RowReceiveMessageBinding.inflate(layoutInflater, parent, false)
-                ReceiveMessageViewHolder(binding)
+                TxtReceiveVHolder(binding)
             }
             TYPE_IMG_SENT-> {
                 val binding = RowImageSentBinding.inflate(layoutInflater, parent, false)
-                SendImgVHolder(binding)
+                ImageSentVHolder(binding)
+            }
+            TYPE_IMG_RECEIVE-> {
+                val binding = RowImageReceiveBinding.inflate(layoutInflater, parent, false)
+                ImageReceiveVHolder(binding)
+            }
+            TYPE_STICKER_SENT-> {
+                val binding = RowStickerSentBinding.inflate(layoutInflater, parent, false)
+                StickerSentVHolder(binding)
+            }
+            TYPE_STICKER_RECEIVE-> {
+                val binding = RowStickerReceiveBinding.inflate(layoutInflater, parent, false)
+                StickerReceiveVHolder(binding)
             }
             else-> {
-                val binding = RowImageReceiveBinding.inflate(layoutInflater, parent, false)
-                ReceiveImgVHolder(binding)
+                val binding = RowStickerReceiveBinding.inflate(layoutInflater, parent, false)
+                StickerReceiveVHolder(binding)
             }
         }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when(holder){
-            is SendMessageViewHolder ->
+            is TxtSentVHolder ->
                 holder.bind(getItem(position))
-            is ReceiveMessageViewHolder ->
+            is TxtReceiveVHolder ->
                 holder.bind(getItem(position))
-            is SendImgVHolder ->
+            is ImageSentVHolder ->
                 holder.bind(getItem(position))
-            is ReceiveImgVHolder ->
+            is ImageReceiveVHolder ->
+                holder.bind(getItem(position))
+            is StickerSentVHolder ->
+                holder.bind(getItem(position))
+            is StickerReceiveVHolder ->
                 holder.bind(getItem(position))
         }
     }
@@ -69,15 +85,21 @@ class AdChat(private val context: Context, private val msgClickListener: ItemCli
             return TYPE_TXT_SENT
         else if (!fromMe && message.type == "text")
             return TYPE_TXT_RECEIVED
-        else if (fromMe && message.type == "image")
+        else if (fromMe && message.type == "image" && message.imageMessage?.imageType=="image")
             return TYPE_IMG_SENT
-        else if (!fromMe && message.type == "image")
+        else if (!fromMe && message.type == "image" && message.imageMessage?.imageType=="image")
             return TYPE_IMG_RECEIVE
+        else if (fromMe && message.type == "image" && (message.imageMessage?.imageType=="sticker"
+                    || message.imageMessage?.imageType=="gif"))
+            return TYPE_STICKER_SENT
+        else if (!fromMe && message.type == "image"  && (message.imageMessage?.imageType=="sticker"
+                    || message.imageMessage?.imageType=="gif"))
+            return TYPE_STICKER_RECEIVE
         return super.getItemViewType(position)
     }
 
 
-    class SendMessageViewHolder(val binding: RowSentMessageBinding) :
+    class TxtSentVHolder(val binding: RowSentMessageBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Message) {
             binding.message = item
@@ -85,7 +107,7 @@ class AdChat(private val context: Context, private val msgClickListener: ItemCli
         }
     }
 
-    class ReceiveMessageViewHolder(val binding: RowReceiveMessageBinding) :
+    class TxtReceiveVHolder(val binding: RowReceiveMessageBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Message) {
             binding.message = item
@@ -93,7 +115,7 @@ class AdChat(private val context: Context, private val msgClickListener: ItemCli
         }
     }
 
-    class SendImgVHolder(val binding: RowImageSentBinding) :
+    class ImageSentVHolder(val binding: RowImageSentBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Message) {
             binding.message = item
@@ -101,7 +123,23 @@ class AdChat(private val context: Context, private val msgClickListener: ItemCli
         }
     }
 
-    class ReceiveImgVHolder(val binding: RowImageReceiveBinding) :
+    class ImageReceiveVHolder(val binding: RowImageReceiveBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: Message) {
+            binding.message = item
+            binding.executePendingBindings()
+        }
+    }
+
+    class StickerSentVHolder(val binding: RowStickerSentBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: Message) {
+            binding.message = item
+            binding.executePendingBindings()
+        }
+    }
+
+    class StickerReceiveVHolder(val binding: RowStickerReceiveBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Message) {
             binding.message = item
