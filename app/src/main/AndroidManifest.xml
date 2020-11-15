@@ -36,10 +36,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:targetApi="q">
+
         <receiver
             android:name=".utils.GroupMsgActionReceiver"
             android:enabled="true"
             android:exported="true"/>
+
         <receiver
             android:name=".utils.NActionReceiver"
             android:enabled="true" />
@@ -51,7 +53,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.activities.MainActivity" />
+
+        <activity android:name=".ui.activities.MainActivity"
+            android:windowSoftInputMode="adjustPan"/>
+
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:screenOrientation="portrait"

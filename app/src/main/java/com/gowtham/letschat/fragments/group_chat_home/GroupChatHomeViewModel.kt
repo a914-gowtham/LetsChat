@@ -20,6 +20,7 @@ class GroupChatHomeViewModel @ViewModelInject constructor(
 
     fun getGroupMessages() = dbRepository.getGroupWithMessages()
 
+    fun getGroupMessagesAsList() = dbRepository.getGroupWithMessagesList()
 
 
 }

@@ -42,6 +42,8 @@ constructor(@ApplicationContext private val context: Context,
 
     fun getChatUsers() = dbRepo.getChatUserWithMessages()
 
+    fun getChatUsersAsList() = dbRepo.getChatUserWithMessagesList()
+
     override fun onCleared() {
         LogMessage.v("SingleChatHOME cleared")
         configChanged.value=0

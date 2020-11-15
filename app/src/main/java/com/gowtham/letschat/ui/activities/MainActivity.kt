@@ -80,6 +80,11 @@ class MainActivity : ActBase() {
                 badge.number = count.size
             }
         }
+
+        sharedViewModel.getState().observe(this,{
+
+
+        })
     }
 
     private fun setDataInView() {
@@ -147,6 +152,8 @@ class MainActivity : ActBase() {
                     binding.toolbar.gone()
                 }
             }
+            if(this::searchItem.isInitialized)
+                searchItem.collapseActionView()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -167,6 +174,26 @@ class MainActivity : ActBase() {
             queryHint = getString(R.string.txt_search)
         }
 
+        searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+            override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
+                sharedViewModel.setState(ScreenState.SearchState)
+                return true
+            }
+
+            override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
+                if (sharedViewModel.getState().value is ScreenState.SearchState)
+                    sharedViewModel.setState(ScreenState.IdleState)
+                return true
+            }
+        })
+
+        sharedViewModel.getState().observe(this, { state ->
+            if (state is ScreenState.SearchState && searchView.isIconified) {
+                searchItem.expandActionView()
+                searchView.setQuery(sharedViewModel.getLastQuery().value,false)
+            }
+        })
+
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return true
@@ -178,29 +205,6 @@ class MainActivity : ActBase() {
             }
         })
 
-        searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-            override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
-                sharedViewModel.setState(ScreenState.SearchState)
-                return true
-            }
-
-            override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
-                Timber.v("11")
-                if (sharedViewModel.getState().value is ScreenState.SearchState) {
-                    sharedViewModel.setState(ScreenState.IdleState)
-                    Timber.v("222")
-                }
-                return true
-            }
-        })
-
-        sharedViewModel.getState().observe(this, { state ->
-            if (state is ScreenState.SearchState && searchView.isIconified) {
-                searchItem.expandActionView()
-                Timber.v("Last Query ${sharedViewModel.getLastQuery().value}")
-                searchView.setQuery(sharedViewModel.getLastQuery().value,false)
-            }
-        })
     }
 
     private fun showView() {

@@ -23,9 +23,12 @@ import com.gowtham.letschat.models.UserProfile
 import com.gowtham.letschat.ui.activities.SharedViewModel
 import com.gowtham.letschat.utils.*
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -83,29 +86,44 @@ class FSingleChatHome : Fragment(),ItemClickListener {
         profile = preference.getUserProfile()!!
         setDataInView()
         subScribeObservers()
-
-        lifecycleScope.launch {
-            viewModel.getChatUsers().collect { list ->
-                val filteredList = list.filter { it.messages.isNotEmpty() }
-                if (filteredList.isNotEmpty()) {
-                    binding.imageEmpty.gone()
-                    chatList = filteredList as MutableList<ChatUserWithMessages>
-                    //sort by recent message
-                    chatList = filteredList.sortedByDescending { it.messages.last().createdAt }
-                        .toMutableList()
-                    AdSingleChatHome.allChatList=chatList
-                    adChat.submitList(chatList)
-                }else
-                    binding.imageEmpty.show()
-            }
-        }
     }
 
     private fun subScribeObservers() {
+        lifecycleScope.launch {
+            viewModel.getChatUsers().collect { list ->
+                updateList(list)
+            }
+        }
+
+        sharedViewModel.getState().observe(viewLifecycleOwner,{state->
+            if (state is ScreenState.IdleState){
+                CoroutineScope(Dispatchers.IO).launch {
+                    updateList(viewModel.getChatUsersAsList())
+                }
+            }
+        })
         sharedViewModel.lastQuery.observe(viewLifecycleOwner,{
             if (sharedViewModel.getState().value is ScreenState.SearchState)
                 adChat.filter(it)
         })
+    }
+
+    private suspend fun updateList(list: List<ChatUserWithMessages>) {
+        withContext(Dispatchers.Main){
+            val filteredList = list.filter { it.messages.isNotEmpty() }
+            if (filteredList.isNotEmpty()) {
+                binding.imageEmpty.gone()
+                chatList = filteredList as MutableList<ChatUserWithMessages>
+                //sort by recent message
+                chatList = filteredList.sortedByDescending { it.messages.last().createdAt }
+                    .toMutableList()
+                AdSingleChatHome.allChatList=chatList
+                adChat.submitList(chatList)
+                if(sharedViewModel.getState().value is ScreenState.SearchState)
+                    adChat.filter(sharedViewModel.lastQuery.value.toString())
+            }else
+                binding.imageEmpty.show()
+        }
     }
 
     private fun setDataInView() {
@@ -128,8 +146,10 @@ class FSingleChatHome : Fragment(),ItemClickListener {
     }
 
     override fun onItemClicked(v: View, position: Int) {
-        preference.setCurrentUser(chatList[position].user.id)
-        val action= FSingleChatHomeDirections.actionFSingleChatToFChat(chatList[position].user)
+        sharedViewModel.setState(ScreenState.IdleState)
+        val chatUser=adChat.currentList[position]
+        preference.setCurrentUser(chatUser.user.id)
+        val action= FSingleChatHomeDirections.actionFSingleChatToFChat(chatUser.user)
         findNavController().navigate(action)
     }
 }
