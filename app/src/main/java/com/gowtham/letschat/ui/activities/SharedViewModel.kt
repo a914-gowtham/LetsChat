@@ -2,6 +2,7 @@ package com.gowtham.letschat.ui.activities
 
 import android.content.Context
 import androidx.hilt.lifecycle.ViewModelInject
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.gowtham.letschat.db.daos.ChatUserDao
@@ -24,15 +25,36 @@ constructor(@ApplicationContext private val context: Context,
 
     val openMainAct = MutableLiveData<Boolean>()
 
+    private val _state = MutableLiveData<ScreenState>(ScreenState.IdleState)
+
+    val lastQuery = MutableLiveData<String>()
+
     private var timer: TimerTask? = null
 
     init {
         "Init SharedViewModel".printMeD()
     }
 
+    fun getLastQuery(): LiveData<String> {
+        return lastQuery
+    }
+
+    fun setLastQuery(query: String) {
+        lastQuery.value = query
+    }
+
+    fun setState(state: ScreenState){
+        _state.value=state
+    }
+
+    fun getState() : LiveData<ScreenState>{
+        return _state
+    }
+
     fun setCountry(country: Country) {
         this.country.value = country
     }
+
 
     fun onFromSplash() {
         if (timer == null) {

@@ -101,7 +101,7 @@
     </fragment>
     <fragment
         android:id="@+id/FSearch"
-        android:name="com.gowtham.letschat.fragments.FSearch"
+        android:name="com.gowtham.letschat.fragments.search.FSearch"
         android:label="FSearch"
         tools:layout="@layout/f_search" />
     <fragment

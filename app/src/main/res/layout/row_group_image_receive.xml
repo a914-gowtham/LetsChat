@@ -49,8 +49,9 @@
 
             <ImageView
                 loadGroupMsgImage="@{message}"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
+                android:layout_width="240dp"
+                android:layout_height="280dp"
+                android:scaleType="centerCrop"
                 android:id="@+id/image_msg" />
         </LinearLayout>
 

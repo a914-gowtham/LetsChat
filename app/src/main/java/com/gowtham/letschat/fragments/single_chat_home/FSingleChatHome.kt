@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -50,7 +51,7 @@ class FSingleChatHome : Fragment(),ItemClickListener {
 
     private var chatList = mutableListOf<ChatUserWithMessages>()
 
-    private lateinit var sharedViewModel: SharedViewModel
+    private val sharedViewModel by activityViewModels<SharedViewModel>()
 
     private lateinit var binding: FSingleChatHomeBinding
 
@@ -78,10 +79,10 @@ class FSingleChatHome : Fragment(),ItemClickListener {
         super.onViewCreated(view, savedInstanceState)
 
         activity = requireActivity()
-        sharedViewModel = ViewModelProvider(requireActivity()).get(SharedViewModel::class.java)
         binding.lifecycleOwner = viewLifecycleOwner
         profile = preference.getUserProfile()!!
         setDataInView()
+        subScribeObservers()
 
         lifecycleScope.launch {
             viewModel.getChatUsers().collect { list ->
@@ -92,12 +93,19 @@ class FSingleChatHome : Fragment(),ItemClickListener {
                     //sort by recent message
                     chatList = filteredList.sortedByDescending { it.messages.last().createdAt }
                         .toMutableList()
+                    AdSingleChatHome.allChatList=chatList
                     adChat.submitList(chatList)
-                    Timber.v("Userss ${chatList.first().user.unRead}")
                 }else
                     binding.imageEmpty.show()
             }
         }
+    }
+
+    private fun subScribeObservers() {
+        sharedViewModel.lastQuery.observe(viewLifecycleOwner,{
+            if (sharedViewModel.getState().value is ScreenState.SearchState)
+                adChat.filter(it)
+        })
     }
 
     private fun setDataInView() {

@@ -2,8 +2,13 @@ package com.gowtham.letschat.ui.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.*
+import androidx.activity.viewModels
+import androidx.appcompat.widget.SearchView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
@@ -20,6 +25,7 @@ import com.gowtham.letschat.fragments.single_chat_home.FSingleChatHomeDirections
 import com.gowtham.letschat.utils.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 
 class MainActivity : ActBase() {
@@ -28,14 +34,20 @@ class MainActivity : ActBase() {
 
     private lateinit var navController: NavController
 
+    private val sharedViewModel: SharedViewModel by viewModels()
+
+    private lateinit var searchView: SearchView
+
+    private lateinit var searchItem: MenuItem
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        setSupportActionBar(binding.toolbar)
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
-
         binding.fab.setOnClickListener {
             if (Utils.askContactPermission(returnFragment()!!)) {
                 if (navController.isValidDestination(R.id.FSingleChatHome))
@@ -68,18 +80,16 @@ class MainActivity : ActBase() {
                 badge.number = count.size
             }
         }
-
     }
 
     private fun setDataInView() {
         try {
             navController = Navigation.findNavController(this, R.id.nav_host_fragment)
             navController.addOnDestinationChangedListener { _, destination, _ ->
-                onDestinationChanged()
+                onDestinationChanged(destination.id)
             }
             val appBarConfiguration = AppBarConfiguration(setOf(R.id.FSingleChatHome))
-            binding.toolbar
-                .setupWithNavController(navController, appBarConfiguration)
+            binding.toolbar.setupWithNavController(navController, appBarConfiguration)
             binding.bottomNav.setOnNavigationItemSelectedListener(onBottomNavigationListener)
 
             val isNewMessage = intent.action == Constants.ACTION_NEW_MESSAGE
@@ -94,7 +104,7 @@ class MainActivity : ActBase() {
                     navController.navigate(R.id.action_FLogIn_to_FSingleChatHome)
             }
 
-            //single chat message clicked
+            //single chat message notification clicked
             if (isNewMessage && navController.isValidDestination(R.id.FSingleChatHome)) {
                 preference.setCurrentUser(userData!!.id)
                 val action = FSingleChatHomeDirections.actionFSingleChatToFChat(userData)
@@ -112,22 +122,22 @@ class MainActivity : ActBase() {
         }
     }
 
-    private fun onDestinationChanged() {
+    private fun onDestinationChanged(currentDestination: Int) {
         try {
-            when {
-                navController.isValidDestination(R.id.FSingleChatHome) -> {
+            when(currentDestination) {
+                R.id.FSingleChatHome -> {
                     binding.bottomNav.selectedItemId = R.id.nav_chat
                     showView()
                 }
-                navController.isValidDestination(R.id.FGroupChatHome) -> {
+                R.id.FGroupChatHome -> {
                     binding.bottomNav.selectedItemId = R.id.nav_group
                     showView()
                 }
-                navController.isValidDestination(R.id.FSearch) -> {
+                R.id.FSearch -> {
                     binding.bottomNav.selectedItemId = R.id.nav_search
                     showView()
                 }
-                navController.isValidDestination(R.id.FMyProfile) -> {
+                R.id.FMyProfile -> {
                     binding.bottomNav.selectedItemId = R.id.nav_profile
                     showView()
                 }
@@ -140,6 +150,57 @@ class MainActivity : ActBase() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.menu_search, menu)
+        initToolbarItem()
+        return true
+    }
+
+    private fun initToolbarItem() {
+        searchItem = binding.toolbar.menu.findItem(R.id.action_search)
+        searchView = searchItem.actionView as SearchView
+        searchView.apply {
+            maxWidth = Integer.MAX_VALUE
+            queryHint = getString(R.string.txt_search)
+        }
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                sharedViewModel.setLastQuery(newText.toString())
+                return true
+            }
+        })
+
+        searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+            override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
+                sharedViewModel.setState(ScreenState.SearchState)
+                return true
+            }
+
+            override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
+                Timber.v("11")
+                if (sharedViewModel.getState().value is ScreenState.SearchState) {
+                    sharedViewModel.setState(ScreenState.IdleState)
+                    Timber.v("222")
+                }
+                return true
+            }
+        })
+
+        sharedViewModel.getState().observe(this, { state ->
+            if (state is ScreenState.SearchState && searchView.isIconified) {
+                searchItem.expandActionView()
+                Timber.v("Last Query ${sharedViewModel.getLastQuery().value}")
+                searchView.setQuery(sharedViewModel.getLastQuery().value,false)
+            }
+        })
     }
 
     private fun showView() {
@@ -211,8 +272,7 @@ class MainActivity : ActBase() {
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+        grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         /* val navHostFragment = supportFragmentManager.fragments.first() as? NavHostFragment
          if (navHostFragment != null) {
@@ -228,8 +288,7 @@ class MainActivity : ActBase() {
             finish()
         else if (navController.isValidDestination(R.id.FMyProfile) ||
             navController.isValidDestination(R.id.FGroupChatHome) ||
-            navController.isValidDestination(R.id.FSearch)
-        ) {
+            navController.isValidDestination(R.id.FSearch)) {
             val navOptions =
                 NavOptions.Builder().setPopUpTo(R.id.nav_host_fragment, true).build()
             Navigation.findNavController(this, R.id.nav_host_fragment)

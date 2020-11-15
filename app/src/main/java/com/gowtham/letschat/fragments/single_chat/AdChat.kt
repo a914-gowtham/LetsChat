@@ -6,11 +6,14 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.gowtham.letschat.databinding.*
 import com.gowtham.letschat.db.data.Message
-import com.gowtham.letschat.fragments.group_chat.AdGroupChat
+import com.gowtham.letschat.models.MyImage
 import com.gowtham.letschat.utils.ItemClickListener
 import com.gowtham.letschat.utils.MPreference
+import com.stfalcon.imageviewer.StfalconImageViewer
+import com.stfalcon.imageviewer.loader.ImageLoader
 
 class AdChat(private val context: Context, private val msgClickListener: ItemClickListener) :
     ListAdapter<Message, RecyclerView.ViewHolder>(DiffCallbackMessages()) {
@@ -68,9 +71,9 @@ class AdChat(private val context: Context, private val msgClickListener: ItemCli
             is TxtReceiveVHolder ->
                 holder.bind(getItem(position))
             is ImageSentVHolder ->
-                holder.bind(getItem(position))
+                holder.bind(getItem(position),msgClickListener)
             is ImageReceiveVHolder ->
-                holder.bind(getItem(position))
+                holder.bind(getItem(position),msgClickListener)
             is StickerSentVHolder ->
                 holder.bind(getItem(position))
             is StickerReceiveVHolder ->
@@ -98,7 +101,6 @@ class AdChat(private val context: Context, private val msgClickListener: ItemCli
         return super.getItemViewType(position)
     }
 
-
     class TxtSentVHolder(val binding: RowSentMessageBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Message) {
@@ -117,16 +119,22 @@ class AdChat(private val context: Context, private val msgClickListener: ItemCli
 
     class ImageSentVHolder(val binding: RowImageSentBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: Message) {
+        fun bind(item: Message, msgClickListener: ItemClickListener) {
             binding.message = item
+            binding.imageMsg.setOnClickListener {
+                msgClickListener.onItemClicked(it,bindingAdapterPosition)
+            }
             binding.executePendingBindings()
         }
     }
 
     class ImageReceiveVHolder(val binding: RowImageReceiveBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: Message) {
+        fun bind(item: Message,msgClickListener: ItemClickListener) {
             binding.message = item
+            binding.imageMsg.setOnClickListener {
+                msgClickListener.onItemClicked(it,bindingAdapterPosition)
+            }
             binding.executePendingBindings()
         }
     }

@@ -22,9 +22,11 @@ import com.gowtham.letschat.db.data.GroupMessage
 import com.gowtham.letschat.db.data.ImageMessage
 import com.gowtham.letschat.db.data.TextMessage
 import com.gowtham.letschat.fragments.FAttachment
+import com.gowtham.letschat.models.MyImage
 import com.gowtham.letschat.models.UserProfile
 import com.gowtham.letschat.utils.*
 import com.gowtham.letschat.views.CustomEditText
+import com.stfalcon.imageviewer.StfalconImageViewer
 import com.theartofdev.edmodo.cropper.CropImage
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -182,14 +184,21 @@ class FGroupChat : Fragment(), ItemClickListener, CustomEditText.KeyBoardInputCa
     }
 
     override fun onItemClicked(v: View, position: Int) {
-       // Message click listener
+        binding.fullSizeImageView.show()
+        StfalconImageViewer.Builder(
+            context,
+            listOf(MyImage(messageList.get(position).imageMessage?.uri!!))) { imageView, myImage ->
+            ImageUtils.loadGalleryImage(myImage.url,imageView)
+        }
+            .withDismissListener { binding.fullSizeImageView.visibility = View.GONE }
+            .show()
     }
 
     override fun onResume() {
         viewModel.setOnline(true)
         preference.setCurrentGroup(group.id)
         viewModel.setSeenAllMessage()
-        viewModel.sendCachedMesssages()
+        viewModel.sendCachedTxtMesssages()
         Utils.removeNotification(requireContext())
         super.onResume()
     }

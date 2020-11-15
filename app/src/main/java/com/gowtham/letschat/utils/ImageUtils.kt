@@ -46,7 +46,7 @@ object ImageUtils {
             diskCachePolicy(CachePolicy.ENABLED)
             placeholder(R.drawable.ic_other_user)
             error(R.drawable.ic_other_user)
-              transformations(CircleCropTransformation())
+            transformations(CircleCropTransformation())
         }
     }
 
@@ -236,13 +236,22 @@ object ImageUtils {
                 val mime = MimeTypeMap.getSingleton()
                 mime.getExtensionFromMimeType(context.contentResolver.getType(uri))
             } else MimeTypeMap.getFileExtensionFromUrl(
-                Uri
-                    .fromFile(File(uri.path)).toString()
+                Uri.fromFile(File(uri.path)).toString()
             )
             return if (extension == null || extension.isEmpty()) actual else extension
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
         }
         return actual
+    }
+
+    fun loadGalleryImage(url: String, imageView: ImageView) {
+        imageView.load(url){
+            crossfade(true)
+            crossfade(300)
+            diskCachePolicy(CachePolicy.ENABLED)
+            placeholder(R.drawable.ic_gal_pholder)
+            error(R.drawable.ic_broken_image)
+        }
     }
 }

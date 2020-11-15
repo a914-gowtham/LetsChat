@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.gowtham.letschat.databinding.*
 import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.data.GroupMessage
-import com.gowtham.letschat.fragments.single_chat.AdChat
 import com.gowtham.letschat.utils.ItemClickListener
 import com.gowtham.letschat.utils.MPreference
 
@@ -71,9 +70,9 @@ class AdGroupChat (private val context: Context,
             is TxtReceivedMsgHolder ->
                 holder.bind(getItem(position))
             is ImgSentMsgHolder ->
-                holder.bind(getItem(position))
+                holder.bind(getItem(position),msgClickListener)
             is ImgReceivedMsgHolder ->
-                holder.bind(getItem(position))
+                holder.bind(getItem(position),msgClickListener)
             is StickerSentMsgHolder ->
                 holder.bind(getItem(position))
             is StickerReceivedMsgHolder ->
@@ -121,17 +120,23 @@ class AdGroupChat (private val context: Context,
 
     class ImgSentMsgHolder(val binding: RowGroupImageSentBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: GroupMessage) {
+        fun bind(item: GroupMessage, msgClickListener: ItemClickListener) {
             binding.message = item
+            binding.imageMsg.setOnClickListener {
+                msgClickListener.onItemClicked(it,bindingAdapterPosition)
+            }
             binding.executePendingBindings()
         }
     }
 
     class ImgReceivedMsgHolder(val binding: RowGroupImageReceiveBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: GroupMessage) {
+        fun bind(item: GroupMessage, msgClickListener: ItemClickListener) {
             binding.message = item
             binding.chatUsers= chatUserList.toTypedArray()
+            binding.imageMsg.setOnClickListener {
+                msgClickListener.onItemClicked(it,bindingAdapterPosition)
+            }
             binding.executePendingBindings()
         }
     }

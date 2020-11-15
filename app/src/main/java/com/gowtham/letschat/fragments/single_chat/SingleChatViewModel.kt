@@ -284,7 +284,7 @@ constructor(
         removeTypingCallbacks()
     }
 
-    fun sendCachedMesssages() {
+    fun sendCachedTxtMesssages() {
         //Send msg that is not sent succesfully in last time
         CoroutineScope(Dispatchers.IO).launch {
             updateCacheMessges(dbRepository.getChatsOfFriend(toUser))
@@ -293,7 +293,7 @@ constructor(
 
     private suspend fun updateCacheMessges(listOfMessage: List<Message>) {
         withContext(Dispatchers.Main) {
-            val nonSendMsgs = listOfMessage.filter { it.from == fromUser && it.status == 0 }
+            val nonSendMsgs = listOfMessage.filter { it.from == fromUser && it.status == 0 && it.type=="text"}
             LogMessage.v("nonSendMsgs Size ${nonSendMsgs.size}")
             if (nonSendMsgs.isNotEmpty()) {
                 for (cachedMsg in nonSendMsgs) {

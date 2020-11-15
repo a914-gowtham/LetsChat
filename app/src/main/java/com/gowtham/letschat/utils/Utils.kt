@@ -162,7 +162,7 @@ object Utils {
             }
             status.last_seen>0L -> {
                 txtView.visibility= View.VISIBLE
-                "last seen ${status.last_seen}"
+                "last seen ${Utils.getTime(status.last_seen)}"
 
             }
             else -> {

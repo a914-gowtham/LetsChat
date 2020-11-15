@@ -9,13 +9,15 @@
 
     <LinearLayout style="@style/VView"
         android:layout_marginEnd="60dp"
+        android:layout_marginTop="5dp"
         android:layout_marginStart="5dp">
 
         <ImageView
             loadImage="@{message}"
             android:layout_gravity="start"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
+            android:layout_width="240dp"
+            android:layout_height="280dp"
+            android:scaleType="centerCrop"
             android:id="@+id/image_msg" />
 
         <LinearLayout

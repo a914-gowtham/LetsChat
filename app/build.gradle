@@ -140,12 +140,13 @@ dependencies {
 
     implementation 'com.jakewharton.timber:timber:4.7.1'
 
-    implementation "com.github.skydoves:powermenu:2.1.7"
-
     //Image loader
     implementation("io.coil-kt:coil:1.0.0")
     implementation("io.coil-kt:coil-gif:1.0.0")
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.7.0'
+
+    //image zoom
+    implementation 'com.github.stfalcon:stfalcon-imageviewer:1.0.0'
 
     //Kotlin seriler
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")

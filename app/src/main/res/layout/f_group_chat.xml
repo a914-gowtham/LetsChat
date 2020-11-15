@@ -13,27 +13,40 @@
             type="com.gowtham.letschat.fragments.group_chat.GroupChatViewModel" />
     </data>
 
-    <LinearLayout style="@style/FView"
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        style="@style/FView"
         android:focusable="true"
         android:fitsSystemWindows="true"
-        android:focusableInTouchMode="true">
+        android:focusableInTouchMode="true"
+        tools:ignore="ContentDescription">
 
-        <include
-            android:id="@+id/view_chat_header"
-            bind:group="@{group}"
-            bind:viewmodel="@{viewmodel}"
-            layout="@layout/view_group_chat_toolbar" />
+        <LinearLayout style="@style/FView">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/list_message"
-            tools:listitem="@layout/row_sent_message"
-            style="@style/VWView" />
+            <include
+                android:id="@+id/view_chat_header"
+                bind:group="@{group}"
+                bind:viewmodel="@{viewmodel}"
+                layout="@layout/view_group_chat_toolbar" />
 
-        <include
-            android:id="@+id/view_chat_btm"
-            bind:viewmodel="@{viewmodel}"
-            layout="@layout/view_group_chat_btm" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list_message"
+                tools:listitem="@layout/row_sent_message"
+                style="@style/VWView" />
 
-    </LinearLayout>
+            <include
+                android:id="@+id/view_chat_btm"
+                bind:viewmodel="@{viewmodel}"
+                layout="@layout/view_group_chat_btm" />
+
+        </LinearLayout>
+
+
+        <ImageView
+            android:id="@+id/fullSizeImageView"
+            style="@style/FView"
+            android:background="@color/colorBlack"
+            android:visibility="gone"
+             />
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </layout>

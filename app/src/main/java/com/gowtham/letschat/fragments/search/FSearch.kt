@@ -1,4 +1,4 @@
-package com.gowtham.letschat.fragments
+package com.gowtham.letschat.fragments.search
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -19,8 +19,7 @@ class FSearch : Fragment(R.layout.f_search){
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+        savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate(layoutInflater, R.layout.f_search, container, false)
         return binding.root
     }

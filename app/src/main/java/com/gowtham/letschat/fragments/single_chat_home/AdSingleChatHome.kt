@@ -12,6 +12,7 @@ import com.gowtham.letschat.databinding.RowSentMessageBinding
 import com.gowtham.letschat.db.data.ChatUserWithMessages
 import com.gowtham.letschat.utils.ItemClickListener
 import com.gowtham.letschat.utils.MPreference
+import java.util.*
 
 class AdSingleChatHome(private val context: Context) :
     ListAdapter<ChatUserWithMessages, RecyclerView.ViewHolder>(DiffCallbackChats()) {
@@ -19,8 +20,28 @@ class AdSingleChatHome(private val context: Context) :
     private val preference = MPreference(context)
 
     companion object {
-        lateinit var chatList: MutableList<ChatUserWithMessages>
+        lateinit var allChatList: MutableList<ChatUserWithMessages>
         lateinit var itemClickListener: ItemClickListener
+    }
+
+    fun filter(query: String) {
+        try {
+            val list= mutableListOf<ChatUserWithMessages>()
+            if (query.isEmpty())
+                list.addAll(allChatList)
+            else {
+                for (contact in allChatList) {
+                    if (contact.user.localName.toLowerCase(Locale.getDefault())
+                            .contains(query.toLowerCase(Locale.getDefault()))) {
+                        list.add(contact)
+                    }
+                }
+            }
+            submitList(null)
+            submitList(list)
+        } catch (e: Exception) {
+            e.stackTrace
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {

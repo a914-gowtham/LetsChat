@@ -213,7 +213,7 @@ class GroupChatViewModel @ViewModelInject constructor(
         typingHandler.removeCallbacks(typingThread)
     }
 
-    fun sendCachedMesssages() {
+    fun sendCachedTxtMesssages() {
         CoroutineScope(Dispatchers.IO).launch {
             updateCacheMessges(groupMsgDao.getChatsOfGroupList(currentGroup))
         }

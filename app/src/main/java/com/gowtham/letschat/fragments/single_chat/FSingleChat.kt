@@ -10,15 +10,20 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.net.toFile
 import androidx.core.view.inputmethod.InputContentInfoCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import coil.load
+import coil.request.CachePolicy
+import com.gowtham.letschat.R
 import com.gowtham.letschat.databinding.FSingleChatBinding
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.data.ChatUser
@@ -26,9 +31,13 @@ import com.gowtham.letschat.db.data.ImageMessage
 import com.gowtham.letschat.db.data.Message
 import com.gowtham.letschat.db.data.TextMessage
 import com.gowtham.letschat.fragments.FAttachment
+import com.gowtham.letschat.models.MyImage
 import com.gowtham.letschat.models.UserProfile
+import com.gowtham.letschat.ui.activities.SharedViewModel
 import com.gowtham.letschat.utils.*
 import com.gowtham.letschat.views.CustomEditText
+import com.stfalcon.imageviewer.StfalconImageViewer
+import com.stfalcon.imageviewer.loader.ImageLoader
 import com.theartofdev.edmodo.cropper.CropImage
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -125,43 +134,6 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
         }
     }
 
-    private fun openSaveIntent() {
-        val contactIntent = Intent(ContactsContract.Intents.Insert.ACTION)
-        contactIntent.type = ContactsContract.RawContacts.CONTENT_TYPE
-        contactIntent
-            .putExtra(ContactsContract.Intents.Insert.NAME, chatUser.user.userName)
-            .putExtra(ContactsContract.Intents.Insert.PHONE, chatUser.user.mobile?.number.toString())
-        startActivityForResult(contactIntent, REQ_ADD_CONTACT)
-    }
-
-    private fun sendMessage() {
-        val msg = binding.viewChatBtm.edtMsg.text!!.trim().toString()
-        if (msg.isEmpty())
-            return
-        binding.viewChatBtm.lottieSend.playAnimation()
-        val message = createMessage()
-        message.textMessage=TextMessage(msg)
-        viewModel.sendMessage(message)
-        binding.viewChatBtm.edtMsg.setText("")
-    }
-
-    private fun createMessage(): Message {
-       return Message(
-            System.currentTimeMillis(),
-            from = preference.getUid().toString(),
-            chatUserId=chatUserId,
-            to = toUser.uId!!, senderName = fromUser.userName,
-            senderImage = fromUser.image
-        )
-    }
-
-    private fun subscribeObservers() {
-        //pass messages list for recycler to show
-          viewModel.chatUserOnlineStatus.observe(viewLifecycleOwner, {
-              Utils.setOnlineStatus(binding.viewChatHeader.txtLastSeen, it, localUserId)
-          })
-    }
-
     private fun setDataInView() {
         try {
             fromUser = preference.getUserProfile()!!
@@ -186,6 +158,43 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
         }
     }
 
+    private fun subscribeObservers() {
+        //pass messages list for recycler to show
+        viewModel.chatUserOnlineStatus.observe(viewLifecycleOwner, {
+            Utils.setOnlineStatus(binding.viewChatHeader.txtLastSeen, it, localUserId)
+        })
+    }
+
+    private fun openSaveIntent() {
+        val contactIntent = Intent(ContactsContract.Intents.Insert.ACTION)
+        contactIntent.type = ContactsContract.RawContacts.CONTENT_TYPE
+        contactIntent
+            .putExtra(ContactsContract.Intents.Insert.NAME, chatUser.user.userName)
+            .putExtra(ContactsContract.Intents.Insert.PHONE, chatUser.user.mobile?.number.toString())
+        startActivityForResult(contactIntent, REQ_ADD_CONTACT)
+    }
+
+    private fun sendMessage() {
+        val msg = binding.viewChatBtm.edtMsg.text!!.trim().toString()
+        if (msg.isEmpty())
+            return
+        binding.viewChatBtm.lottieSend.playAnimation()
+        val message = createMessage()
+        message.textMessage=TextMessage(msg)
+        viewModel.sendMessage(message)
+        binding.viewChatBtm.edtMsg.setText("")
+    }
+
+    private fun createMessage(): Message {
+        return Message(
+            System.currentTimeMillis(),
+            from = preference.getUid().toString(),
+            chatUserId=chatUserId,
+            to = toUser.uId!!, senderName = fromUser.userName,
+            senderImage = fromUser.image
+        )
+    }
+
     private val msgTxtChangeListener=object : TextWatcher{
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
         }
@@ -199,7 +208,14 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
     }
 
     override fun onItemClicked(v: View, position: Int) {
-       // Message click listener
+        binding.fullSizeImageView.show()
+        StfalconImageViewer.Builder(
+            context,
+            listOf(MyImage(messageList.get(position).imageMessage?.uri!!))) { imageView, myImage ->
+            ImageUtils.loadGalleryImage(myImage.url,imageView)
+        }
+            .withDismissListener { binding.fullSizeImageView.visibility = View.GONE }
+            .show()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -246,11 +262,6 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
             openSaveIntent()
     }
 
-    override fun onDestroy() {
-        Utils.closeKeyBoard(requireActivity())
-        super.onDestroy()
-    }
-
     override fun onCommitContent(inputContentInfo: InputContentInfoCompat?,
         flags: Int,
         opts: Bundle?) {
@@ -286,9 +297,14 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
         viewModel.setOnline(true)
         preference.setCurrentUser(chatUserId)
         viewModel.setSeenAllMessage()
-        viewModel.sendCachedMesssages()
+        viewModel.sendCachedTxtMesssages()
         Utils.removeNotification(requireContext())
         super.onResume()
+    }
+
+    override fun onDestroy() {
+        Utils.closeKeyBoard(requireActivity())
+        super.onDestroy()
     }
 
     override fun onStop() {

@@ -5,7 +5,7 @@
 
     </data>
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+    <LinearLayout
        style="@style/StyleRoot">
 
         <TextView
@@ -13,5 +13,5 @@
             android:layout_gravity="center"
             android:text="Search"/>
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </LinearLayout>
 </layout>

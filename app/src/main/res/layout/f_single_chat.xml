@@ -13,10 +13,14 @@
             type="com.gowtham.letschat.fragments.single_chat.SingleChatViewModel" />
     </data>
 
-        <LinearLayout style="@style/FView"
-            android:focusable="true"
-            android:fitsSystemWindows="true"
-            android:focusableInTouchMode="true">
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+       style="@style/FView"
+        android:focusable="true"
+        android:fitsSystemWindows="true"
+        android:focusableInTouchMode="true"
+        tools:ignore="ContentDescription">
+
+        <LinearLayout style="@style/FView">
 
             <include
                 android:id="@+id/view_chat_header"
@@ -35,5 +39,11 @@
                 layout="@layout/view_chat_btm" />
 
         </LinearLayout>
+        <ImageView
+            android:id="@+id/fullSizeImageView"
+            style="@style/FView"
+            android:background="@color/colorBlack"
+            android:visibility="gone" />
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </layout>

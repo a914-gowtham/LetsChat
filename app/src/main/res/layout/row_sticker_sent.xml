@@ -18,6 +18,7 @@
                 android:layout_marginStart="60dp"
                 android:minHeight="130dp"
                 android:minWidth="130dp"
+                android:scaleType="fitCenter"
                 android:id="@+id/image_msg" />
 
         <LinearLayout
