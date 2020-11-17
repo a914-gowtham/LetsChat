@@ -15,6 +15,9 @@
         android:padding="16dp"
         tools:ignore="ContentDescription">
 
+        <androidx.core.widget.NestedScrollView
+            style="@style/FView">
+
         <LinearLayout
             style="@style/FView"
             android:gravity="center_horizontal">
@@ -102,5 +105,6 @@
                     android:text="@string/txt_save_changes" />
             </LinearLayout>
         </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

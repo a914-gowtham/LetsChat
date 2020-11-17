@@ -38,7 +38,7 @@
 
     <string name="txt_notifications">Notifications</string>
     <string name="txt_not_description">Enable Notification</string>
-    <string name="txt_message">Type something</string>
+    <string name="txt_message">Type something...</string>
     <string name="txt_user_name">User Name</string>
     <string name="txt_u_name">User name</string>
     <string name="txt_add_contacts">Add contacts</string>
