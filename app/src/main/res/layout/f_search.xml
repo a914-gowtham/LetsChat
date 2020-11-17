@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
     </data>
 
-    <LinearLayout
-       style="@style/StyleRoot">
+    <LinearLayout style="@style/StyleRoot">
 
-        <TextView
-            style="@style/TxtSemiStyle"
-            android:layout_gravity="center"
-            android:text="Search"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list_users"
+            style="@style/StyleList"
+            tools:listitem="@layout/row_contact" />
 
     </LinearLayout>
 </layout>

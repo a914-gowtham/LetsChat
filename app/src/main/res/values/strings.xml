@@ -40,11 +40,19 @@
     <string name="txt_not_description">Enable Notification</string>
     <string name="txt_message">Type something</string>
     <string name="txt_user_name">User Name</string>
+    <string name="txt_u_name">User name</string>
     <string name="txt_add_contacts">Add contacts</string>
     <string name="txt_add_group_mems">Add Group Members</string>
     <string name="txt_group_name">Enter group name</string>
     <string name="txt_add_a_friend">Add a friend</string>
     <string name="txt_select_a_option">Select a option</string>
-    <string name="txt_log_out">Log Out</string>
+    <string name="txt_log_out">LogOut</string>
+    <string name="txt_save_changes">Save changes</string>
+    <string name="txt_your_status">Status</string>
+    <string name="txt_mob_num">Mobile number</string>
+    <string name="txt_want_2_logout">Do you want to logout!</string>
+    <string name="txt_alert_msg">You can\'t recover old messages.if you logged out..</string>
+    <string name="txt_cancel">Cancel</string>
+    <string name="txt_ok">Ok</string>
 
 </resources>

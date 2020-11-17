@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+
+    </data>
+
+    <RelativeLayout style="@style/VView"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/txt_title"
+            style="@style/TxtSemiSmallStyle"
+            android:text="@string/txt_want_2_logout"
+            android:textSize="20sp"/>
+
+        <TextView
+            android:id="@+id/txt_sub_title"
+            android:layout_below="@id/txt_title"
+            style="@style/TxtRgStyle"
+            android:gravity="start"
+            android:layout_marginTop="5dp"
+            android:text="@string/txt_alert_msg"/>
+
+        <TextView
+            android:id="@+id/txt_cancel"
+            style="@style/TxtSemiSmallStyle"
+            android:layout_below="@id/txt_sub_title"
+            android:layout_toStartOf="@+id/txt_ok"
+            android:padding="10dp"
+            android:layout_marginTop="5dp"
+            android:text="@string/txt_cancel"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:textSize="18sp" />
+
+        <TextView
+            android:layout_marginTop="5dp"
+            android:id="@+id/txt_ok"
+            style="@style/TxtSemiSmallStyle"
+            android:text="@string/txt_ok"
+            android:paddingStart="12dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingEnd="12dp"
+            android:layout_below="@id/txt_sub_title"
+            android:layout_alignParentEnd="true"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:textSize="18sp"/>
+    </RelativeLayout>
+</layout>

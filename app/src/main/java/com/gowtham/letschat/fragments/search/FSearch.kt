@@ -8,6 +8,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.gowtham.letschat.R
 import com.gowtham.letschat.databinding.FSearchBinding
+import com.gowtham.letschat.databinding.FSingleChatHomeBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -20,7 +21,7 @@ class FSearch : Fragment(R.layout.f_search){
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate(layoutInflater, R.layout.f_search, container, false)
+        binding = FSearchBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
 
@@ -28,6 +29,11 @@ class FSearch : Fragment(R.layout.f_search){
         super.onViewCreated(view, savedInstanceState)
 
         binding.lifecycleOwner = viewLifecycleOwner
+        setDataInView()
+    }
+
+    private fun setDataInView() {
+
 
     }
 

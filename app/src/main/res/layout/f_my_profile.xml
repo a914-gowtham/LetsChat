@@ -1,19 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="android.view.View" />
 
+        <variable
+            name="viewModel"
+            type="com.gowtham.letschat.fragments.myprofile.FMyProfileViewModel" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
-       style="@style/StyleRoot">
+        style="@style/StyleRoot"
+        android:padding="16dp"
+        tools:ignore="ContentDescription">
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/txt_log_out"
-            android:layout_gravity="center"
-            android:id="@+id/button"/>
+        <LinearLayout
+            style="@style/FView"
+            android:gravity="center_horizontal">
 
+            <RelativeLayout
+                android:layout_width="120dp"
+                android:layout_height="120dp">
+                <ImageView
+                    android:id="@+id/image_profile"
+                    style="@style/FView"
+                    imageUrl="@{viewModel.imageUrl}"
+                    android:src="@drawable/ic_other_user" />
+
+                <ProgressBar
+                    android:id="@+id/progress_pro"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_centerInParent="true"
+                    android:visibility="@{viewModel.isUploading ? View.VISIBLE : View.GONE}" />
+            </RelativeLayout>
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/StyleInputLayout"
+                android:layout_marginTop="25dp"
+                android:hint="@string/txt_u_name">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    style="@style/StyleEdtInput"
+                    android:id="@+id/edt_user_name"
+                    android:inputType="textPersonName|textCapWords"
+                    android:text="@={viewModel.userName}" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/StyleInputLayout"
+                android:layout_marginTop="15dp"
+                android:hint="@string/txt_your_status">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    style="@style/StyleEdtInput"
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:maxLength="60"
+                    android:maxLines="3"
+                    android:id="@+id/edt_status"
+                    android:text="@={viewModel.about}" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/StyleInputLayout"
+                android:layout_marginTop="15dp"
+                android:hint="@string/txt_mob_num">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    style="@style/StyleEdtInput"
+                    android:clickable="false"
+                    android:cursorVisible="false"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:text="@={viewModel.mobile}" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <View style="@style/VWView" />
+
+
+            <LinearLayout
+                style="@style/LView"
+                android:layout_marginBottom="30dp">
+
+                <TextView
+                    android:id="@+id/btn_logout"
+                    style="@style/StyleButton"
+                    android:layout_marginEnd="5dp"
+                    android:background="@drawable/shape_border_line"
+                    android:text="@string/txt_log_out"
+                    android:textColor="@color/colorPrimary2" />
+
+                <TextView
+                    android:id="@+id/btn_save_changes"
+                    style="@style/StyleButton"
+                    android:layout_marginStart="5dp"
+                    android:text="@string/txt_save_changes" />
+            </LinearLayout>
+        </LinearLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

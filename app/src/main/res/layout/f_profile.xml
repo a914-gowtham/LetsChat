@@ -45,7 +45,7 @@
                 android:background="@android:color/transparent"
                 android:fontFamily="@font/font_semi"
                 android:hint="@string/txt_user_name"
-                android:inputType="textPersonName"
+                android:inputType="textPersonName|textCapWords"
                 android:padding="8dp"
                 android:text="@={viewmodel.name}"
                 android:textColor="@color/colorBlack"

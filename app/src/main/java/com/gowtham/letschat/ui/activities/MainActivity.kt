@@ -141,10 +141,12 @@ class MainActivity : ActBase() {
                 R.id.FSearch -> {
                     binding.bottomNav.selectedItemId = R.id.nav_search
                     showView()
+                    binding.fab.hide()
                 }
                 R.id.FMyProfile -> {
                     binding.bottomNav.selectedItemId = R.id.nav_profile
                     showView()
+                    binding.fab.hide()
                 }
                 else -> {
                     binding.bottomNav.gone()
@@ -152,8 +154,10 @@ class MainActivity : ActBase() {
                     binding.toolbar.gone()
                 }
             }
-            if(this::searchItem.isInitialized)
+            if(!this::searchItem.isInitialized)
+                return
                 searchItem.collapseActionView()
+                searchItem.isVisible = currentDestination!=R.id.FMyProfile
         } catch (e: Exception) {
             e.printStackTrace()
         }

@@ -152,22 +152,19 @@ object Utils {
     }
 
     fun setOnlineStatus(txtView: TextView, status: UserStatus, uId: String) {
+        txtView.visibility= View.VISIBLE
         txtView.text= when {
             status.typing_status=="typing" && uId==status.chatuser -> {
                 "typing..."
             }
             status.status=="online" -> {
-                txtView.visibility= View.VISIBLE
                 "online"
             }
             status.last_seen>0L -> {
-                txtView.visibility= View.VISIBLE
-                "last seen ${Utils.getTime(status.last_seen)}"
-
+                "last seen ${getLastSeen(status.last_seen)}"
             }
             else -> {
-                txtView.visibility = View.GONE
-                ""
+                "..."
             }
         }
     }
@@ -297,6 +294,28 @@ object Utils {
             else->{
                 //hh:mm aa
                 SimpleDateFormat("hh:mm aa").format(date)
+            }
+        }
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    fun getLastSeen(lastSeen: Long): String{
+        val currentTime=System.currentTimeMillis()
+        val dayCount = (currentTime - lastSeen)/(24 * 60 * 60 * 1000)
+        val calender= java.util.Calendar.getInstance()
+        calender.timeInMillis=lastSeen
+        val date=calender.time
+        return when{
+            dayCount> 1L -> {
+                //DD/MM/YYYY format
+                SimpleDateFormat("dd/MMM/yyyy").format(date)
+            }
+            dayCount==1L -> {
+                "yesterday ${SimpleDateFormat("hh:mm aa").format(date)}"
+            }
+            else->{
+                //hh:mm aa
+                "today ${SimpleDateFormat("hh:mm aa").format(date)}"
             }
         }
     }

@@ -64,7 +64,6 @@ class FProfile : Fragment() {
         binding.imgProPic.setOnClickListener { ImageUtils.askPermission(this) }
         binding.fab.setOnClickListener { validate() }
         subscribeObservers()
-
     }
 
     private fun subscribeObservers() {
@@ -73,7 +72,6 @@ class FProfile : Fragment() {
         })
 
         viewModel.profileUpdateState.observe(viewLifecycleOwner, {
-            LogMessage.v(it.toString())
             when (it) {
                 is LoadState.OnSuccess -> {
                     if (findNavController().isValidDestination(R.id.FProfile)) {

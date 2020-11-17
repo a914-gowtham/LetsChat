@@ -106,7 +106,7 @@
         tools:layout="@layout/f_search" />
     <fragment
         android:id="@+id/FMyProfile"
-        android:name="com.gowtham.letschat.fragments.FMyProfile"
+        android:name="com.gowtham.letschat.fragments.myprofile.FMyProfile"
         android:label="FMyProfile"
         tools:layout="@layout/f_my_profile" />
     <fragment
