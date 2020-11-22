@@ -16,7 +16,8 @@
         <LinearLayout
             style="@style/LView"
             android:gravity="center_vertical"
-            android:padding="5dp">
+            android:padding="5dp"
+            android:layout_marginBottom="5dp">
 
             <ImageView
                 android:id="@+id/image_add"
@@ -52,13 +53,14 @@
             </RelativeLayout>
 
             <ImageView
-                android:layout_width="42dp"
-                android:layout_height="42dp"
+                android:id="@+id/img_record"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_gravity="bottom"
                 android:layout_marginEnd="5dp"
+                android:padding="3dp"
                 android:layout_marginBottom="3dp"
                 android:src="@drawable/ic_mic"
-                android:visibility="invisible"
                 app:tint="@color/colorPrimary" />
 
         </LinearLayout>
@@ -69,17 +71,9 @@
             android:layout_height="45dp"
             android:layout_gravity="end|bottom"
             android:layout_marginEnd="7dp"
-            android:layout_marginBottom="5dp"
+            android:layout_marginBottom="10dp"
+            android:visibility="gone"
             app:lottie_rawRes="@raw/lottie_send" />
-
-        <!--
-            <com.airbnb.lottie.LottieAnimationView
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_gravity="end|bottom"
-                app:lottie_autoPlay="true"
-                app:lottie_rawRes="@raw/lottie_voice"/>
-        -->
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

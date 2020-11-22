@@ -67,7 +67,8 @@ object Utils {
         return ContextCompat.getColor(context, color)
     }
 
-    fun checkPermission(context: Fragment, vararg permissions: String): Boolean {
+    fun checkPermission(context: Fragment,
+                        vararg permissions: String,reqCode: Int= PERMISSION_REQ_CODE): Boolean {
         var allPermitted = false
         for (permission in permissions) {
             allPermitted = (ContextCompat.checkSelfPermission(context.requireContext(), permission)
@@ -77,7 +78,7 @@ object Utils {
         if (allPermitted) return true
         context.requestPermissions(
             permissions,
-            PERMISSION_REQ_CODE
+            reqCode
         )
         return false
     }

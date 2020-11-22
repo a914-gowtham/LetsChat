@@ -1,9 +1,15 @@
 package com.gowtham.letschat.fragments.single_chat
 
+import android.Manifest
+import android.animation.Animator
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.ActivityInfo
+import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.ContactsContract
 import android.text.Editable
 import android.text.TextWatcher
@@ -26,10 +32,7 @@ import coil.request.CachePolicy
 import com.gowtham.letschat.R
 import com.gowtham.letschat.databinding.FSingleChatBinding
 import com.gowtham.letschat.db.daos.ChatUserDao
-import com.gowtham.letschat.db.data.ChatUser
-import com.gowtham.letschat.db.data.ImageMessage
-import com.gowtham.letschat.db.data.Message
-import com.gowtham.letschat.db.data.TextMessage
+import com.gowtham.letschat.db.data.*
 import com.gowtham.letschat.fragments.FAttachment
 import com.gowtham.letschat.models.MyImage
 import com.gowtham.letschat.models.UserProfile
@@ -47,6 +50,8 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
 import java.io.File
+import java.io.IOException
+import java.util.*
 import javax.inject.Inject
 
 
@@ -70,13 +75,23 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
 
     private lateinit var localUserId: String
 
+    private var recorder: MediaRecorder? = null
+
     val args by navArgs<FSingleChatArgs>()
 
     private lateinit var manager: LinearLayoutManager
 
     private lateinit var chatUserId: String
 
-    private val REQ_ADD_CONTACT=22
+    var isRecording = false //whether is recoding now or not
+
+    private var recordStart = 0L
+
+    private var recordDuration = 0L
+
+    private val REQ_AUDIO_PERMISSION=29
+
+    private var lastAudioName=""
 
     private val adChat: AdChat by lazy {
         AdChat(requireContext(), this)
@@ -96,20 +111,7 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
         binding.viewmodel=viewModel
         chatUser= args.chatUserProfile!!
         viewModel.setUnReadCountZero(chatUser)
-        binding.viewChatBtm.lottieSend.setOnClickListener {
-            sendMessage()
-        }
-        binding.viewChatHeader.viewBack.setOnClickListener {
-           findNavController().popBackStack()
-        }
-        binding.viewChatHeader.imageAddContact.setOnClickListener {
-            if (Utils.askContactPermission(this))
-                openSaveIntent()
-        }
-        binding.viewChatBtm.imageAdd.setOnClickListener {
-            val fragment=FAttachment.newInstance(Bundle())
-            fragment.show(childFragmentManager,"")
-        }
+        setListeners()
         if(!chatUser.locallySaved)
             binding.viewChatHeader.imageAddContact.show()
         viewModel.canScroll(false)
@@ -134,6 +136,36 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
         }
     }
 
+    private fun setListeners() {
+        binding.viewChatBtm.lottieSend.setOnClickListener {
+            sendMessage()
+        }
+        binding.viewChatHeader.viewBack.setOnClickListener {
+            findNavController().popBackStack()
+        }
+        binding.viewChatBtm.imgRecord.setOnClickListener {
+            if(Utils.checkPermission(this, Manifest.permission.RECORD_AUDIO,reqCode = REQ_AUDIO_PERMISSION))
+                startRecording()
+        }
+        binding.lottieVoice.setOnClickListener {
+            if (isRecording){
+                stopRecording()
+                val msg=createMessage()
+                msg.type="audio"
+                msg.audioMessage= AudioMessage(lastAudioName,(recordDuration/1000).toInt())
+                Timber.v("Audio Message $msg")
+            }
+        }
+        binding.viewChatHeader.imageAddContact.setOnClickListener {
+            if (Utils.askContactPermission(this))
+                openSaveIntent()
+        }
+        binding.viewChatBtm.imageAdd.setOnClickListener {
+            val fragment=FAttachment.newInstance(Bundle())
+            fragment.show(childFragmentManager,"")
+        }
+    }
+
     private fun setDataInView() {
         try {
             fromUser = preference.getUserProfile()!!
@@ -153,6 +185,54 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
             chatUserId=toUser.uId!!
             binding.chatUser = chatUser
             binding.viewChatBtm.edtMsg.addTextChangedListener(msgTxtChangeListener)
+            binding.viewChatBtm.lottieSend.addAnimatorListener(object : Animator.AnimatorListener{
+                override fun onAnimationStart(p0: Animator?) {
+
+
+                }
+
+                override fun onAnimationEnd(animation: Animator?, isReverse: Boolean) {
+                    super.onAnimationEnd(animation, isReverse)
+                }
+
+                override fun onAnimationEnd(p0: Animator?) {
+                    binding.viewChatBtm.imgRecord.show()
+                    binding.viewChatBtm.lottieSend.gone()
+                }
+
+                override fun onAnimationCancel(p0: Animator?) {
+                }
+
+                override fun onAnimationRepeat(p0: Animator?) {
+
+
+                }
+            })
+
+            binding.lottieVoice.addAnimatorListener(object : Animator.AnimatorListener{
+                override fun onAnimationStart(p0: Animator?) {
+
+
+                }
+
+                override fun onAnimationEnd(animation: Animator?, isReverse: Boolean) {
+                    super.onAnimationEnd(animation, isReverse)
+                }
+
+                override fun onAnimationEnd(p0: Animator?) {
+                    binding.viewChatBtm.imgRecord.show()
+                    binding.lottieVoice.gone()
+                }
+
+                override fun onAnimationCancel(p0: Animator?) {
+                }
+
+                override fun onAnimationRepeat(p0: Animator?) {
+
+
+                }
+            })
+
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -201,6 +281,16 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                viewModel.sendTyping(binding.viewChatBtm.edtMsg.trim())
+            if(binding.viewChatBtm.lottieSend.isAnimating)
+                return
+            if(s.isNullOrBlank()) {
+                binding.viewChatBtm.imgRecord.show()
+                binding.viewChatBtm.lottieSend.hide()
+            }
+            else{
+                binding.viewChatBtm.lottieSend.show()
+                binding.viewChatBtm.imgRecord.hide()
+            }
         }
 
         override fun afterTextChanged(s: Editable?) {
@@ -258,7 +348,12 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
         requestCode: Int,
         permissions: Array<out String>,grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (Utils.isPermissionOk(*grantResults))
+        if(requestCode==REQ_AUDIO_PERMISSION){
+            if (Utils.isPermissionOk(*grantResults))
+                startRecording()
+            else
+                requireActivity().toast("Audio permission is needed!")
+        }else if (Utils.isPermissionOk(*grantResults))
             openSaveIntent()
     }
 
@@ -293,6 +388,54 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
         }
     }
 
+    private fun startRecording() {
+        binding.lottieVoice.show()
+        binding.lottieVoice.playAnimation()
+        binding.viewChatBtm.edtMsg.apply {
+            isEnabled=false
+            hint="Recording..."
+        }
+        Handler(Looper.getMainLooper()).postDelayed({
+            binding.lottieVoice.pauseAnimation()
+            val currentOrientation=requireActivity().resources.configuration.orientation
+            requireActivity().requestedOrientation = currentOrientation
+            //name of the file where record will be stored
+            lastAudioName=
+                "${requireActivity().externalCacheDir?.absolutePath}/audiorecord${System.currentTimeMillis()}.3gp"
+            recorder = MediaRecorder().apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+                setOutputFile(lastAudioName)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+                try {
+                    prepare()
+                } catch (e: IOException) {
+                    println("ChatFragment.startRecording${e.message}")
+                }
+                start()
+                isRecording=true
+                recordStart = Date().time
+            }
+        },1000)
+    }
+
+    private fun stopRecording() {
+        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        binding.viewChatBtm.edtMsg.apply {
+            isEnabled=true
+            hint="Type Something..."
+        }
+        binding.lottieVoice.resumeAnimation()
+        recorder?.apply {
+            stop()
+            release()
+            recorder = null
+        }
+        isRecording=false
+        recordDuration = Date().time - recordStart
+    }
+
+
     override fun onResume() {
         viewModel.setOnline(true)
         preference.setCurrentUser(chatUserId)
@@ -320,7 +463,13 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
 
     override fun onDestroyView() {
         super.onDestroyView()
+        stopRecording()
         EventBus.getDefault().unregister(this)
+    }
+
+    companion object{
+        private const val REQ_AUDIO_PERMISSION=42
+        private const val REQ_ADD_CONTACT=22
     }
 }
 

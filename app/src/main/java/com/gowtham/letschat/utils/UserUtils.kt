@@ -273,7 +273,7 @@ object UserUtils {
                 chatUser.unRead=0
                 repo.insertUser(chatUser)
             }
-            Timber.v("Time taken to $time")
+            Timber.v("Taken time $time")
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -358,7 +358,6 @@ object UserUtils {
                             val savedNumber=localContacts.firstOrNull { it.mobile == doc.mobile?.number }
                             if(savedNumber!=null){
                                 val chatUser=getChatUser(doc,chatUsers,savedNumber.name)
-                                Timber.v("Contact ${chatUser.documentId}")
                                 finalList.add(chatUser)
                             }
                         }
@@ -378,18 +377,6 @@ object UserUtils {
         totalRecursionCount =0
         resultCount =0
         queriedList.clear()
-    }
-
-    fun setUnReadCount(userDao: ChatUserDao, messageDao: MessageDao){
-        CoroutineScope(Dispatchers.IO).launch {
-            val messages=messageDao.getMessageList()
-            val users=userDao.getChatUserList()
-            for (user in users){
-                val count=messages.filter { it.chatUserId==user.id && it.status<3}.size
-                user.unRead=count
-            }
-            userDao.insertMultipleUser(users)
-        }
     }
 
     fun setUnReadCountGroup(groupDao: GroupDao, group: Group) {

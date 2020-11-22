@@ -2,6 +2,8 @@ package com.gowtham.letschat.ui.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.*
 import androidx.activity.viewModels
 import androidx.appcompat.widget.SearchView
@@ -154,10 +156,10 @@ class MainActivity : ActBase() {
                     binding.toolbar.gone()
                 }
             }
-            if(!this::searchItem.isInitialized)
-                return
+            Handler(Looper.getMainLooper()).postDelayed({ //delay time for searchview
                 searchItem.collapseActionView()
                 searchItem.isVisible = currentDestination!=R.id.FMyProfile
+            },400)
         } catch (e: Exception) {
             e.printStackTrace()
         }

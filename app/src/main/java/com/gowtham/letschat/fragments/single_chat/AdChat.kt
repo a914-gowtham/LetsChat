@@ -27,6 +27,8 @@ class AdChat(private val context: Context, private val msgClickListener: ItemCli
         private const val TYPE_IMG_RECEIVE = 3
         private const val TYPE_STICKER_SENT = 4
         private const val TYPE_STICKER_RECEIVE = 5
+        private const val TYPE_AUDIO_SENT = 6
+        private const val TYPE_AUDIO_RECEIVE = 7
         lateinit var messageList: MutableList<Message>
     }
 
@@ -98,6 +100,10 @@ class AdChat(private val context: Context, private val msgClickListener: ItemCli
         else if (!fromMe && message.type == "image"  && (message.imageMessage?.imageType=="sticker"
                     || message.imageMessage?.imageType=="gif"))
             return TYPE_STICKER_RECEIVE
+        if (fromMe && message.type == "audio")
+            return TYPE_AUDIO_SENT
+        else if (!fromMe && message.type == "audio")
+            return TYPE_AUDIO_RECEIVE
         return super.getItemViewType(position)
     }
 

@@ -44,6 +44,14 @@
             style="@style/FView"
             android:background="@color/colorBlack"
             android:visibility="gone" />
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottie_voice"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
+            android:layout_gravity="end|bottom"
+            android:visibility="gone"
+            bind:lottie_rawRes="@raw/lottie_voice"/>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </layout>
