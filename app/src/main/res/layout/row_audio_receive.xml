@@ -12,24 +12,36 @@
 
     <LinearLayout
         style="@style/VView"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingBottom="12dp"
-        android:paddingTop="12dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
         android:layout_marginTop="5dp"
-        android:layout_marginEnd="5dp"
-        android:layout_marginStart="60dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="120dp"
         android:background="@drawable/shape_audio_bg"
         tools:ignore="ContentDescription">
 
         <LinearLayout style="@style/LView">
 
-            <ImageView
-                android:id="@+id/img_play"
-                android:padding="6dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_action_play" />
+            <RelativeLayout
+               style="@style/WView">
+
+                <ProgressBar
+                    style="@style/WView"
+                    android:layout_marginEnd="5dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_centerInParent="true"
+                    android:visibility="@{message.status==0 ? View.VISIBLE : View.GONE}" />
+
+                <ImageView
+                    android:id="@+id/img_play"
+                    android:padding="6dp"
+                    android:layout_centerInParent="true"
+                    style="@style/WView"
+                    android:src="@drawable/ic_action_play" />
+            </RelativeLayout>
 
             <ProgressBar
                 android:id="@+id/progress_bar"
@@ -41,27 +53,12 @@
 
         </LinearLayout>
 
-        <LinearLayout style="@style/WLView"
-            android:layout_marginTop="5dp"
-            android:gravity="center_vertical"
-            android:layout_gravity="end">
-
-            <ProgressBar
-                style="@style/WView"
-                android:layout_marginEnd="5dp"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_gravity="center_vertical"
-                android:visibility="@{message.status==0 ? View.VISIBLE : View.GONE}" />
-
             <TextView
                 android:id="@+id/txt_msg_time"
                 style="@style/TxtRgStyle"
                 android:textSize="16sp"
                 android:textColor="@color/colorWhite"
                 app:showMsgTime="@{message}" />
-
-        </LinearLayout>
 
     </LinearLayout>
 </layout>

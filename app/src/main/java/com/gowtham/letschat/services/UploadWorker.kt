@@ -8,6 +8,7 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.UploadTask
 import com.gowtham.letschat.TYPE_NEW_MESSAGE
 import com.gowtham.letschat.core.MessageSender
 import com.gowtham.letschat.core.OnMessageResponse
@@ -23,6 +24,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import timber.log.Timber
+import java.io.FileInputStream
 import java.util.concurrent.CountDownLatch
 
 class UploadWorker @WorkerInject constructor(
@@ -42,13 +44,18 @@ class UploadWorker @WorkerInject constructor(
 
         val createdAt=message.createdAt.toString()
         val num=createdAt.substring(createdAt.length - 5)
-        val url=message.imageMessage?.uri.toString()
+        val url=params.inputData.getString(Constants.MESSAGE_FILE_URI) ?: ""
         val format=url.substring(url.lastIndexOf('.'))
-        val sourceName="${message.imageMessage?.imageType}$num$format"
+        val sourceName="${message.type}$num$format"
 
         val child = storageRef.child(
             "chats/${message.to}/$sourceName")
-        val task = child.putFile(Uri.parse(url))
+        val task: UploadTask
+        if(url.contains(".3gp")) {
+            val stream = FileInputStream(url)
+            task = child.putStream(stream)
+        }else
+            task=child.putFile(Uri.parse(message.imageMessage?.uri))
 
         val countDownLatch = CountDownLatch(1)
         val result= arrayOf(Result.failure())

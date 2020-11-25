@@ -29,6 +29,7 @@ import com.gowtham.letschat.services.UploadWorker
 import com.gowtham.letschat.utils.*
 import com.gowtham.letschat.utils.Constants.CHAT_USER_DATA
 import com.gowtham.letschat.utils.Constants.MESSAGE_DATA
+import com.gowtham.letschat.utils.Constants.MESSAGE_FILE_URI
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -413,13 +414,14 @@ constructor(
         dbRepository.insertUser(chatUser)
     }
 
-    fun uploadImage(message: Message){
+    fun uploadToCloud(message: Message,fileUri: String){
         try {
             dbRepository.insertMessage(message)
             removeTypingCallbacks()
             val messageData=Json.encodeToString(message)
             val chatUserData=Json.encodeToString(chatUser)
             val data= Data.Builder()
+                .putString(MESSAGE_FILE_URI,fileUri)
                 .putString(MESSAGE_DATA,messageData)
                 .putString(CHAT_USER_DATA,chatUserData)
                 .build()

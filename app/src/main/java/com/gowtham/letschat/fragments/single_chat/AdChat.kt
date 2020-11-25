@@ -6,14 +6,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import coil.load
 import com.gowtham.letschat.databinding.*
 import com.gowtham.letschat.db.data.Message
-import com.gowtham.letschat.models.MyImage
 import com.gowtham.letschat.utils.ItemClickListener
 import com.gowtham.letschat.utils.MPreference
-import com.stfalcon.imageviewer.StfalconImageViewer
-import com.stfalcon.imageviewer.loader.ImageLoader
 
 class AdChat(private val context: Context, private val msgClickListener: ItemClickListener) :
     ListAdapter<Message, RecyclerView.ViewHolder>(DiffCallbackMessages()) {
@@ -59,9 +55,13 @@ class AdChat(private val context: Context, private val msgClickListener: ItemCli
                 val binding = RowStickerReceiveBinding.inflate(layoutInflater, parent, false)
                 StickerReceiveVHolder(binding)
             }
+            TYPE_AUDIO_SENT-> {
+                val binding = RowAudioSentBinding.inflate(layoutInflater, parent, false)
+                AudioSentVHolder(binding)
+            }
             else-> {
-                val binding = RowStickerReceiveBinding.inflate(layoutInflater, parent, false)
-                StickerReceiveVHolder(binding)
+                val binding = RowAudioReceiveBinding.inflate(layoutInflater, parent, false)
+                AudioReceiveVHolder(binding)
             }
         }
     }
@@ -79,6 +79,10 @@ class AdChat(private val context: Context, private val msgClickListener: ItemCli
             is StickerSentVHolder ->
                 holder.bind(getItem(position))
             is StickerReceiveVHolder ->
+                holder.bind(getItem(position))
+            is AudioSentVHolder ->
+                holder.bind(getItem(position),msgClickListener)
+            is AudioReceiveVHolder ->
                 holder.bind(getItem(position))
         }
     }
@@ -157,6 +161,25 @@ class AdChat(private val context: Context, private val msgClickListener: ItemCli
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Message) {
             binding.message = item
+            binding.executePendingBindings()
+        }
+    }
+
+    class AudioReceiveVHolder(val binding: RowAudioReceiveBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: Message) {
+            binding.message = item
+            binding.executePendingBindings()
+        }
+    }
+
+    class AudioSentVHolder(val binding: RowAudioSentBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: Message, msgClickListener: ItemClickListener) {
+            binding.message = item
+            binding.imgPlay.setOnClickListener {
+                msgClickListener.onItemClicked(it,bindingAdapterPosition)
+            }
             binding.executePendingBindings()
         }
     }

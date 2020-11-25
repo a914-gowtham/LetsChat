@@ -47,6 +47,7 @@
                     android:text="@={viewmodel.message}"
                     android:inputType="textCapSentences|textMultiLine"
                     android:maxLines="4"
+                    android:textColorHint="@color/colorPrimary"
                     android:padding="8dp"
                     android:textColor="@color/colorPrimary"
                     android:importantForAutofill="no" />
