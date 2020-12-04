@@ -52,34 +52,6 @@ class FSearch : Fragment(R.layout.f_search),ItemClickListener{
         binding.apply {
             listUsers.setHasFixedSize(true)
             listUsers.itemAnimator = null
-            listUsers.adapter = adapter.withLoadStateHeaderAndFooter(
-                header = LoadStateAdapter { adapter.retry() },
-                footer = LoadStateAdapter { adapter.retry() }
-            )
-            buttonRetry.setOnClickListener { adapter.retry() }
-        }
-
-
-        adapter.addLoadStateListener { loadState ->
-            binding.apply {
-                progressBar.isVisible = loadState.source.refresh is LoadState.Loading
-                listUsers.isVisible = loadState.source.refresh is LoadState.NotLoading
-                buttonRetry.isVisible = loadState.source.refresh is LoadState.Error
-                txtError.isVisible = loadState.source.refresh is LoadState.Error
-                binding.viewEmpty.isVisible = loadState.source.refresh is LoadState.NotLoading
-                // empty view
-                if (loadState.source.refresh is LoadState.NotLoading &&
-                    loadState.append.endOfPaginationReached &&
-                    adapter.itemCount < 1) {
-                    listUsers.isVisible = false
-                    txtNoUser.isVisible = true
-                    binding.viewEmpty.isVisible = false
-                } else {
-                    txtNoUser.isVisible = false
-                }
-                if(adapter.itemCount!=0)
-                    binding.viewEmpty.gone()
-            }
         }
     }
 
@@ -95,9 +67,9 @@ class FSearch : Fragment(R.layout.f_search),ItemClickListener{
             }
         })
 
-        viewModel.users.observe(viewLifecycleOwner) {
+        /*viewModel.users.observe(viewLifecycleOwner) {
             adapter.submitData(viewLifecycleOwner.lifecycle, it)
-        }
+        }*/
 
         sharedViewModel.lastQuery.observe(viewLifecycleOwner, {
             if (sharedViewModel.getState().value is ScreenState.SearchState) {

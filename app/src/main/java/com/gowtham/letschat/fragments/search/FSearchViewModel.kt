@@ -1,16 +1,13 @@
 package com.gowtham.letschat.fragments.search
 
-import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.*
-import androidx.paging.cachedIn
-import com.gowtham.letschat.db.DbRepository
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.switchMap
 import com.gowtham.letschat.utils.LogMessage
-import com.gowtham.letschat.utils.UserUtils
-import dagger.hilt.android.qualifiers.ApplicationContext
 
 class FSearchViewModel @ViewModelInject constructor(repository: SearchRepo): ViewModel() {
 
@@ -21,7 +18,11 @@ class FSearchViewModel @ViewModelInject constructor(repository: SearchRepo): Vie
     private var currentQuery=MutableLiveData<String>()
 
     val users=currentQuery.switchMap { query->
-        repository.getSearchResults(query).cachedIn(viewModelScope)
+         callMe(query)
+    }
+
+    private fun callMe(query: String?): LiveData<Any> {
+        return users
     }
 
     init {
