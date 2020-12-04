@@ -13,4 +13,8 @@
     <declare-styleable name="RoundImageView">
         <attr name="border_radius" format="dimension" />
     </declare-styleable>
+    <declare-styleable name="StoriesProgressView">
+        <attr name="progressCount" format="integer|reference"/>
+    </declare-styleable>
+
 </resources>

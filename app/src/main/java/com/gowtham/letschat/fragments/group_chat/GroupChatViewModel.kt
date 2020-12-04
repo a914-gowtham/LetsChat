@@ -27,6 +27,7 @@ import com.gowtham.letschat.db.daos.GroupDao
 import com.gowtham.letschat.db.daos.GroupMessageDao
 import com.gowtham.letschat.db.data.Group
 import com.gowtham.letschat.db.data.GroupMessage
+import com.gowtham.letschat.db.data.Message
 import com.gowtham.letschat.di.GroupCollection
 import com.gowtham.letschat.fragments.single_chat.toDataClass
 import com.gowtham.letschat.services.GroupUploadWorker
@@ -245,21 +246,27 @@ class GroupChatViewModel @ViewModelInject constructor(
         UserUtils.insertGroupMsg(groupMsgDao, message)
     }
 
-    fun uploadImage(message: GroupMessage) {
-        UserUtils.insertGroupMsg(groupMsgDao, message)
-        removeTypingCallbacks()
-        val messageData=Json.encodeToString(message)
-        val groupData=Json.encodeToString(group)
-        val data= Data.Builder()
-            .putString(Constants.MESSAGE_DATA,messageData)
-            .putString(Constants.GROUP_DATA,groupData)
-            .build()
-        val uploadWorkRequest: WorkRequest =
-            OneTimeWorkRequestBuilder<GroupUploadWorker>()
-                .setInputData(data)
+    fun uploadToCloud(message: GroupMessage, fileUri: String){
+        try {
+            UserUtils.insertGroupMsg(groupMsgDao, message)
+            removeTypingCallbacks()
+            val messageData=Json.encodeToString(message)
+            val groupData=Json.encodeToString(group)
+            val data= Data.Builder()
+                .putString(Constants.MESSAGE_FILE_URI,fileUri)
+                .putString(Constants.MESSAGE_DATA,messageData)
+                .putString(Constants.GROUP_DATA,groupData)
                 .build()
-        WorkManager.getInstance(context).enqueue(uploadWorkRequest)
+            val uploadWorkRequest: WorkRequest =
+                OneTimeWorkRequestBuilder<GroupUploadWorker>()
+                    .setInputData(data)
+                    .build()
+            WorkManager.getInstance(context).enqueue(uploadWorkRequest)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
+
 
     private val messageListener = object : OnGrpMessageResponse {
         override fun onSuccess(message: GroupMessage) {

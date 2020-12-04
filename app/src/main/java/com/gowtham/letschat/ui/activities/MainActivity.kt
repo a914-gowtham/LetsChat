@@ -42,6 +42,8 @@ class MainActivity : ActBase() {
 
     private lateinit var searchItem: MenuItem
 
+    private var stopped=false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
@@ -187,17 +189,21 @@ class MainActivity : ActBase() {
             }
 
             override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
-                if (sharedViewModel.getState().value is ScreenState.SearchState)
+                  if (!stopped)
                     sharedViewModel.setState(ScreenState.IdleState)
                 return true
             }
         })
 
         sharedViewModel.getState().observe(this, { state ->
-            if (state is ScreenState.SearchState && searchView.isIconified) {
+            Handler(Looper.getMainLooper()).postDelayed({ //delay time for searchview
+                if (state is ScreenState.SearchState && searchView.isIconified) {
                 searchItem.expandActionView()
-                searchView.setQuery(sharedViewModel.getLastQuery().value,false)
-            }
+                    val list=sharedViewModel.listOfQuery
+                    val query=if (sharedViewModel.getLastQuery().value.isNullOrBlank())  list[list.lastIndex-1] else
+                        sharedViewModel.getLastQuery().value
+                searchView.setQuery(query, false)
+            }},200)
         })
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -305,5 +311,15 @@ class MainActivity : ActBase() {
                 .navigate(R.id.FSingleChatHome, null, navOptions)
         } else
             super.onBackPressed()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        stopped=true
+    }
+
+    override fun onResume() {
+        super.onResume()
+        stopped=false
     }
 }

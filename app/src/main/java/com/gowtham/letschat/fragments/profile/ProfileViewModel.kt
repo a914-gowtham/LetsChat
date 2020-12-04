@@ -16,6 +16,7 @@ import com.gowtham.letschat.utils.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import java.util.*
 
 class ProfileViewModel @ViewModelInject
 constructor(
@@ -72,12 +73,12 @@ constructor(
         }
     }
 
-    private fun storeProfileData() {
+    fun storeProfileData() {
         try {
             profileUpdateState.value = LoadState.OnLoading
             val profile = UserProfile(
                 preference.getUid()!!, createdAt, System.currentTimeMillis(),
-                profilePicUrl.value!!,name.value!!, about, mobile = preference.getMobile(),token = preference.getPushToken().toString(),
+                profilePicUrl.value!!,name.value!!.toLowerCase(Locale.getDefault()), about, mobile = preference.getMobile(),token = preference.getPushToken().toString(),
              deviceDetails =
              Json.decodeFromString<ModelDeviceDetails>(UserUtils.getDeviceInfo(context).toString()))
             docuRef.set(profile, SetOptions.merge()).addOnSuccessListener {
@@ -95,28 +96,5 @@ constructor(
     override fun onCleared() {
         LogMessage.v("ProfileViewModel Cleared")
         super.onCleared()
-    }
-
-    fun checkForUserName() {
-        if (name.value.isNullOrEmpty())
-            return
-        checkUserNameState.value=LoadState.OnLoading
-        usersCollection.whereEqualTo("userName", name.value)
-            .get().addOnSuccessListener { documents ->
-//                var isSameUser=false   //current user already has this name
-                val userId=preference.getUid()
-                val isSameuser=documents.firstOrNull() { it.id==userId }
-                if (documents.isEmpty || isSameuser!=null){
-                    checkUserNameState.value = LoadState.OnSuccess()
-                    storeProfileData()
-               } else{
-                    checkUserNameState.value = LoadState.OnFailure(Exception())
-                    context.toast("This user name is already taken")
-                }
-            }.addOnFailureListener { exception ->
-                checkUserNameState.value = LoadState.OnFailure(exception)
-                context.toast(exception.message.toString())
-            }
-
     }
 }

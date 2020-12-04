@@ -44,7 +44,7 @@ class FMyProfile : Fragment(R.layout.f_my_profile) {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FMyProfileBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
@@ -66,7 +66,7 @@ class FMyProfile : Fragment(R.layout.f_my_profile) {
                 newName.isNullOrBlank() -> context.toast("User name can't be empty!")
                 else -> {
                     context.window.decorView.clearFocus()
-                    viewModel.saveChanges(newName)
+                    viewModel.saveChanges()
                 }
             }
         }

@@ -72,6 +72,7 @@ android {
 
 dependencies {
     def work_version = "2.4.0"
+    def pagingVersion = '3.0.0-alpha05'
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
@@ -152,4 +153,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")
      // Work Manager
     implementation "androidx.work:work-runtime-ktx:$work_version"
+    // Paging 3
+    implementation "androidx.paging:paging-runtime:$pagingVersion"
 }

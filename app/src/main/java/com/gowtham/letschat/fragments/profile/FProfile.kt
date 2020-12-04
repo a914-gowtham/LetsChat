@@ -103,7 +103,7 @@ class FProfile : Fragment() {
     private fun validate() {
         val name = viewModel.name.value
         if (!name.isNullOrEmpty() && name.length > 1 && !viewModel.progressProPic.value!!)
-            viewModel.checkForUserName()
+            viewModel.storeProfileData()
     }
 
 

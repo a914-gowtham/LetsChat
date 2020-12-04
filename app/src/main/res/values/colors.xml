@@ -24,4 +24,9 @@
     <color name="colorOrange">#F9583A</color>
     <color name="colorTop">#4676E5</color>
     <color name="colorBottom">#7C71E9</color>
+    <color name="progress_primary">@color/white</color>
+    <color name="progress_secondary">@color/gray_scale</color>
+    <color name="progress_max_active">@color/white</color>
+    <color name="gray_scale">#74FFFFFF</color>
+    <color name="white">#fff</color>
 </resources>

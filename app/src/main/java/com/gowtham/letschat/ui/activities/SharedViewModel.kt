@@ -29,6 +29,10 @@ constructor(@ApplicationContext private val context: Context,
 
     val lastQuery = MutableLiveData<String>()
 
+    val submittedQuery = MutableLiveData<String>()
+
+    val listOfQuery= arrayListOf<String>()
+
     private var timer: TimerTask? = null
 
     init {
@@ -40,6 +44,7 @@ constructor(@ApplicationContext private val context: Context,
     }
 
     fun setLastQuery(query: String) {
+        listOfQuery.add(query)
         lastQuery.value = query
     }
 
@@ -67,5 +72,9 @@ constructor(@ApplicationContext private val context: Context,
     override fun onCleared() {
         super.onCleared()
         "onCleared SharedViewModel".printMeD()
+    }
+
+    fun submittedQuery(query: String) {
+        submittedQuery.value=query
     }
 }

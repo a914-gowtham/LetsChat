@@ -16,6 +16,7 @@ import com.gowtham.letschat.utils.MPreference
 import com.gowtham.letschat.utils.toast
 import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
+import java.util.*
 
 class FMyProfileViewModel @ViewModelInject constructor(
     @ApplicationContext private val context: Context,
@@ -68,35 +69,10 @@ class FMyProfileViewModel @ViewModelInject constructor(
         }
     }
 
-    fun saveChanges(newName: String) {
+    fun saveChanges() {
         try {
-            val oldName = userProfile?.userName
             profileUpdateState.value=LoadState.OnLoading
-            if (newName!=oldName)
-                checkForUserName(newName)
-            else
-                updateProfileData()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun checkForUserName(name: String) {
-        try {
-            usersCollection.whereEqualTo("userName",name)
-                .get().addOnSuccessListener { documents ->
-                    val userId=preference.getUid()
-                    val isSameuser=documents.firstOrNull() { it.id==userId }
-                    if (documents.isEmpty || isSameuser!=null)
-                        updateProfileData()
-                     else{
-                        profileUpdateState.value = LoadState.OnFailure(Exception())
-                        context.toast("User name is already taken")
-                    }
-                }.addOnFailureListener { exception ->
-                    profileUpdateState.value = LoadState.OnFailure(exception)
-                    context.toast(exception.message.toString())
-                }
+            updateProfileData()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -105,7 +81,7 @@ class FMyProfileViewModel @ViewModelInject constructor(
     private fun updateProfileData() {
         try {
             val profile=userProfile!!
-            profile.userName =userName.value!!
+            profile.userName = userName.value!!.toLowerCase(Locale.getDefault())
             profile.about =about.value!!
             profile.image =imageUrl.value!!
             profile.updatedAt=System.currentTimeMillis()

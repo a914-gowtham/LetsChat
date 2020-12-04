@@ -13,8 +13,6 @@ import com.gowtham.letschat.TYPE_NEW_MESSAGE
 import com.gowtham.letschat.core.MessageSender
 import com.gowtham.letschat.core.OnMessageResponse
 import com.gowtham.letschat.db.DbRepository
-import com.gowtham.letschat.db.daos.ChatUserDao
-import com.gowtham.letschat.db.daos.MessageDao
 import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.data.Message
 import com.gowtham.letschat.di.MessageCollection
@@ -42,28 +40,25 @@ class UploadWorker @WorkerInject constructor(
         val stringData=params.inputData.getString(Constants.MESSAGE_DATA) ?: ""
         val message= Json.decodeFromString<Message>(stringData)
 
-        val createdAt=message.createdAt.toString()
-        val num=createdAt.substring(createdAt.length - 5)
-        val url=params.inputData.getString(Constants.MESSAGE_FILE_URI) ?: ""
-        val format=url.substring(url.lastIndexOf('.'))
-        val sourceName="${message.type}$num$format"
+        val url=params.inputData.getString(Constants.MESSAGE_FILE_URI)!!
+        val sourceName=getSourceName(message,url)
 
         val child = storageRef.child(
             "chats/${message.to}/$sourceName")
         val task: UploadTask
-        if(url.contains(".3gp")) {
-            val stream = FileInputStream(url)
-            task = child.putStream(stream)
+        task = if(url.contains(".mp3")) {
+            val stream = FileInputStream(url)  //audio message
+            child.putStream(stream)
         }else
-            task=child.putFile(Uri.parse(message.imageMessage?.uri))
+            child.putFile(Uri.parse(message.imageMessage?.uri))
 
         val countDownLatch = CountDownLatch(1)
         val result= arrayOf(Result.failure())
         task.addOnSuccessListener {
             child.downloadUrl.addOnCompleteListener { taskResult ->
                 Timber.v("TaskResult ${taskResult.result.toString()}")
-                val imgUrl=taskResult.result.toString()
-                sendMessage(message,imgUrl,result,countDownLatch)
+                val downloadUrl=taskResult.result.toString()
+                sendMessage(message,downloadUrl,result,countDownLatch)
             }.addOnFailureListener { e ->
                 Timber.v("TaskResult Failed ${e.message}")
                 result[0]= Result.failure()
@@ -71,18 +66,22 @@ class UploadWorker @WorkerInject constructor(
                 dbRepository.insertMessage(message)
                 countDownLatch.countDown()
             }
-        }.addOnProgressListener { taskSnapshot ->
-            val progress: Double =
-                100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount
         }
         countDownLatch.await()
         return result[0]
     }
 
-    private fun sendMessage(message: Message,imgUrl: String,result: Array<Result>,
+    private fun getSourceName(message: Message, url: String): String {
+        val createdAt=message.createdAt.toString()
+        val num=createdAt.substring(createdAt.length - 5)
+        val extension=url.substring(url.lastIndexOf('.'))
+        return "${message.type}_$num$extension"
+    }
+
+    private fun sendMessage(message: Message,downloadUrl: String,result: Array<Result>,
         countDownLatch: CountDownLatch) {
         val chatUser=Json.decodeFromString<ChatUser>(params.inputData.getString(Constants.CHAT_USER_DATA)!!)
-        message.imageMessage?.uri=imgUrl
+        setUrl(message,downloadUrl)
         val messageSender = MessageSender(
             msgCollection,
             dbRepository,
@@ -102,6 +101,13 @@ class UploadWorker @WorkerInject constructor(
             }
         )
         messageSender.checkAndSend(message.from, message.to, message)
+    }
+
+    private fun setUrl(message: Message, imgUrl: String) {
+        if (message.type=="audio")
+            message.audioMessage?.uri=imgUrl
+        else
+            message.imageMessage?.uri=imgUrl
     }
 
 

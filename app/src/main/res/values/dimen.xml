@@ -2,4 +2,10 @@
 <resources>
     <dimen name="set_margin">56dp</dimen>
     <dimen name="zero_margin">0dp</dimen>
+    <dimen name="menu_btm">220dp</dimen>
+    <dimen name="img_lmg">15dp</dimen>
+    <dimen name="cmt_lr_pad">15dp</dimen>
+    <dimen name="cmt_tb_pad">7dp</dimen>
+    <dimen name="search_pad">-100dp</dimen>
+    <dimen name="progress_bar_height">2dp</dimen>
 </resources>

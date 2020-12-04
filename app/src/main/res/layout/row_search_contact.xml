@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+
+        <variable
+            name="profile"
+            type="com.gowtham.letschat.models.UserProfile" />
+    </data>
+
+    <LinearLayout
+        android:id="@+id/view_root"
+        style="@style/VView"
+        android:background="?attr/selectableItemBackground"
+        android:paddingStart="12dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="8dp">
+
+        <LinearLayout
+            style="@style/LView"
+            tools:ignore="ContentDescription">
+
+            <RelativeLayout style="@style/WView">
+
+                <ImageView
+                    android:id="@+id/image_profile"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/ic_other_user"
+                    app:imageUrl="@{profile.image}" />
+
+                <TextView
+                    android:visibility="@{profile.image.isEmpty ? View.VISIBLE : View.GONE}"
+                    android:text="@{profile.userName}"
+                    style="@style/TxtNoImageUrlStyle" />
+            </RelativeLayout>
+
+            <LinearLayout
+                style="@style/LWView"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="10dp">
+
+                <TextView
+                    style="@style/TxtSemiSmallStyle"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="@{profile.userName}"
+                    android:textSize="17sp" />
+
+                <TextView
+                    style="@style/WView"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="@{profile.about}"
+                    android:textColor="@color/colorGrey"
+                    android:textSize="15sp"
+                    android:visibility="@{profile.about.empty ? View.GONE : View.VISIBLE}" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</layout>

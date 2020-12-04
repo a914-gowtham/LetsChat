@@ -27,9 +27,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.gowtham.letschat.databinding.FSingleChatBinding
 import com.gowtham.letschat.db.data.*
 import com.gowtham.letschat.fragments.FAttachment
+import com.gowtham.letschat.fragments.group_chat.AdGroupChat
 import com.gowtham.letschat.models.MyImage
 import com.gowtham.letschat.models.UserProfile
 import com.gowtham.letschat.utils.*
+import com.gowtham.letschat.utils.Events.EventAudioMsg
+import com.gowtham.letschat.utils.Utils.edtValue
 import com.gowtham.letschat.views.CustomEditText
 import com.stfalcon.imageviewer.StfalconImageViewer
 import com.theartofdev.edmodo.cropper.CropImage
@@ -83,7 +86,7 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
 
     private var lastAudioFile=""
 
-    private var player = MediaPlayer()
+    private var msgPostponed=false
 
     private val adChat: AdChat by lazy {
         AdChat(requireContext(), this)
@@ -92,7 +95,7 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?): View? {
+        savedInstanceState: Bundle?): View {
         binding = FSingleChatBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
@@ -113,7 +116,13 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
 
         lifecycleScope.launch {
             viewModel.getMessagesByChatUserId(chatUserId).collect { mMessagesList ->
+                if(mMessagesList.isEmpty())
+                    return@collect
                 messageList = mMessagesList as MutableList<Message>
+                if(AdChat.isPlaying()){
+                    msgPostponed=true
+                    return@collect
+                }
                 AdChat.messageList = messageList
                 adChat.submitList(mMessagesList)
                 //scroll to last items in recycler (recent messages)
@@ -136,6 +145,7 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
             findNavController().popBackStack()
         }
         binding.viewChatBtm.imgRecord.setOnClickListener {
+            AdChat.stopPlaying()
             if(Utils.checkPermission(this, Manifest.permission.RECORD_AUDIO,reqCode = REQ_AUDIO_PERMISSION))
                 startRecording()
         }
@@ -182,7 +192,7 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
             chatUserId=toUser.uId!!
             binding.chatUser = chatUser
             binding.viewChatBtm.edtMsg.addTextChangedListener(msgTxtChangeListener)
-            binding.viewChatBtm.lottieSend.addAnimatorListener(object : Animator.AnimatorListener{
+            binding.viewChatBtm.lottieSend.addAnimatorListener(object : Animator.AnimatorListener {
                 override fun onAnimationStart(p0: Animator?) {
 
 
@@ -193,8 +203,10 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
                 }
 
                 override fun onAnimationEnd(p0: Animator?) {
-                    binding.viewChatBtm.imgRecord.show()
-                    binding.viewChatBtm.lottieSend.gone()
+                    if (edtValue(binding.viewChatBtm.edtMsg).isEmpty()) {
+                        binding.viewChatBtm.imgRecord.show()
+                        binding.viewChatBtm.lottieSend.gone()
+                    }
                 }
 
                 override fun onAnimationCancel(p0: Animator?) {
@@ -252,7 +264,7 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
     }
 
     private fun sendMessage() {
-        val msg = binding.viewChatBtm.edtMsg.text!!.trim().toString()
+        val msg =Utils.edtValue(binding.viewChatBtm.edtMsg)
         if (msg.isEmpty())
             return
         binding.viewChatBtm.lottieSend.playAnimation()
@@ -277,7 +289,7 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
         }
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-               viewModel.sendTyping(binding.viewChatBtm.edtMsg.trim())
+            viewModel.sendTyping(binding.viewChatBtm.edtMsg.trim())
             if(binding.viewChatBtm.lottieSend.isAnimating)
                 return
             if(s.isNullOrBlank()) {
@@ -296,25 +308,7 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
 
     override fun onItemClicked(v: View, position: Int) {
         val message=messageList.get(position)
-        if(message.type=="audio"){
-            if (player!=null && player.isPlaying){
-                player.stop()
-                player.release()
-            }else
-                player=MediaPlayer()
-            player.apply {
-                try {
-                    setDataSource(message.audioMessage?.uri)
-                    prepareAsync()
-                    setOnPreparedListener {
-                        Timber.v("Started")
-                        start()
-                    }
-                } catch (e: IOException) {
-                    println("ChatFragment.startPlaying:prepare failed")
-                }
-            }
-        }else if (message.type=="image" && message.imageMessage!!.imageType=="image") {
+        if (message.type=="image" && message.imageMessage!!.imageType=="image") {
             binding.fullSizeImageView.show()
             StfalconImageViewer.Builder(
                 context,
@@ -414,14 +408,13 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
             isEnabled=false
             hint="Recording..."
         }
-        val currentOrientation=requireActivity().resources.configuration.orientation
-        requireActivity().requestedOrientation = currentOrientation
+        onAudioEvent(EventAudioMsg(true))
         //name of the file where record will be stored
         lastAudioFile=
-            "${requireActivity().externalCacheDir?.absolutePath}/audiorecord${System.currentTimeMillis()}.3gp"
+            "${requireActivity().externalCacheDir?.absolutePath}/audiorecord${System.currentTimeMillis()}.mp3"
         recorder = MediaRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+            setOutputFormat(MediaRecorder.OutputFormat.DEFAULT)
             setOutputFile(lastAudioFile)
             setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
             try {
@@ -439,7 +432,7 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
     }
 
     private fun stopRecording() {
-        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        onAudioEvent(EventAudioMsg(false))
         binding.viewChatBtm.edtMsg.apply {
             isEnabled=true
             hint="Type Something..."
@@ -485,11 +478,28 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
     override fun onDestroyView() {
         super.onDestroyView()
         stopRecording()
+        AdChat.stopPlaying()
         EventBus.getDefault().unregister(this)
     }
 
+    @Subscribe
+    fun onAudioEvent(audioEvent: EventAudioMsg){
+        if (audioEvent.isPlaying){
+            //lock current orientation
+            val currentOrientation=requireActivity().resources.configuration.orientation
+            requireActivity().requestedOrientation = currentOrientation
+        }else {
+            requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            if (msgPostponed){
+                //refresh list
+                AdChat.messageList = messageList
+                adChat.submitList(messageList)
+                msgPostponed=false
+            }
+        }
+    }
+
     companion object{
-        private const val REQ_AUDIO_PERMISSION=42
         private const val REQ_ADD_CONTACT=22
     }
 }

@@ -21,13 +21,9 @@
 
         <TextView
             android:id="@+id/txt_camera"
-            style="@style/TxtSemiSmallStyle"
-            android:layout_width="match_parent"
+            style="@style/TxtBottomSheetStyle"
             android:layout_marginTop="10dp"
             android:text="@string/take_photo"
-            android:padding="12dp"
-            android:drawablePadding="12dp"
-            android:textSize="18sp"
             android:background="?android:attr/selectableItemBackground"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView"
@@ -35,12 +31,8 @@
 
         <TextView
             android:id="@+id/txt_gallery"
-            style="@style/TxtSemiSmallStyle"
+            style="@style/TxtBottomSheetStyle"
             android:text="@string/txt_gallery"
-            android:layout_width="match_parent"
-            android:padding="12dp"
-            android:textSize="18sp"
-            android:drawablePadding="12dp"
             android:background="?android:attr/selectableItemBackground"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/txt_camera"

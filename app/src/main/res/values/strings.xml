@@ -54,5 +54,6 @@
     <string name="txt_alert_msg">You can\'t recover old messages.if you logged out..</string>
     <string name="txt_cancel">Cancel</string>
     <string name="txt_ok">Ok</string>
+    <string name="txt_take_video">Take Video</string>
 
 </resources>

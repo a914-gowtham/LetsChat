@@ -31,7 +31,7 @@ class FImageSrcSheet constructor() : BottomSheetDialogFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?): View? {
+        savedInstanceState: Bundle?): View {
         binding = FImageSrcSheetBinding.inflate(layoutInflater, container, false)
         return binding.root
     }

@@ -1,6 +1,7 @@
 package com.gowtham.letschat.fragments.single_chat
 
 import android.content.Context
+import android.media.MediaPlayer
 import android.os.Handler
 import android.os.Looper
 import androidx.hilt.lifecycle.ViewModelInject
@@ -74,7 +75,7 @@ constructor(
 
     private var chatsFromRoom = ArrayList<Message>()
 
-    private val typingHandler = Handler()
+    private val typingHandler = Handler(Looper.getMainLooper())
 
     private var isTyping = false
 
@@ -91,6 +92,8 @@ constructor(
     private var cleared = false
 
     private var chatUserOnline = false
+
+    private var mediaPlayer=MediaPlayer()
 
     init {
         LogMessage.v("SingleChatViewModel init Doc1 $doc1")
@@ -270,6 +273,10 @@ constructor(
 
     fun getMessagesByChatUserId(chatUserId: String) =
         dbRepository.getMessagesByChatUserId(chatUserId)
+
+    fun insertMultiMessage(list: MutableList<Message>){
+        dbRepository.insertMultipleMessage(list)
+    }
 
     fun sendMessage(message: Message) {
         Handler(Looper.getMainLooper()).postDelayed({

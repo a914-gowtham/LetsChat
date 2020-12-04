@@ -8,6 +8,7 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.UploadTask
 import com.gowtham.letschat.TYPE_NEW_GROUP_MESSAGE
 import com.gowtham.letschat.TYPE_NEW_MESSAGE
 import com.gowtham.letschat.core.GroupMsgSender
@@ -23,11 +24,13 @@ import com.gowtham.letschat.db.data.GroupMessage
 import com.gowtham.letschat.db.data.Message
 import com.gowtham.letschat.di.GroupCollection
 import com.gowtham.letschat.utils.Constants
+import com.gowtham.letschat.utils.LogMessage
 import com.gowtham.letschat.utils.UserUtils
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import timber.log.Timber
+import java.io.FileInputStream
 import java.util.concurrent.CountDownLatch
 
 class GroupUploadWorker @WorkerInject constructor(
@@ -45,15 +48,16 @@ class GroupUploadWorker @WorkerInject constructor(
         val stringData=params.inputData.getString(Constants.MESSAGE_DATA) ?: ""
         val message= Json.decodeFromString<GroupMessage>(stringData)
 
-        val createdAt=message.createdAt.toString()
-        val num=createdAt.substring(createdAt.length - 5)
-        val url=message.imageMessage?.uri.toString()
-        val format=url.substring(url.lastIndexOf('.'))
-        val sourceName="${message.imageMessage?.imageType}$num$format"
+        val url=params.inputData.getString(Constants.MESSAGE_FILE_URI)!!
+        val sourceName=getSourceName(message,url)
 
         val child = storageRef.child(
             "group/${message.to}/$sourceName")
-        val task = child.putFile(Uri.parse(url))
+       val task = if(url.contains(".mp3")) {
+            val stream = FileInputStream(url)  //audio message
+            child.putStream(stream)
+        }else
+            child.putFile(Uri.parse(message.imageMessage?.uri))
 
         val countDownLatch = CountDownLatch(1)
         val result= arrayOf(Result.failure())
@@ -69,9 +73,6 @@ class GroupUploadWorker @WorkerInject constructor(
                 dbRepository.insertMessage(message)
                 countDownLatch.countDown()
             }
-        }.addOnProgressListener { taskSnapshot ->
-            val progress: Double =
-                100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount
         }
         countDownLatch.await()
         return result[0]
@@ -82,7 +83,7 @@ class GroupUploadWorker @WorkerInject constructor(
         result: Array<Result>,
         countDownLatch: CountDownLatch) {
         val group=Json.decodeFromString<Group>(params.inputData.getString(Constants.GROUP_DATA)!!)
-        message.imageMessage?.uri=imgUrl
+        setUrl(message,imgUrl)
         val messageSender = GroupMsgSender(groupCollection)
         messageSender.sendMessage(message, group, object : OnGrpMessageResponse{
             override fun onSuccess(message: GroupMessage) {
@@ -99,6 +100,13 @@ class GroupUploadWorker @WorkerInject constructor(
         })
     }
 
+    private fun setUrl(message: GroupMessage, imgUrl: String) {
+        if (message.type=="audio")
+            message.audioMessage?.uri=imgUrl
+        else
+            message.imageMessage?.uri=imgUrl
+    }
+
     private fun sendPushToMembers(group: Group, message: GroupMessage) {
         val users = group.members?.filter { it.user.token.isNotEmpty() }?.map {
             it.user.token
@@ -112,5 +120,11 @@ class GroupUploadWorker @WorkerInject constructor(
         }
     }
 
+    private fun getSourceName(message: GroupMessage, url: String): String {
+        val createdAt=message.createdAt.toString()
+        val num=createdAt.substring(createdAt.length - 5)
+        val extension=url.substring(url.lastIndexOf('.'))
+        return "${message.type}_$num$extension"
+    }
 
 }

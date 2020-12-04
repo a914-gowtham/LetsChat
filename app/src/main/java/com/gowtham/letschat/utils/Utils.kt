@@ -15,6 +15,7 @@ import android.os.Build
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.TextView
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -28,6 +29,7 @@ import com.gowtham.letschat.db.data.GroupMessage
 import com.gowtham.letschat.models.Country
 import com.gowtham.letschat.models.UserStatus
 import com.gowtham.letschat.ui.activities.ActSplash
+import com.gowtham.letschat.views.CustomEditText
 import java.text.SimpleDateFormat
 
 object Utils {
@@ -319,6 +321,10 @@ object Utils {
                 "today ${SimpleDateFormat("hh:mm aa").format(date)}"
             }
         }
+    }
+
+    fun edtValue(edtMsg: EditText): String {
+      return edtMsg.text!!.trim().toString()
     }
 }
 
