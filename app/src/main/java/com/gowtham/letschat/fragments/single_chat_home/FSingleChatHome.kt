@@ -37,9 +37,6 @@ import javax.inject.Inject
 class FSingleChatHome : Fragment(),ItemClickListener {
 
     @Inject
-    lateinit var chatUsersListener: ChatUserProfileListener
-
-    @Inject
     lateinit var preference: MPreference
 
     @Inject
@@ -70,10 +67,13 @@ class FSingleChatHome : Fragment(),ItemClickListener {
     @Inject
     lateinit var groupChatHandler: GroupChatHandler
 
+    @Inject
+    lateinit var chatUsersListener: ChatUserProfileListener
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?): View? {
+        savedInstanceState: Bundle?): View {
         binding = FSingleChatHomeBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
@@ -83,6 +83,9 @@ class FSingleChatHome : Fragment(),ItemClickListener {
 
         activity = requireActivity()
         binding.lifecycleOwner = viewLifecycleOwner
+        chatHandler.initHandler()
+        groupChatHandler.initHandler()
+        chatUsersListener.initListener()
         profile = preference.getUserProfile()!!
         setDataInView()
         subScribeObservers()

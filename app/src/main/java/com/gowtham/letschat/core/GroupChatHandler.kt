@@ -38,7 +38,7 @@ class GroupChatHandler @Inject constructor(
 
     private val userId = preference.getUid()
 
-    private var messageCollectionGroup: Query
+    private lateinit var messageCollectionGroup: Query
 
     private val messagesList: MutableList<GroupMessage> by lazy { mutableListOf() }
 
@@ -46,13 +46,7 @@ class GroupChatHandler @Inject constructor(
 
     private lateinit var chatUsers: List<ChatUser>
 
-    init {
-        Timber.v("GroupChatHandler init")
-        preference.clearCurrentGroup()
-        messageCollectionGroup = UserUtils.getGroupMsgSubCollectionRef()
-        addGroupsSnapShotListener()
-        addGroupMsgListener()
-    }
+    private var instanceCreated=false
 
     companion object{
 
@@ -66,23 +60,31 @@ class GroupChatHandler @Inject constructor(
         }
     }
 
+    fun initHandler() {
+        if (instanceCreated)
+            return
+        else
+            instanceCreated=true
+        Timber.v("GroupChatHandler init")
+        preference.clearCurrentGroup()
+        messageCollectionGroup = UserUtils.getGroupMsgSubCollectionRef()
+        addGroupsSnapShotListener()
+        addGroupMsgListener()
+    }
+
     private fun addGroupMsgListener() {
        groupListener= messageCollectionGroup.whereArrayContains("to", userId!!)
             .addSnapshotListener { snapshots, error ->
-                Timber.v("GroupMessageCollection listener called")
                 if (error == null) {
                     messagesList.clear()
                     listOfGroup.clear()
-                    if(snapshots==null) {
-                        Timber.v("Snapshot is null")
+                    if(snapshots==null)
                         return@addSnapshotListener
-                    }
                     for (msgDoc in snapshots) {
                         if (msgDoc.id.toLong() < preference.getLogInTime())
                             continue    //ignore old messages
                         val message = msgDoc.data.toDataClass<GroupMessage>()
                         if (message.groupId == preference.getOnlineGroup()) { //would be updated by snapshot listener
-                            Timber.v("Online group is ${message.groupId}")
                             continue
                         }
                         if (!listOfGroup.contains(message.groupId))
@@ -104,7 +106,6 @@ class GroupChatHandler @Inject constructor(
                     it.from!=userId &&
                     it.groupId==group.id && myStatus<3
                 }.size
-                Timber.v("Group name ${group.id} Unread count ${group.unRead}")
             }
             updateInLocal(groups)
         }
@@ -123,7 +124,6 @@ class GroupChatHandler @Inject constructor(
     private fun addGroupsSnapShotListener() {
         myProfileListener= userCollection.document(userId.toString()).addSnapshotListener { snapshot, error ->
             if (error == null) {
-                Timber.v("UserSnapShot listener called")
                 val groups = snapshot?.get("groups")
                 val listOfGroup = if (groups == null) ArrayList() else groups as ArrayList<String>
                 CoroutineScope(Dispatchers.IO).launch {

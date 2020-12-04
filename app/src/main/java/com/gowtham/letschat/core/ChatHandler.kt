@@ -44,9 +44,9 @@ class ChatHandler @Inject constructor(
 
     private val listOfDoc=ArrayList<String>()
 
-    private var messageCollectionGroup: Query
+    private lateinit var messageCollectionGroup: Query
 
-    private var isFirstTime=true
+    private var instanceCreated=false
 
     companion object{
 
@@ -59,68 +59,69 @@ class ChatHandler @Inject constructor(
         }
     }
 
-
-    init {
-        Timber.v("ChatHandler init")
-        messageCollectionGroup=UserUtils.getMessageSubCollectionRef()
-        preference.clearCurrentUser()
-        CoroutineScope(Dispatchers.IO).launch{
-            chatUsers=dbRepository.getChatUserList()
-        }
-
-        listenerDoc1= messageCollectionGroup.whereEqualTo("from",fromUser)
-            .addSnapshotListener { snapShots, error ->
-                Timber.v("from me MessageSub triggered ${snapShots?.metadata?.isFromCache}")
-                if (error==null){
-                    messagesList.clear()
-                    listOfDoc.clear()
-                    val listOfIds=ArrayList<String>()
-                    snapShots?.forEach { doc->
-                        val parentDoc=doc.reference.parent.parent?.id!!
-                        if (doc.id.toLong()>preference.getLogInTime()){
-                            val message= doc.data.toDataClass<Message>()
-                            message.chatUserId =if (message.from != fromUser) message.from else message.to
-                            if (isNotOnlineUser(message)){
-                                messagesList.add(message)
-                                if (!listOfDoc.contains(parentDoc)){
-                                    listOfDoc.add(doc.reference.parent.parent?.id.toString())
-                                    listOfIds.add(message.chatUserId!!)
-                                }}
-                            else
-                                Timber.i("Online User ${preference.getOnlineUser()}")
-                        }
-                    }
-                    updateChatUserIdInMessage(listOfIds)
-                }else
-                    Timber.v(error)
+    fun initHandler(){
+            if (instanceCreated)
+                return
+            else
+                instanceCreated=true
+            Timber.v("ChatHandler init")
+            messageCollectionGroup=UserUtils.getMessageSubCollectionRef()
+            preference.clearCurrentUser()
+            CoroutineScope(Dispatchers.IO).launch{
+                chatUsers=dbRepository.getChatUserList()
             }
 
-        listenerDoc2= messageCollectionGroup.whereEqualTo("to",fromUser)
-            .addSnapshotListener { snapShots, error ->
-                Timber.v("To me and MessageSub triggered ${snapShots?.metadata?.isFromCache}")
-                if (error==null){
-                    messagesList.clear()
-                    listOfDoc.clear()
-                    val listOfIds=ArrayList<String>()
-                    snapShots?.forEach { doc->
-                        val parentDoc=doc.reference.parent.parent?.id!!
-                        if (doc.id.toLong()>preference.getLogInTime()){
-                            val message= doc.data.toDataClass<Message>()
-                            message.chatUserId =if (message.from != fromUser) message.from else message.to
-                            if (isNotOnlineUser(message)){
-                                messagesList.add(message)
-                                if (!listOfDoc.contains(parentDoc)){
-                                    listOfDoc.add(doc.reference.parent.parent?.id.toString())
-                                    listOfIds.add(message.chatUserId!!)
-                                }}
-                            else
-                                Timber.i("Online User ${preference.getOnlineUser()}")
+            listenerDoc1= messageCollectionGroup.whereEqualTo("from",fromUser)
+                .addSnapshotListener { snapShots, error ->
+                    if (error==null){
+                        messagesList.clear()
+                        listOfDoc.clear()
+                        val listOfIds=ArrayList<String>()
+                        snapShots?.forEach { doc->
+                            val parentDoc=doc.reference.parent.parent?.id!!
+                            if (doc.id.toLong()>preference.getLogInTime()){
+                                val message= doc.data.toDataClass<Message>()
+                                message.chatUserId =if (message.from != fromUser) message.from else message.to
+                                if (isNotOnlineUser(message)){
+                                    messagesList.add(message)
+                                    if (!listOfDoc.contains(parentDoc)){
+                                        listOfDoc.add(doc.reference.parent.parent?.id.toString())
+                                        listOfIds.add(message.chatUserId!!)
+                                    }}
+                                else
+                                    Timber.i("Online User ${preference.getOnlineUser()}")
+                            }
                         }
-                    }
-                    updateChatUserIdInMessage(listOfIds)
-                }else
-                    Timber.v(error)
-            }
+                        updateChatUserIdInMessage(listOfIds)
+                    }else
+                        Timber.v(error)
+                }
+
+            listenerDoc2= messageCollectionGroup.whereEqualTo("to",fromUser)
+                .addSnapshotListener { snapShots, error ->
+                    if (error==null){
+                        messagesList.clear()
+                        listOfDoc.clear()
+                        val listOfIds=ArrayList<String>()
+                        snapShots?.forEach { doc->
+                            val parentDoc=doc.reference.parent.parent?.id!!
+                            if (doc.id.toLong()>preference.getLogInTime()){
+                                val message= doc.data.toDataClass<Message>()
+                                message.chatUserId =if (message.from != fromUser) message.from else message.to
+                                if (isNotOnlineUser(message)){
+                                    messagesList.add(message)
+                                    if (!listOfDoc.contains(parentDoc)){
+                                        listOfDoc.add(doc.reference.parent.parent?.id.toString())
+                                        listOfIds.add(message.chatUserId!!)
+                                    }}
+                                else
+                                    Timber.i("Online User ${preference.getOnlineUser()}")
+                            }
+                        }
+                        updateChatUserIdInMessage(listOfIds)
+                    }else
+                        Timber.v(error)
+                }
     }
 
     private fun updateChatUserIdInMessage(listOfIds : ArrayList<String>) {
@@ -142,7 +143,6 @@ class ChatHandler @Inject constructor(
                                 it.status<3 }.size
                         chatUser.documentId =doc
                         list.add(chatUser)
-                        Timber.v("chatUser ${chatUser.localName} UnRead count ${chatUser.unRead}")
                     }
                 }
                 updateOnDb(list,unSavedUsersId,locallySaved)
@@ -168,7 +168,6 @@ class ChatHandler @Inject constructor(
                 showNotification(unSavedUsersId,locallySaved,lastMessage)
             }
         }
-        Timber.v("UnsavedUser count ${unSavedUsersId.size}")
     }
 
     private fun showNotification(

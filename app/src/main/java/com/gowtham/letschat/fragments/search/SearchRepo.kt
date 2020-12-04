@@ -1,8 +1,5 @@
 package com.gowtham.letschat.fragments.search
 
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.liveData
 import com.google.firebase.firestore.CollectionReference
 import javax.inject.Inject
 import javax.inject.Singleton

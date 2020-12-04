@@ -161,7 +161,7 @@ class MainActivity : ActBase() {
             Handler(Looper.getMainLooper()).postDelayed({ //delay time for searchview
                 searchItem.collapseActionView()
                 searchItem.isVisible = currentDestination!=R.id.FMyProfile
-            },400)
+            },1000)
         } catch (e: Exception) {
             e.printStackTrace()
         }

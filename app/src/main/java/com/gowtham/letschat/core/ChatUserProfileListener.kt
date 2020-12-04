@@ -24,18 +24,12 @@ class ChatUserProfileListener @Inject
 constructor( @ApplicationContext val context: Context,
              private val userCollectionRef: CollectionReference,
              private val preference: MPreference,
-             private val dbRepository: DbRepository
-){
+             private val dbRepository: DbRepository){
 
-
-    init {
-        getChatUsers()
-    }
+    private var instanceCreated=false
 
     companion object{
-
         private val listOfListeners=ArrayList<ListenerRegistration>()
-
         fun removeListener(){
             listOfListeners.forEach {
                 it.remove()
@@ -44,7 +38,6 @@ constructor( @ApplicationContext val context: Context,
     }
 
     private fun getChatUsers() {
-        Timber.v("ChatUser's listener called")
         CoroutineScope(Dispatchers.IO).launch {
             val users=dbRepository.getChatUserList()
             withContext(Dispatchers.Main){
@@ -64,7 +57,6 @@ constructor( @ApplicationContext val context: Context,
                     return@addSnapshotListener
                 }
                 val userProfile = profile?.toObject(UserProfile::class.java)
-                Timber.v("ChatUser listener ${userProfile?.uId}")
                 userProfile?.let { pro->
                     val chatUser=users.firstOrNull { it.id== pro.uId }
                     if (chatUser!=null){
@@ -112,6 +104,13 @@ constructor( @ApplicationContext val context: Context,
                 chatUser.localName=mobile
                 chatUser.locallySaved=false
             }
+        }
+    }
+
+    fun initListener() {
+        if (!instanceCreated) {
+            getChatUsers()
+            instanceCreated=true
         }
     }
 
