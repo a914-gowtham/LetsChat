@@ -11,13 +11,5 @@ import javax.inject.Singleton
 class SearchRepo  @Inject constructor(
     private val usersCollection: CollectionReference,){
 
-    fun getSearchResults(query: String) =
-        Pager(
-            config = PagingConfig(
-                pageSize = 20,
-                maxSize = 100,
-                enablePlaceholders = false
-            ),
-            pagingSourceFactory = { UnsplashPagingSource(usersCollection,query) }
-        ).liveData
+
 }
