@@ -21,8 +21,7 @@ import java.util.*
 class ProfileViewModel @ViewModelInject
 constructor(
     @ApplicationContext private val context: Context,
-    private val preference: MPreference, private val storageRef: StorageReference,
-    private val docuRef: DocumentReference,private val usersCollection: CollectionReference) : ViewModel() {
+    private val preference: MPreference,private val usersCollection: CollectionReference) : ViewModel() {
 
     val progressProPic = MutableLiveData(false)
 
@@ -31,6 +30,10 @@ constructor(
     val checkUserNameState = MutableLiveData<LoadState>()
 
     val name = MutableLiveData("")
+
+    private val storageRef=UserUtils.getStorageRef(context)
+
+    private val docuRef=UserUtils.getDocumentRef(context)
 
     val profilePicUrl = MutableLiveData("")
 

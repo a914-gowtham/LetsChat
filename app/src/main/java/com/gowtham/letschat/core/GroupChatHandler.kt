@@ -36,7 +36,7 @@ class GroupChatHandler @Inject constructor(
     private val groupCollection: CollectionReference,
     private val dbRepository: DbRepository) {
 
-    private val userId = preference.getUid()
+    private var userId = preference.getUid()
 
     private lateinit var messageCollectionGroup: Query
 
@@ -46,15 +46,15 @@ class GroupChatHandler @Inject constructor(
 
     private lateinit var chatUsers: List<ChatUser>
 
-    private var instanceCreated=false
-
     companion object{
 
         private var groupListener: ListenerRegistration?=null
 
         private var myProfileListener: ListenerRegistration?=null
+        private var instanceCreated=false
 
         fun removeListener(){
+            instanceCreated=false
             groupListener?.remove()
             myProfileListener?.remove()
         }
@@ -65,6 +65,7 @@ class GroupChatHandler @Inject constructor(
             return
         else
             instanceCreated=true
+        userId = preference.getUid()
         Timber.v("GroupChatHandler init")
         preference.clearCurrentGroup()
         messageCollectionGroup = UserUtils.getGroupMsgSubCollectionRef()

@@ -15,6 +15,7 @@ import com.gowtham.letschat.R
 import com.gowtham.letschat.databinding.FCountriesBinding
 import com.gowtham.letschat.ui.activities.SharedViewModel
 import com.gowtham.letschat.utils.ItemClickListener
+import com.gowtham.letschat.utils.Utils
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -37,6 +38,9 @@ class FCountries : Fragment(), ItemClickListener {
         savedInstanceState: Bundle?): View? {
         binding = FCountriesBinding.inflate(layoutInflater, container, false)
         setHasOptionsMenu(true)
+        binding.toolbar.setNavigationOnClickListener {
+            findNavController().popBackStack()
+        }
         binding.lifecycleOwner = viewLifecycleOwner
         return binding.root
     }

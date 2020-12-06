@@ -29,7 +29,7 @@ import kotlin.random.Random
 
 class CreateGroupViewModel @ViewModelInject constructor(
     @ApplicationContext private val context: Context,
-    private val preference: MPreference, private val storageRef: StorageReference,
+    private val preference: MPreference,
     private val userCollection: CollectionReference,
     private val dbRepo: DbRepository,
     @GroupCollection
@@ -42,6 +42,8 @@ class CreateGroupViewModel @ViewModelInject constructor(
     val imageUrl = MutableLiveData("")
 
     val groupCreateStatus = MutableLiveData<LoadState>()
+
+    private val storageRef=UserUtils.getStorageRef(context)
 
     fun uploadProfileImage(imagePath: Uri) {
         try {

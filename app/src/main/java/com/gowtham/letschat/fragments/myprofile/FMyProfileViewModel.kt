@@ -13,6 +13,7 @@ import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
 import com.gowtham.letschat.utils.LoadState
 import com.gowtham.letschat.utils.MPreference
+import com.gowtham.letschat.utils.UserUtils
 import com.gowtham.letschat.utils.toast
 import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
@@ -20,8 +21,7 @@ import java.util.*
 
 class FMyProfileViewModel @ViewModelInject constructor(
     @ApplicationContext private val context: Context,
-    private val preference: MPreference, private val storageRef: StorageReference,
-    private val docuRef: DocumentReference, private val usersCollection: CollectionReference
+    private val preference: MPreference,private val usersCollection: CollectionReference
 ) : ViewModel() {
 
     private var userProfile = preference.getUserProfile()
@@ -35,6 +35,10 @@ class FMyProfileViewModel @ViewModelInject constructor(
     val isUploading = MutableLiveData(false)
 
     private val mobileData = userProfile?.mobile
+
+    private val storageRef= UserUtils.getStorageRef(context)
+
+    private val docuRef= UserUtils.getDocumentRef(context)
 
     val mobile = MutableLiveData("${mobileData?.country} ${mobileData?.number}")
 

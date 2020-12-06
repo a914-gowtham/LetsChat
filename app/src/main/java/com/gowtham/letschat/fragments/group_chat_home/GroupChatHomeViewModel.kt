@@ -13,7 +13,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 class GroupChatHomeViewModel @ViewModelInject constructor(
     @ApplicationContext private val context: Context,
     private val preference: MPreference,
-    private val docuRef: DocumentReference,
     private val dbRepository: DbRepository,
     private val usersCollection: CollectionReference) : ViewModel()  {
 

@@ -48,8 +48,6 @@ import timber.log.Timber
 class GroupChatViewModel @ViewModelInject constructor(
     @ApplicationContext private val context: Context,
     private val preference: MPreference,
-    private val storageRef: StorageReference,
-    private val userCollection: CollectionReference,
     private val groupDao: GroupDao,
     private val groupMsgDao: GroupMessageDao,
     private val chatUserDao: ChatUserDao,

@@ -2,9 +2,20 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
+        <import type="com.gowtham.letschat.utils.BindingAdapters"/>
+        <import type="java.util.ArrayList"/>
         <variable
             name="message"
             type="com.gowtham.letschat.db.data.Message" />
+
+        <variable
+            name="adapterPosition"
+            type="Integer" />
+
+        <variable
+            name="messageList"
+            type="ArrayList&lt;com.gowtham.letschat.db.data.Message&gt;"
+            />
     </data>
 
     <LinearLayout

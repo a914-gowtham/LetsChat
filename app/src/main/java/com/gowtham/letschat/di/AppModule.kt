@@ -12,6 +12,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ApplicationComponent
+import dagger.hilt.android.scopes.FragmentScoped
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -26,20 +27,6 @@ annotation class GroupCollection
 @Module
 @InstallIn(ApplicationComponent::class)
 object AppModule {
-
-    @Singleton
-    @Provides
-    fun provideFireStorageRef(preference: MPreference): StorageReference {
-        val ref = Firebase.storage.getReference("Users")
-        return ref.child(preference.getUid().toString())
-    }
-
-    @Singleton
-    @Provides
-    fun provideFireStoreDoc(preference: MPreference): DocumentReference {
-        val db = FirebaseFirestore.getInstance()
-        return db.collection("Users").document(preference.getUid()!!)
-    }
 
     @Singleton
     @Provides

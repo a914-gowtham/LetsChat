@@ -17,6 +17,7 @@ import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.data.Message
 import com.gowtham.letschat.di.MessageCollection
 import com.gowtham.letschat.utils.Constants
+import com.gowtham.letschat.utils.MPreference
 import com.gowtham.letschat.utils.UserUtils
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -28,7 +29,6 @@ import java.util.concurrent.CountDownLatch
 class UploadWorker @WorkerInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val storageRef: StorageReference,
     @MessageCollection
     val msgCollection: CollectionReference,
     val dbRepository: DbRepository):
@@ -42,6 +42,7 @@ class UploadWorker @WorkerInject constructor(
 
         val url=params.inputData.getString(Constants.MESSAGE_FILE_URI)!!
         val sourceName=getSourceName(message,url)
+        val storageRef=UserUtils.getStorageRef(applicationContext)
 
         val child = storageRef.child(
             "chats/${message.to}/$sourceName")

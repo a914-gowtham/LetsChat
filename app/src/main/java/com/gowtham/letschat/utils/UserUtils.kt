@@ -34,7 +34,9 @@ import com.gowtham.letschat.models.Contact
 import com.gowtham.letschat.models.ModelDeviceDetails
 import com.gowtham.letschat.models.UserProfile
 import com.gowtham.letschat.models.UserStatus
+import com.gowtham.letschat.services.UploadWorker
 import com.gowtham.letschat.ui.activities.ActSplash
+import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -76,6 +78,8 @@ object UserUtils {
     private fun updateDeviceDetails(context: Context,userCollection: CollectionReference) {
         val preference = MPreference(context)
         val token = preference.getPushToken()
+        Timber.v("AAA ${preference.getUid()}")
+        Timber.v("BB ${preference.getUserProfile()?.uId}")
         if (token.isNullOrEmpty())
             updatePushToken(context,userCollection, true)
         else if (Utils.isNetConnected(context)) {
@@ -96,7 +100,7 @@ object UserUtils {
         }
     }
 
-    private fun getStorageRef(context: Context): StorageReference {
+    fun getStorageRef(context: Context): StorageReference {
         val preference = MPreference(context)
         val ref = Firebase.storage.getReference("Users")
         return ref.child(preference.getUid().toString())
@@ -228,14 +232,14 @@ object UserUtils {
             CoroutineScope(Dispatchers.IO).launch {
                 db.clearAllTables()
             }
-            preference.clearAll()
+            EventBus.getDefault().post(UserStatus("offline"))
             ChatHandler.removeListeners()
             GroupChatHandler.removeListener()
             ChatUserProfileListener.removeListener()
             AdSingleChatHome.allChatList= emptyList<ChatUserWithMessages>().toMutableList()
             AdGroupChatHome.allList= emptyList<GroupWithMessages>().toMutableList()
-            EventBus.getDefault().post(UserStatus("offline"))
             FirebaseAuth.getInstance().signOut()
+            preference.clearAll()
             Utils.startNewActivity(context, ActSplash::class.java)
         } catch (e: Exception) {
             e.printStackTrace()

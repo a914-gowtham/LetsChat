@@ -5,6 +5,7 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -12,6 +13,7 @@ import com.gowtham.letschat.R
 import com.gowtham.letschat.databinding.*
 import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.data.GroupMessage
+import com.gowtham.letschat.fragments.single_chat.AdChat
 import com.gowtham.letschat.utils.Events.EventAudioMsg
 import com.gowtham.letschat.utils.ItemClickListener
 import com.gowtham.letschat.utils.MPreference
@@ -148,6 +150,12 @@ class AdGroupChat (private val context: Context,
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: GroupMessage) {
             binding.message = item
+            if (bindingAdapterPosition>0) {
+                val message = messageList[bindingAdapterPosition - 1]
+                if (message.from == item.from) {
+                    binding.txtMsg.setBackgroundResource(R.drawable.shape_send_msg_corned)
+                }
+            }
             binding.executePendingBindings()
         }
     }
@@ -157,6 +165,15 @@ class AdGroupChat (private val context: Context,
         fun bind(item: GroupMessage) {
             binding.message = item
             binding.chatUsers= chatUserList.toTypedArray()
+            if (bindingAdapterPosition>0) {
+                val lastMsg = messageList[bindingAdapterPosition - 1]
+                if (lastMsg.from == item.from) {
+                    binding.apply {
+                        viewDetail.gone()
+                    }
+                    binding.viewMsgHolder.setBackgroundResource(R.drawable.shape_receive_msg_corned)
+                }
+            }
             binding.executePendingBindings()
         }
     }

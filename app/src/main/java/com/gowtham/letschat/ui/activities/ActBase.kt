@@ -98,8 +98,11 @@ open class ActBase : AppCompatActivity() {
     fun onProfileUpdated(event: UserStatus) {  //will be triggered only when initial profile update completed
       if (event.status=="online")
           updateStatus()
-        else
-          connectedRef?.onDisconnect()
+        else{
+          val lastOnlineRef = database.getReference("/Users/${preference.getUid()}/last_seen")
+          val status = database.getReference("/Users/${preference.getUid()}/status")
+          status.setValue("offline")
+        }
     }
 
     override fun onDestroy() {

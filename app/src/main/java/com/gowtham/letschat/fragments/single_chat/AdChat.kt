@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ProgressBar
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +21,7 @@ import com.gowtham.letschat.utils.Events.EventUpdateRecycleItem
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
+import java.util.ArrayList
 import kotlin.properties.Delegates
 
 class AdChat(private val context: Context, private val msgClickListener: ItemClickListener) :
@@ -100,9 +102,9 @@ class AdChat(private val context: Context, private val msgClickListener: ItemCli
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when(holder){
             is TxtSentVHolder ->
-                holder.bind(getItem(position))
+                holder.bind(context,getItem(position))
             is TxtReceiveVHolder ->
-                holder.bind(getItem(position))
+                holder.bind(context,getItem(position))
             is ImageSentVHolder ->
                 holder.bind(getItem(position),msgClickListener)
             is ImageReceiveVHolder ->
@@ -144,16 +146,27 @@ class AdChat(private val context: Context, private val msgClickListener: ItemCli
 
     class TxtSentVHolder(val binding: RowSentMessageBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: Message) {
+        fun bind(context: Context,item: Message) {
             binding.message = item
+            binding.messageList= messageList as ArrayList<Message>
+            if (bindingAdapterPosition>0) {
+                val message = messageList[bindingAdapterPosition - 1]
+                if (message.from == item.from)
+                    binding.txtMsg.setBackgroundResource(R.drawable.shape_send_msg_corned)
+            }
             binding.executePendingBindings()
         }
     }
 
     class TxtReceiveVHolder(val binding: RowReceiveMessageBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: Message) {
+        fun bind(context:Context,item: Message) {
             binding.message = item
+            if (bindingAdapterPosition>0) {
+                val message = messageList[bindingAdapterPosition - 1]
+                if (message.from == item.from)
+                    binding.txtMsg.setBackgroundResource(R.drawable.shape_receive_msg_corned)
+            }
             binding.executePendingBindings()
         }
     }

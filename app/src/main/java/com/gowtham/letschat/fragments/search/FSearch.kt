@@ -77,8 +77,10 @@ class FSearch : Fragment(R.layout.f_search), ItemClickListener {
                 binding.txtNoUser.gone()
                 binding.viewEmpty.show()
             } else {
-                binding.viewEmpty.show()
-                binding.txtNoUser.gone()
+                if (sharedViewModel.lastQuery.value.isNullOrBlank()) {
+                    binding.viewEmpty.show()
+                    binding.txtNoUser.gone()
+                }
             }
         })
 
@@ -91,19 +93,25 @@ class FSearch : Fragment(R.layout.f_search), ItemClickListener {
         viewModel.getLoadState().observe(viewLifecycleOwner, { state ->
             when (state) {
                 is LoadState.OnLoading -> {
-                    binding.txtNoUser.gone()
-                    binding.viewEmpty.gone()
-                    binding.progressBar.show()
+                    binding.apply {
+                        txtNoUser.gone()
+                        viewEmpty.gone()
+                        progressBar.show()
+                    }
                 }
                 is LoadState.OnSuccess -> {
                     binding.progressBar.gone()
                     val list = state.data as List<ChatUser>
                     if (list.isEmpty()) {
-                        binding.txtNoUser.show()
-                        binding.viewEmpty.gone()
+                        binding.apply {
+                            txtNoUser.show()
+                            viewEmpty.gone()
+                        }
                     } else {
-                        binding.txtNoUser.gone()
-                        binding.viewEmpty.gone()
+                        binding.apply {
+                            txtNoUser.gone()
+                            viewEmpty.gone()
+                        }
                         userList.clear()
                         userList.addAll(list)
                         adapter.notifyDataSetChanged()

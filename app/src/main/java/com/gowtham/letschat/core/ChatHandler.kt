@@ -36,7 +36,7 @@ class ChatHandler @Inject constructor(
 
     private val messagesList: MutableList<Message> by lazy { mutableListOf() }
 
-    private val fromUser=preference.getUid()
+    private var fromUser=preference.getUid()
 
     val message= MutableLiveData<String>()
 
@@ -46,14 +46,14 @@ class ChatHandler @Inject constructor(
 
     private lateinit var messageCollectionGroup: Query
 
-    private var instanceCreated=false
-
     companion object{
 
         private var listenerDoc1: ListenerRegistration?=null
         private var listenerDoc2: ListenerRegistration?=null
+        private var instanceCreated=false
 
         fun removeListeners(){
+            instanceCreated=false
             listenerDoc1?.remove()
             listenerDoc2?.remove()
         }
@@ -64,6 +64,7 @@ class ChatHandler @Inject constructor(
                 return
             else
                 instanceCreated=true
+             fromUser= preference.getUid()
             Timber.v("ChatHandler init")
             messageCollectionGroup=UserUtils.getMessageSubCollectionRef()
             preference.clearCurrentUser()

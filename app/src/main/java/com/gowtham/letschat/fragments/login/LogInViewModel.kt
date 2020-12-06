@@ -184,19 +184,22 @@ constructor(@ApplicationContext private val context: Context,
        preference.saveMobile(ModelMobile(country.value!!.noCode,mobile.value!!))
 
     fun fetchUser(taskId: Task<AuthResult>) {
-        Timber.v("FetchUser::")
         val db = FirebaseFirestore.getInstance()
         val user = taskId.result?.user
+        Timber.v("FetchUser:: ${user?.uid}")
         val noteRef = db.document("Users/" + user?.uid)
         noteRef.get()
             .addOnSuccessListener { data ->
+                Timber.v("Uss:: ${preference.getUid()}")
                 preference.setUid(user?.uid.toString())
+                Timber.v("Uss11:: ${preference.getUid()}")
                 preference.setLogin()
                 preference.setLogInTime()
                 setVProgress(false)
                 progress.value=false
                 if (data.exists()) {
                     val appUser = data.toObject(UserProfile::class.java)
+                    Timber.v("UserId ${appUser?.uId}")
                     preference.saveProfile(appUser!!)
                     //if device id is not same,send new_user_logged type notification to the token
                    checkLastDevice(appUser)
@@ -216,7 +219,7 @@ constructor(@ApplicationContext private val context: Context,
                 val deviceDetails=appUser.deviceDetails
                 val sameDevice=deviceDetails?.device_id.equals(localDevice)
                 if (!sameDevice)
-                    UserUtils.sendPush(context,TYPE_LOGGED_IN,"",appUser.token.toString(),appUser.uId!!)
+                    UserUtils.sendPush(context,TYPE_LOGGED_IN,"", appUser.token,appUser.uId!!)
             }
         } catch (e: Exception) {
             e.printStackTrace()

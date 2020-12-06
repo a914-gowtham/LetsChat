@@ -13,6 +13,7 @@ import android.widget.TextView
 import androidx.core.view.setPadding
 import androidx.core.widget.ImageViewCompat
 import androidx.databinding.BindingAdapter
+import androidx.databinding.InverseMethod
 import coil.ImageLoader
 import coil.decode.GifDecoder
 import coil.load
@@ -32,6 +33,7 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 import java.util.*
+import kotlin.collections.ArrayList
 
 object BindingAdapters {
 
@@ -69,6 +71,25 @@ object BindingAdapters {
     fun setLastMessage(txtView: TextView, msgList: List<Message>) {
         val lastMsg=msgList.last()
         txtView.text= getLastMsgTxt(lastMsg)
+    }
+
+    @InverseMethod("messageBsg")
+    @JvmStatic
+    fun messageBsg(msg: Message): String {
+            return "sd"
+    }
+
+    @BindingAdapter("message" , "messageList" , "adapterPos")
+    @JvmStatic
+    fun messageBackground(txtView: TextView,msg: Message,list: ArrayList<Message>,adapterPos: Int) {
+             txtView.setBackgroundResource(R.drawable.shape_send_msg)
+if (list.size<=2){
+    val message=list[adapterPos-1]
+    if (message.from=="me"){
+
+    }
+}
+
     }
 
     @BindingAdapter("loadImage")

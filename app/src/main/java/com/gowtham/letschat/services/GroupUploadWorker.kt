@@ -36,7 +36,6 @@ import java.util.concurrent.CountDownLatch
 class GroupUploadWorker @WorkerInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val storageRef: StorageReference,
     @GroupCollection
     val groupCollection: CollectionReference,
     private val dbRepository: DbRepository):
@@ -50,7 +49,7 @@ class GroupUploadWorker @WorkerInject constructor(
 
         val url=params.inputData.getString(Constants.MESSAGE_FILE_URI)!!
         val sourceName=getSourceName(message,url)
-
+        val storageRef=UserUtils.getStorageRef(applicationContext)
         val child = storageRef.child(
             "group/${message.to}/$sourceName")
        val task = if(url.contains(".mp3")) {

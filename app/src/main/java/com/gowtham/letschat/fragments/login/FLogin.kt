@@ -51,6 +51,7 @@ class FLogin : Fragment() {
         binding.viewmodel = viewModel
         setDefaultCountry()
         binding.txtCountryCode.setOnClickListener {
+            Utils.closeKeyBoard(requireActivity())
             findNavController().navigate(R.id.action_FLogIn_to_FCountries)
         }
         binding.btnGetOtp.setOnClickListener {

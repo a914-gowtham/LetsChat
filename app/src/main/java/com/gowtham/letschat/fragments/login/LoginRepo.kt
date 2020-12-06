@@ -16,6 +16,7 @@ import com.gowtham.letschat.utils.printMeD
 import com.gowtham.letschat.utils.toast
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ActivityRetainedScoped
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -38,6 +39,7 @@ class LoginRepo @Inject constructor(@ActivityRetainedScoped val actContxt: MainA
     }
 
     fun setMobile(country: Country, mobile: String) {
+        Timber.v("Mobile $mobile")
         val number = country.noCode + " " + mobile
         val options = PhoneAuthOptions.newBuilder(auth)
             .setPhoneNumber(number)
@@ -49,7 +51,7 @@ class LoginRepo @Inject constructor(@ActivityRetainedScoped val actContxt: MainA
     }
 
     override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-        Log.d("TAG", "onVerificationCompleted:$credential")
+        Timber.v("onVerificationCompleted:$credential")
         this.credential.value = credential
         Handler(Looper.getMainLooper()).postDelayed({
             signInWithPhoneAuthCredential(credential)
@@ -67,7 +69,7 @@ class LoginRepo @Inject constructor(@ActivityRetainedScoped val actContxt: MainA
     }
 
     override fun onCodeSent(verificationId: String, token: PhoneAuthProvider.ForceResendingToken) {
-        Log.d("TAG", "onCodeSent:$verificationId")
+        Timber.v("onCodeSent:$verificationId")
         this.verificationId.value = verificationId
         context.toast("Verification code sent successfully")
     }
@@ -76,10 +78,10 @@ class LoginRepo @Inject constructor(@ActivityRetainedScoped val actContxt: MainA
         FirebaseAuth.getInstance().signInWithCredential(credential)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Log.d("TAG", "signInWithCredential:success")
+                    Timber.v("signInWithCredential:success")
                     taskResult.value = task
                 } else {
-                    Log.w("TAG", "signInWithCredential:failure", task.exception)
+                    Timber.v("signInWithCredential:failure ${task.exception}")
                     if (task.exception is FirebaseAuthInvalidCredentialsException)
                         context.toast("Invalid verification code!")
                     failedState.value = LogInFailedState.SignIn
