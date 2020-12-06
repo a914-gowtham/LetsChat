@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.gowtham.letschat.db.ChatUserDatabase
 import com.gowtham.letschat.utils.Constants.CHAT_USER_DB_NAME
+import com.gowtham.letschat.utils.MPreference
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

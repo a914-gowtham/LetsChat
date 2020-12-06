@@ -6,6 +6,8 @@ object Constants {
 
     const val VIEW_CT=43
 
+    const val KEY_LAST_QUERIED_LIST="last_queried_list"
+
     const val CHAT_USER_DB_NAME="chat_user_db"
 
     const val ACTION_LOGGED_IN_ANOTHER_DEVICE="action_logged_in_another_device"

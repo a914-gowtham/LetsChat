@@ -4,6 +4,7 @@
 
     <data>
 
+
     </data>
 
     <RelativeLayout style="@style/StyleRoot">
@@ -13,30 +14,12 @@
             style="@style/StyleList"
             tools:listitem="@layout/row_search_contact" />
 
-        <Button
-            android:id="@+id/button_retry"
-            style="@style/WView"
-            android:layout_centerInParent="true"
-            android:text="Retry"
-            android:visibility="gone"
-            tools:visibility="visible" />
-
         <ProgressBar
             android:id="@+id/progress_bar"
             style="@style/WView"
             android:layout_centerInParent="true"
             android:visibility="gone"
             tools:visibility="visible" />
-
-        <TextView
-            android:id="@+id/txt_error"
-            style="@style/TxtRgStyle"
-            android:layout_above="@+id/button_retry"
-            android:layout_centerHorizontal="true"
-            android:text="Results couldn't be loaded"
-            android:visibility="gone"
-            tools:visibility="visible" />
-
 
         <TextView
             android:id="@+id/txt_no_user"
@@ -46,11 +29,10 @@
             android:visibility="gone"
             tools:visibility="visible" />
 
-        <ImageView
+        <TextView
             android:id="@+id/view_empty"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:src="@drawable/ic_empty"/>
+            style="@style/TxtRgStyle"
+            android:text="Search someone.."
+            android:layout_centerInParent="true"/>
     </RelativeLayout>
 </layout>

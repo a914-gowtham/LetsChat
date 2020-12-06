@@ -35,9 +35,7 @@ data class TextMessage(val text: String?=null): Parcelable
 
 @Serializable
 @Parcelize
-data class AudioMessage(var uri: String?=null,val duration: Int=0,
-                        var currentDuration: Int=0,var isLoading: Boolean=false,
-                        var isPlaying: Boolean=false): Parcelable
+data class AudioMessage(var uri: String?=null,val duration: Int=0): Parcelable
 
 @Serializable
 @Parcelize

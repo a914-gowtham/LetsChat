@@ -103,7 +103,11 @@
         android:id="@+id/FSearch"
         android:name="com.gowtham.letschat.fragments.search.FSearch"
         android:label="FSearch"
-        tools:layout="@layout/f_search" />
+        tools:layout="@layout/f_search" >
+        <action
+            android:id="@+id/action_FSearch_to_FSingleChat"
+            app:destination="@id/FSingleChat" />
+    </fragment>
     <fragment
         android:id="@+id/FMyProfile"
         android:name="com.gowtham.letschat.fragments.myprofile.FMyProfile"

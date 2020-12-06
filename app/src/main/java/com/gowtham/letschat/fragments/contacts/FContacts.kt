@@ -48,7 +48,7 @@ class FContacts : Fragment(), ItemClickListener {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?): View? {
+        savedInstanceState: Bundle?): View {
         binding = FContactsBinding.inflate(layoutInflater, container, false)
         setHasOptionsMenu(true)
         return binding.root

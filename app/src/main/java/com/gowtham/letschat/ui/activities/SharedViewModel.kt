@@ -10,6 +10,7 @@ import com.gowtham.letschat.models.Country
 import com.gowtham.letschat.utils.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ActivityScoped
+import timber.log.Timber
 import java.util.*
 import javax.inject.Singleton
 import kotlin.concurrent.schedule
@@ -31,7 +32,7 @@ constructor(@ApplicationContext private val context: Context,
 
     val submittedQuery = MutableLiveData<String>()
 
-    val listOfQuery= arrayListOf<String>()
+    val listOfQuery= arrayListOf<String>("")
 
     private var timer: TimerTask? = null
 
@@ -44,11 +45,13 @@ constructor(@ApplicationContext private val context: Context,
     }
 
     fun setLastQuery(query: String) {
+        Timber.v("Last Query $query")
         listOfQuery.add(query)
         lastQuery.value = query
     }
 
     fun setState(state: ScreenState){
+        Timber.v("State $state")
         _state.value=state
     }
 

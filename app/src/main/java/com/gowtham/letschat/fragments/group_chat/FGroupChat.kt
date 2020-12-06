@@ -151,7 +151,7 @@ class FGroupChat : Fragment(), ItemClickListener, CustomEditText.KeyBoardInputCa
             if (isRecording){
                 stopRecording()
                 val duration=(recordDuration/1000).toInt()
-                if (duration==0) {
+                if (duration<=1) {
                     requireContext().toast("Nothing is recorded!")
                     return@setOnClickListener
                 }

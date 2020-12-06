@@ -8,18 +8,6 @@
             <LayoutPositions>
               <option name="myPositions">
                 <map>
-                  <entry key="ActChat">
-                    <value>
-                      <LayoutPositions>
-                        <option name="myPosition">
-                          <Point>
-                            <option name="x" value="1218" />
-                            <option name="y" value="831" />
-                          </Point>
-                        </option>
-                      </LayoutPositions>
-                    </value>
-                  </entry>
                   <entry key="FAddGroupMembers">
                     <value>
                       <LayoutPositions>
@@ -52,11 +40,6 @@
                         </option>
                         <option name="myPositions">
                           <map>
-                            <entry key="action_FContacts_to_ActChat">
-                              <value>
-                                <LayoutPositions />
-                              </value>
-                            </entry>
                             <entry key="action_FContacts_to_Chat">
                               <value>
                                 <LayoutPositions />
@@ -225,6 +208,15 @@
                             <option name="y" value="133" />
                           </Point>
                         </option>
+                        <option name="myPositions">
+                          <map>
+                            <entry key="action_FSearch_to_FSingleChat">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
+                          </map>
+                        </option>
                       </LayoutPositions>
                     </value>
                   </entry>
@@ -245,18 +237,18 @@
                       <LayoutPositions>
                         <option name="myPosition">
                           <Point>
-                            <option name="x" value="630" />
-                            <option name="y" value="629" />
+                            <option name="x" value="736" />
+                            <option name="y" value="218" />
                           </Point>
                         </option>
                         <option name="myPositions">
                           <map>
-                            <entry key="action_FSingleChatHome_to_ActChat">
+                            <entry key="action_FSingleChatHome_to_FContacts">
                               <value>
                                 <LayoutPositions />
                               </value>
                             </entry>
-                            <entry key="action_FSingleChatHome_to_FContacts">
+                            <entry key="action_FSingleChatHome_to_FGroupChat">
                               <value>
                                 <LayoutPositions />
                               </value>

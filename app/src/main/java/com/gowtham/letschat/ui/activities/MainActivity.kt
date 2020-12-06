@@ -53,6 +53,8 @@ class MainActivity : ActBase() {
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
         binding.fab.setOnClickListener {
+            if (searchItem.isActionViewExpanded)
+               searchItem.collapseActionView()
             if (Utils.askContactPermission(returnFragment()!!)) {
                 if (navController.isValidDestination(R.id.FSingleChatHome))
                     navController.navigate(R.id.action_FSingleChatHome_to_FContacts)
@@ -85,10 +87,6 @@ class MainActivity : ActBase() {
             }
         }
 
-        sharedViewModel.getState().observe(this,{
-
-
-        })
     }
 
     private fun setDataInView() {
@@ -159,9 +157,12 @@ class MainActivity : ActBase() {
                 }
             }
             Handler(Looper.getMainLooper()).postDelayed({ //delay time for searchview
-                searchItem.collapseActionView()
-                searchItem.isVisible = currentDestination!=R.id.FMyProfile
-            },1000)
+                searchItem.isVisible=true
+                if (currentDestination == R.id.FMyProfile) {
+                    searchItem.collapseActionView()
+                    searchItem.isVisible = false
+                }
+            }, 500)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -196,14 +197,11 @@ class MainActivity : ActBase() {
         })
 
         sharedViewModel.getState().observe(this, { state ->
-            Handler(Looper.getMainLooper()).postDelayed({ //delay time for searchview
-                if (state is ScreenState.SearchState && searchView.isIconified) {
+            if (state is ScreenState.SearchState && searchView.isIconified) {
                 searchItem.expandActionView()
-                    val list=sharedViewModel.listOfQuery
-                    val query=if (sharedViewModel.getLastQuery().value.isNullOrBlank())  list[list.lastIndex-1] else
-                        sharedViewModel.getLastQuery().value
-                searchView.setQuery(query, false)
-            }},200)
+                val list=sharedViewModel.listOfQuery
+                searchView.setQuery(sharedViewModel.getLastQuery().value, false)
+            }
         })
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -237,6 +235,7 @@ class MainActivity : ActBase() {
                     val navOptions =
                         NavOptions.Builder().setPopUpTo(R.id.nav_host_fragment, true).build()
                     if (isNotSameDestination(R.id.FSingleChatHome)) {
+                        searchItem.collapseActionView()
                         Navigation.findNavController(this, R.id.nav_host_fragment)
                             .navigate(R.id.FSingleChatHome, null, navOptions)
                     }
@@ -244,6 +243,7 @@ class MainActivity : ActBase() {
                 }
                 R.id.nav_group -> {
                     if (isNotSameDestination(R.id.FGroupChatHome)) {
+                        searchItem.collapseActionView()
                         Navigation.findNavController(this, R.id.nav_host_fragment)
                             .navigate(R.id.FGroupChatHome)
                     }
@@ -251,6 +251,7 @@ class MainActivity : ActBase() {
                 }
                 R.id.nav_search -> {
                     if (isNotSameDestination(R.id.FSearch)) {
+                        searchItem.collapseActionView()
                         Navigation.findNavController(this, R.id.nav_host_fragment)
                             .navigate(R.id.FSearch)
                     }
@@ -258,6 +259,7 @@ class MainActivity : ActBase() {
                 }
                 else -> {
                     if (isNotSameDestination(R.id.FMyProfile)) {
+                        searchItem.collapseActionView()
                         Navigation.findNavController(this, R.id.nav_host_fragment)
                             .navigate(R.id.FMyProfile)
                     }
@@ -315,11 +317,13 @@ class MainActivity : ActBase() {
 
     override fun onStop() {
         super.onStop()
+        Timber.v("onSdd")
         stopped=true
     }
 
     override fun onResume() {
         super.onResume()
+        Timber.v("onResime")
         stopped=false
     }
 }

@@ -4,24 +4,30 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.paging.LoadState
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.gowtham.letschat.R
 import com.gowtham.letschat.databinding.FSearchBinding
+import com.gowtham.letschat.db.data.ChatUser
+import com.gowtham.letschat.fragments.contacts.AdContact
+import com.gowtham.letschat.fragments.single_chat_home.FSingleChatHomeDirections
 import com.gowtham.letschat.ui.activities.SharedViewModel
-import com.gowtham.letschat.utils.ItemClickListener
-import com.gowtham.letschat.utils.ScreenState
-import com.gowtham.letschat.utils.gone
-import com.gowtham.letschat.utils.show
+import com.gowtham.letschat.utils.*
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import timber.log.Timber
 import java.util.*
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class FSearch : Fragment(R.layout.f_search),ItemClickListener{
+class FSearch : Fragment(R.layout.f_search), ItemClickListener {
 
     private lateinit var binding: FSearchBinding
 
@@ -29,14 +35,20 @@ class FSearch : Fragment(R.layout.f_search),ItemClickListener{
 
     private val viewModel: FSearchViewModel by viewModels()
 
-    private val adapter: AdSearch by lazy {
-        AdSearch(this)
+    private val userList = arrayListOf<ChatUser>()
+
+    @Inject
+    lateinit var preference: MPreference
+
+    private val adapter: AdContact by lazy {
+        AdContact(requireContext(), userList)
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?): View {
+        savedInstanceState: Bundle?
+    ): View {
         binding = FSearchBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
@@ -49,41 +61,89 @@ class FSearch : Fragment(R.layout.f_search),ItemClickListener{
     }
 
     private fun setDataInView() {
+        AdContact.itemClickListener=this
         binding.apply {
             listUsers.setHasFixedSize(true)
             listUsers.itemAnimator = null
+            listUsers.adapter = adapter
         }
     }
 
 
     private fun subscribeObservers() {
-        sharedViewModel.getState().observe(viewLifecycleOwner,{state->
-            if (state is ScreenState.IdleState){
-                binding.txtError.gone()
+        sharedViewModel.getState().observe(viewLifecycleOwner, { state ->
+            if (state is ScreenState.IdleState) {
+                //show recent list
                 binding.txtNoUser.gone()
                 binding.viewEmpty.show()
-            }else{
-                binding.viewEmpty.gone()
+            } else {
+                binding.viewEmpty.show()
+                binding.txtNoUser.gone()
             }
         })
 
-        /*viewModel.users.observe(viewLifecycleOwner) {
-            adapter.submitData(viewLifecycleOwner.lifecycle, it)
-        }*/
+        lifecycleScope.launch {
+            viewModel.getCachedList().collect { listData ->
+                Timber.v("List data $listData")
+            }
+        }
+
+        viewModel.getLoadState().observe(viewLifecycleOwner, { state ->
+            when (state) {
+                is LoadState.OnLoading -> {
+                    binding.txtNoUser.gone()
+                    binding.viewEmpty.gone()
+                    binding.progressBar.show()
+                }
+                is LoadState.OnSuccess -> {
+                    binding.progressBar.gone()
+                    val list = state.data as List<ChatUser>
+                    if (list.isEmpty()) {
+                        binding.txtNoUser.show()
+                        binding.viewEmpty.gone()
+                    } else {
+                        binding.txtNoUser.gone()
+                        binding.viewEmpty.gone()
+                        userList.clear()
+                        userList.addAll(list)
+                        adapter.notifyDataSetChanged()
+                    }
+                }
+                is LoadState.OnFailure -> {
+                    binding.apply {
+                        progressBar.gone()
+                        txtNoUser.show()
+                    }
+                }
+            }
+        })
 
         sharedViewModel.lastQuery.observe(viewLifecycleOwner, {
             if (sharedViewModel.getState().value is ScreenState.SearchState) {
-                if (it.isNullOrBlank()){
-                    binding.txtError.gone()
-                    binding.txtNoUser.gone()
-                    binding.viewEmpty.show()
-                }else
-                  viewModel.makeQuery(it.toLowerCase(Locale.getDefault()))
+                if (it.isBlank()) {
+                    //show recent list
+                    binding.apply {
+                        viewEmpty.show()
+                        txtNoUser.gone()
+                        userList.clear()
+                        userList.addAll(emptyList())
+                        adapter.notifyDataSetChanged()
+                    }
+                } else
+                    viewModel.makeQuery(it.toLowerCase(Locale.getDefault()))
             }
         })
     }
 
     override fun onItemClicked(v: View, position: Int) {
+        val chatUser=userList[position]
+        preference.setCurrentUser(chatUser.id)
+        val action=FSearchDirections.actionFSearchToFSingleChat(chatUser)
+        findNavController().navigate(action)
+    }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewModel.clearCachedUser()
     }
 }

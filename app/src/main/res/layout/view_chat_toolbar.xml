@@ -89,8 +89,6 @@
                     android:visibility="gone"
                     android:layout_gravity="center_vertical"
                     android:src="@drawable/ic_person_add" />
-
-
             </LinearLayout>
         </androidx.appcompat.widget.Toolbar>
 

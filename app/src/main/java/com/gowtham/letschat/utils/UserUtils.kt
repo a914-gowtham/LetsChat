@@ -22,14 +22,14 @@ import com.gowtham.letschat.MApplication
 import com.gowtham.letschat.core.*
 import com.gowtham.letschat.db.ChatUserDatabase
 import com.gowtham.letschat.db.DbRepository
-import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.daos.GroupDao
 import com.gowtham.letschat.db.daos.GroupMessageDao
-import com.gowtham.letschat.db.data.Message
 import com.gowtham.letschat.db.daos.MessageDao
-import com.gowtham.letschat.db.data.Group
-import com.gowtham.letschat.db.data.GroupMessage
+import com.gowtham.letschat.db.data.*
+import com.gowtham.letschat.fragments.contacts.AdContact
+import com.gowtham.letschat.fragments.group_chat_home.AdGroupChatHome
+import com.gowtham.letschat.fragments.single_chat_home.AdSingleChatHome
 import com.gowtham.letschat.models.Contact
 import com.gowtham.letschat.models.ModelDeviceDetails
 import com.gowtham.letschat.models.UserProfile
@@ -232,6 +232,8 @@ object UserUtils {
             ChatHandler.removeListeners()
             GroupChatHandler.removeListener()
             ChatUserProfileListener.removeListener()
+            AdSingleChatHome.allChatList= emptyList<ChatUserWithMessages>().toMutableList()
+            AdGroupChatHome.allList= emptyList<GroupWithMessages>().toMutableList()
             EventBus.getDefault().post(UserStatus("offline"))
             FirebaseAuth.getInstance().signOut()
             Utils.startNewActivity(context, ActSplash::class.java)

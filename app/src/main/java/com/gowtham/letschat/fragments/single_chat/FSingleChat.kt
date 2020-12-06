@@ -107,7 +107,7 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
         chatUser= args.chatUserProfile!!
         viewModel.setUnReadCountZero(chatUser)
         setListeners()
-        if(!chatUser.locallySaved)
+        if(!chatUser.locallySaved && !chatUser.isSearchedUser)
             binding.viewChatHeader.imageAddContact.show()
         viewModel.canScroll(false)
         binding.viewChatBtm.edtMsg.setKeyBoardInputCallbackListener(this)
@@ -153,7 +153,7 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
             if (isRecording){
                 stopRecording()
                 val duration=(recordDuration/1000).toInt()
-                if (duration==0) {
+                if (duration<=1) {
                     requireContext().toast("Nothing is recorded!")
                     return@setOnClickListener
                 }
