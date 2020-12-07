@@ -10,10 +10,6 @@ LetsChat is a Sample Messaging Android application built to demonstrate the use 
   <img src="demo_video.gif" />
 </p>
 
-### Status: 🚧 In progress 🚧
-
-LetsChat is still under development and some screens are not yet implemented.
-
 ## Built With 🛠
 - [Kotlin](https://kotlinlang.org/) - First class and official programming language for Android development.
 - [Coroutines & Flow](https://kotlinlang.org/docs/reference/coroutines-overview.html) - For asynchronous and more..
