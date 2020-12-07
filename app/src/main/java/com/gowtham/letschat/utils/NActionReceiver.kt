@@ -102,7 +102,7 @@ class NActionReceiver : HiltBroadcastReceiver(), OnMessageResponse {
         }
         //seen message other message of this user
         UserUtils.setUnReadCountZero(dbRepo, chatUser.user)
-        dbRepo.insertMultipleMessage(list as MutableList<Message>)
+        dbRepo.insertMultipleMessage(list.toMutableList())
     }
 
     private fun createMessage(reply: String, myUserId: String,

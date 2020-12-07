@@ -24,9 +24,8 @@ class ChatUserUtil(private val dbRepository: DbRepository,
                         val mobile = userProfile?.mobile?.country + " " + userProfile?.mobile?.number
                         val chatUser = ChatUser(userProfile?.uId!!, mobile, userProfile)
                         chatUser.unRead=unReadCount
-                        docId?.let {
-                            chatUser.documentId=it
-                        }
+                        if(docId!=null)
+                            chatUser.documentId=docId
                         if (Utils.isContactPermissionOk(context)) {
                             val contacts = UserUtils.fetchContacts(context)
                             val savedContact=contacts.firstOrNull { it.mobile.contains(userProfile.mobile!!.number) }

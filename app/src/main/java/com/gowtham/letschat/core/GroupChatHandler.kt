@@ -82,12 +82,9 @@ class GroupChatHandler @Inject constructor(
                     if(snapshots==null)
                         return@addSnapshotListener
                     for (msgDoc in snapshots) {
-                        if (msgDoc.id.toLong() < preference.getLogInTime())
-                            continue    //ignore old messages
                         val message = msgDoc.data.toDataClass<GroupMessage>()
-                        if (message.groupId == preference.getOnlineGroup()) { //would be updated by snapshot listener
+                        if (message.groupId == preference.getOnlineGroup())  //would be updated by snapshot listener
                             continue
-                        }
                         if (!listOfGroup.contains(message.groupId))
                             listOfGroup.add(message.groupId)
                         messagesList.add(message)

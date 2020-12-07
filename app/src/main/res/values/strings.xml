@@ -51,7 +51,7 @@
     <string name="txt_your_status">Status</string>
     <string name="txt_mob_num">Mobile number</string>
     <string name="txt_want_2_logout">Do you want to logout!</string>
-    <string name="txt_alert_msg">You can\'t recover old messages.if you logged out..</string>
+    <string name="txt_alert_msg">Your chats will be recovered.when you login again..</string>
     <string name="txt_cancel">Cancel</string>
     <string name="txt_ok">Ok</string>
     <string name="txt_take_video">Take Video</string>

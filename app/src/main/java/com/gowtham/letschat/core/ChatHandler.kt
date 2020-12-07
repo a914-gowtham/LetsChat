@@ -80,9 +80,9 @@ class ChatHandler @Inject constructor(
                         val listOfIds=ArrayList<String>()
                         snapShots?.forEach { doc->
                             val parentDoc=doc.reference.parent.parent?.id!!
-                            if (doc.id.toLong()>preference.getLogInTime()){
                                 val message= doc.data.toDataClass<Message>()
-                                message.chatUserId =if (message.from != fromUser) message.from else message.to
+                            Timber.v("CreatedAt1 ${message.createdAt}")
+                            message.chatUserId =if (message.from != fromUser) message.from else message.to
                                 if (isNotOnlineUser(message)){
                                     messagesList.add(message)
                                     if (!listOfDoc.contains(parentDoc)){
@@ -91,7 +91,7 @@ class ChatHandler @Inject constructor(
                                     }}
                                 else
                                     Timber.i("Online User ${preference.getOnlineUser()}")
-                            }
+                            Timber.v("Message List size ${messagesList.size}")
                         }
                         updateChatUserIdInMessage(listOfIds)
                     }else
@@ -101,13 +101,11 @@ class ChatHandler @Inject constructor(
             listenerDoc2= messageCollectionGroup.whereEqualTo("to",fromUser)
                 .addSnapshotListener { snapShots, error ->
                     if (error==null){
-                        messagesList.clear()
-                        listOfDoc.clear()
                         val listOfIds=ArrayList<String>()
                         snapShots?.forEach { doc->
                             val parentDoc=doc.reference.parent.parent?.id!!
-                            if (doc.id.toLong()>preference.getLogInTime()){
                                 val message= doc.data.toDataClass<Message>()
+                            Timber.v("CreatedAt2 ${message.createdAt}")
                                 message.chatUserId =if (message.from != fromUser) message.from else message.to
                                 if (isNotOnlineUser(message)){
                                     messagesList.add(message)
@@ -117,7 +115,6 @@ class ChatHandler @Inject constructor(
                                     }}
                                 else
                                     Timber.i("Online User ${preference.getOnlineUser()}")
-                            }
                         }
                         updateChatUserIdInMessage(listOfIds)
                     }else
@@ -161,6 +158,7 @@ class ChatHandler @Inject constructor(
                            locallySaved: ArrayList<String>) {
         val statusUpdater= MessageStatusUpdater(messageCollection)
         statusUpdater.updateToDelivery(fromUser!!,messagesList,*chatUsers.toTypedArray())
+        Timber.v("My message ${messagesList.size}")
         CoroutineScope(Dispatchers.IO).launch {
             dbRepository.insertMultipleMessage(messagesList)
             dbRepository.insertMultipleUser(list)
@@ -181,10 +179,6 @@ class ChatHandler @Inject constructor(
                return
            }
    */
-        lastMessage.lastOrNull()?.let {
-            if (it.from==fromUser)
-                return
-        }
 
         if (unSavedUsersId.isEmpty() && locallySaved.isEmpty()) {
 //            Utils.removeNotification(context)
@@ -198,7 +192,7 @@ class ChatHandler @Inject constructor(
                     userId,
                     listOfDoc.firstOrNull { it.contains(userId) })
             }
-            //unsaved to mobile contact and already saved in local
+            //unsaved in mobile contacts and already saved in local
             for (userId in locallySaved) {
                 val unreadCount = messagesList.filter {
                     it.from == it.chatUserId &&
@@ -213,5 +207,6 @@ class ChatHandler @Inject constructor(
                 )
             }
         }
+        dbRepository.insertMultipleMessage(messagesList)
     }
 }

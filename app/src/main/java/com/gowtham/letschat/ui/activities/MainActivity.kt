@@ -81,7 +81,7 @@ class MainActivity : ActBase() {
 
         lifecycleScope.launch {
             chatUserDao.getChatUserWithMessages().collect { list ->
-                val count = list.filter { it.user.unRead != 0 }
+                val count = list.filter { it.user.unRead != 0 && it.messages.isNotEmpty() }
                 badge.isVisible = count.isNotEmpty() //hide if 0
                 badge.number = count.size
             }
@@ -157,10 +157,12 @@ class MainActivity : ActBase() {
                 }
             }
             Handler(Looper.getMainLooper()).postDelayed({ //delay time for searchview
-                searchItem.isVisible=true
-                if (currentDestination == R.id.FMyProfile) {
-                    searchItem.collapseActionView()
-                    searchItem.isVisible = false
+                if (this::searchItem.isInitialized) {
+                    if (currentDestination == R.id.FMyProfile) {
+                        searchItem.collapseActionView()
+                        searchItem.isVisible = false
+                    }else
+                        searchItem.isVisible = true
                 }
             }, 500)
         } catch (e: Exception) {

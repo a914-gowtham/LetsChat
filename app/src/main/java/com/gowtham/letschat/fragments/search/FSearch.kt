@@ -87,10 +87,13 @@ class FSearch : Fragment(R.layout.f_search), ItemClickListener {
         lifecycleScope.launch {
             viewModel.getCachedList().collect { listData ->
                 Timber.v("List data $listData")
+                //can be used to show recently searched user list
             }
         }
 
         viewModel.getLoadState().observe(viewLifecycleOwner, { state ->
+            userList.clear()
+            adapter.notifyDataSetChanged()
             when (state) {
                 is LoadState.OnLoading -> {
                     binding.apply {
@@ -112,10 +115,9 @@ class FSearch : Fragment(R.layout.f_search), ItemClickListener {
                             txtNoUser.gone()
                             viewEmpty.gone()
                         }
-                        userList.clear()
-                        userList.addAll(list)
-                        adapter.notifyDataSetChanged()
                     }
+                    userList.addAll(list)
+                    adapter.notifyDataSetChanged()
                 }
                 is LoadState.OnFailure -> {
                     binding.apply {
@@ -129,7 +131,6 @@ class FSearch : Fragment(R.layout.f_search), ItemClickListener {
         sharedViewModel.lastQuery.observe(viewLifecycleOwner, {
             if (sharedViewModel.getState().value is ScreenState.SearchState) {
                 if (it.isBlank()) {
-                    //show recent list
                     binding.apply {
                         viewEmpty.show()
                         txtNoUser.gone()
@@ -152,6 +153,6 @@ class FSearch : Fragment(R.layout.f_search), ItemClickListener {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewModel.clearCachedUser()
+//        viewModel.clearCachedUser()
     }
 }
