@@ -68,9 +68,6 @@ class ChatHandler @Inject constructor(
             Timber.v("ChatHandler init")
             messageCollectionGroup=UserUtils.getMessageSubCollectionRef()
             preference.clearCurrentUser()
-            CoroutineScope(Dispatchers.IO).launch{
-                chatUsers=dbRepository.getChatUserList()
-            }
 
             listenerDoc1= messageCollectionGroup.whereEqualTo("from",fromUser)
                 .addSnapshotListener { snapShots, error ->
@@ -81,7 +78,6 @@ class ChatHandler @Inject constructor(
                         snapShots?.forEach { doc->
                             val parentDoc=doc.reference.parent.parent?.id!!
                                 val message= doc.data.toDataClass<Message>()
-                            Timber.v("CreatedAt1 ${message.createdAt}")
                             message.chatUserId =if (message.from != fromUser) message.from else message.to
                                 if (isNotOnlineUser(message)){
                                     messagesList.add(message)
@@ -92,29 +88,6 @@ class ChatHandler @Inject constructor(
                                 else
                                     Timber.i("Online User ${preference.getOnlineUser()}")
                             Timber.v("Message List size ${messagesList.size}")
-                        }
-                        updateChatUserIdInMessage(listOfIds)
-                    }else
-                        Timber.v(error)
-                }
-
-            listenerDoc2= messageCollectionGroup.whereEqualTo("to",fromUser)
-                .addSnapshotListener { snapShots, error ->
-                    if (error==null){
-                        val listOfIds=ArrayList<String>()
-                        snapShots?.forEach { doc->
-                            val parentDoc=doc.reference.parent.parent?.id!!
-                                val message= doc.data.toDataClass<Message>()
-                            Timber.v("CreatedAt2 ${message.createdAt}")
-                                message.chatUserId =if (message.from != fromUser) message.from else message.to
-                                if (isNotOnlineUser(message)){
-                                    messagesList.add(message)
-                                    if (!listOfDoc.contains(parentDoc)){
-                                        listOfDoc.add(doc.reference.parent.parent?.id.toString())
-                                        listOfIds.add(message.chatUserId!!)
-                                    }}
-                                else
-                                    Timber.i("Online User ${preference.getOnlineUser()}")
                         }
                         updateChatUserIdInMessage(listOfIds)
                     }else
@@ -156,23 +129,16 @@ class ChatHandler @Inject constructor(
     private fun updateOnDb(list: ArrayList<ChatUser>,
                            unSavedUsersId: ArrayList<String>,
                            locallySaved: ArrayList<String>) {
-        val statusUpdater= MessageStatusUpdater(messageCollection)
-        statusUpdater.updateToDelivery(fromUser!!,messagesList,*chatUsers.toTypedArray())
-        Timber.v("My message ${messagesList.size}")
-        CoroutineScope(Dispatchers.IO).launch {
-            dbRepository.insertMultipleMessage(messagesList)
-            dbRepository.insertMultipleUser(list)
-            val lastMessage=dbRepository.getMessageList()
-            withContext(Dispatchers.Main) {
-                showNotification(unSavedUsersId,locallySaved,lastMessage)
-            }
-        }
+             dbRepository.insertMultipleMessage(messagesList)
+             dbRepository.insertMultipleUser(list)
+             showNotification(unSavedUsersId,locallySaved)
+             val statusUpdater= MessageStatusUpdater(messageCollection)
+             statusUpdater.updateToDelivery(fromUser!!,messagesList,*chatUsers.toTypedArray())
     }
 
     private fun showNotification(
         unSavedUsersId: ArrayList<String>,
-        locallySaved: ArrayList<String>,
-        lastMessage: List<Message>) {
+        locallySaved: ArrayList<String>) {
         /*   val ignoreNoti=(isFirstTime && unSavedUsersId.isEmpty())
            if (ignoreNoti) {
                isFirstTime=false
@@ -182,7 +148,7 @@ class ChatHandler @Inject constructor(
 
         if (unSavedUsersId.isEmpty() && locallySaved.isEmpty()) {
 //            Utils.removeNotification(context)
-            FirebasePush.showNotification(context, dbRepository)
+//            FirebasePush.showNotification(context, dbRepository)
         } else {
             //unsaved new user
             for (userId in unSavedUsersId) {
@@ -207,6 +173,30 @@ class ChatHandler @Inject constructor(
                 )
             }
         }
-        dbRepository.insertMultipleMessage(messagesList)
+        if (listenerDoc2==null){
+            listenerDoc2= messageCollectionGroup.whereEqualTo("to",fromUser)
+                .addSnapshotListener { snapShots, error ->
+                    if (error==null){
+                        messagesList.clear()
+                        listOfDoc.clear()
+                        val listOfIds=ArrayList<String>()
+                        snapShots?.forEach { doc->
+                            val parentDoc=doc.reference.parent.parent?.id!!
+                            val message= doc.data.toDataClass<Message>()
+                            message.chatUserId =if (message.from != fromUser) message.from else message.to
+                            if (isNotOnlineUser(message)){
+                                messagesList.add(message)
+                                if (!listOfDoc.contains(parentDoc)){
+                                    listOfDoc.add(doc.reference.parent.parent?.id.toString())
+                                    listOfIds.add(message.chatUserId!!)
+                                }}
+                            else
+                                Timber.i("Online User ${preference.getOnlineUser()}")
+                        }
+                        updateChatUserIdInMessage(listOfIds)
+                    }else
+                        Timber.v(error)
+                }
+        }
     }
 }
