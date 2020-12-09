@@ -22,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.util.logging.Handler
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -46,6 +47,8 @@ class ChatHandler @Inject constructor(
 
     private lateinit var messageCollectionGroup: Query
 
+    private var firetTime: Boolean=true
+
     companion object{
 
         private var listenerDoc1: ListenerRegistration?=null
@@ -69,7 +72,7 @@ class ChatHandler @Inject constructor(
             messageCollectionGroup=UserUtils.getMessageSubCollectionRef()
             preference.clearCurrentUser()
 
-            listenerDoc1= messageCollectionGroup.whereEqualTo("from",fromUser)
+            listenerDoc1= messageCollectionGroup.whereArrayContains("chatUsers", fromUser!!)
                 .addSnapshotListener { snapShots, error ->
                     if (error==null){
                         messagesList.clear()
@@ -116,7 +119,9 @@ class ChatHandler @Inject constructor(
                         list.add(chatUser)
                     }
                 }
-                updateOnDb(list,unSavedUsersId,locallySaved)
+                withContext(Dispatchers.Main){
+                    updateOnDb(list,unSavedUsersId,locallySaved)
+                }
             }
         }
     }
@@ -173,30 +178,32 @@ class ChatHandler @Inject constructor(
                 )
             }
         }
-        if (listenerDoc2==null){
-            listenerDoc2= messageCollectionGroup.whereEqualTo("to",fromUser)
-                .addSnapshotListener { snapShots, error ->
-                    if (error==null){
-                        messagesList.clear()
-                        listOfDoc.clear()
-                        val listOfIds=ArrayList<String>()
-                        snapShots?.forEach { doc->
-                            val parentDoc=doc.reference.parent.parent?.id!!
-                            val message= doc.data.toDataClass<Message>()
-                            message.chatUserId =if (message.from != fromUser) message.from else message.to
-                            if (isNotOnlineUser(message)){
-                                messagesList.add(message)
-                                if (!listOfDoc.contains(parentDoc)){
-                                    listOfDoc.add(doc.reference.parent.parent?.id.toString())
-                                    listOfIds.add(message.chatUserId!!)
-                                }}
-                            else
-                                Timber.i("Online User ${preference.getOnlineUser()}")
-                        }
-                        updateChatUserIdInMessage(listOfIds)
-                    }else
-                        Timber.v(error)
-                }
-        }
+//        if (listenerDoc2==null){
+//            Timber.v("listenerDoc2 is null")
+//            listenerDoc2= messageCollectionGroup.whereEqualTo("to",fromUser)
+//                .addSnapshotListener { snapShots, error ->
+//                    if (error==null){
+//                        messagesList.clear()
+//                        listOfDoc.clear()
+//                        val listOfIds=ArrayList<String>()
+//                        snapShots?.forEach { doc->
+//                            val parentDoc=doc.reference.parent.parent?.id!!
+//                            val message= doc.data.toDataClass<Message>()
+//                            message.chatUserId =if (message.from != fromUser) message.from else message.to
+//                            if (isNotOnlineUser(message)){
+//                                messagesList.add(message)
+//                                if (!listOfDoc.contains(parentDoc)){
+//                                    listOfDoc.add(doc.reference.parent.parent?.id.toString())
+//                                    listOfIds.add(message.chatUserId!!)
+//                                }}
+//                            else
+//                                Timber.i("Online User ${preference.getOnlineUser()}")
+//                        }
+//                        Timber.v("Messages ${messagesList.size}")
+//                        updateChatUserIdInMessage(listOfIds)
+//                    }else
+//                        Timber.v(error)
+//                }
+//        }
     }
 }

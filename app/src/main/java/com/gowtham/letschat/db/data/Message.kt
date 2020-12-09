@@ -26,6 +26,7 @@ data class Message(
     var audioMessage: AudioMessage?=null,
     var videoMessage: VideoMessage?=null,
     var fileMessage: FileMessage?=null,
+    var chatUsers: ArrayList<String>?=null,
     @set:Exclude @get:Exclude
                    var chatUserId: String?=null): Parcelable
 

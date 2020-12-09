@@ -69,6 +69,7 @@ class MessageSender(private val msgCollection: CollectionReference,
             val chatUserId=message.chatUserId
             message.chatUserId=null  //chatUserId field is being used only for relation query,changing to null will ignore this field
             message.status=1
+            message.chatUsers= arrayListOf(message.from,message.to)
             msgCollection.document(doc).collection("messages").document(message.createdAt.toString()).set(
                 message,
                 SetOptions.merge()
