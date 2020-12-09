@@ -17,10 +17,7 @@ import com.gowtham.letschat.fragments.single_chat.toDataClass
 import com.gowtham.letschat.utils.MPreference
 import com.gowtham.letschat.utils.UserUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import timber.log.Timber
 import java.util.logging.Handler
 import javax.inject.Inject
@@ -46,8 +43,6 @@ class ChatHandler @Inject constructor(
     private val listOfDoc=ArrayList<String>()
 
     private lateinit var messageCollectionGroup: Query
-
-    private var firetTime: Boolean=true
 
     companion object{
 
@@ -116,9 +111,13 @@ class ChatHandler @Inject constructor(
                         chatUser.unRead=messagesList.filter { it.from==chatUser.id &&
                                 it.status<3 }.size
                         chatUser.documentId =doc
+                        Timber.v("UserId ${chatUser.id}  count ${chatUser.unRead}")
                         list.add(chatUser)
                     }
                 }
+                dbRepository.insertMultipleMessage(messagesList)
+                dbRepository.insertMultipleUser(list)
+                delay(500)
                 withContext(Dispatchers.Main){
                     updateOnDb(list,unSavedUsersId,locallySaved)
                 }
@@ -134,8 +133,6 @@ class ChatHandler @Inject constructor(
     private fun updateOnDb(list: ArrayList<ChatUser>,
                            unSavedUsersId: ArrayList<String>,
                            locallySaved: ArrayList<String>) {
-             dbRepository.insertMultipleMessage(messagesList)
-             dbRepository.insertMultipleUser(list)
              showNotification(unSavedUsersId,locallySaved)
              val statusUpdater= MessageStatusUpdater(messageCollection)
              statusUpdater.updateToDelivery(fromUser!!,messagesList,*chatUsers.toTypedArray())
@@ -153,7 +150,7 @@ class ChatHandler @Inject constructor(
 
         if (unSavedUsersId.isEmpty() && locallySaved.isEmpty()) {
 //            Utils.removeNotification(context)
-//            FirebasePush.showNotification(context, dbRepository)
+            FirebasePush.showNotification(context, dbRepository)
         } else {
             //unsaved new user
             for (userId in unSavedUsersId) {
