@@ -16,6 +16,7 @@ import com.gowtham.letschat.di.MessageCollection
 import com.gowtham.letschat.fragments.single_chat.toDataClass
 import com.gowtham.letschat.utils.MPreference
 import com.gowtham.letschat.utils.UserUtils
+import com.gowtham.letschat.utils.getUnreadCount
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import timber.log.Timber
@@ -75,7 +76,7 @@ class ChatHandler @Inject constructor(
                         val listOfIds=ArrayList<String>()
                         snapShots?.forEach { doc->
                             val parentDoc=doc.reference.parent.parent?.id!!
-                                val message= doc.data.toDataClass<Message>()
+                            val message= doc.data.toDataClass<Message>()
                             message.chatUserId =if (message.from != fromUser) message.from else message.to
                                 if (isNotOnlineUser(message)){
                                     messagesList.add(message)
@@ -85,7 +86,6 @@ class ChatHandler @Inject constructor(
                                     }}
                                 else
                                     Timber.i("Online User ${preference.getOnlineUser()}")
-                            Timber.v("Message List size ${messagesList.size}")
                         }
                         updateChatUserIdInMessage(listOfIds)
                     }else
@@ -108,8 +108,7 @@ class ChatHandler @Inject constructor(
                     }else{
                         if (!chatUser.locallySaved)
                             locallySaved.add(chatUser.id)
-                        chatUser.unRead=messagesList.filter { it.from==chatUser.id &&
-                                it.status<3 }.size
+                        chatUser.unRead=messagesList.getUnreadCount(chatUser.id)
                         chatUser.documentId =doc
                         Timber.v("UserId ${chatUser.id}  count ${chatUser.unRead}")
                         list.add(chatUser)
@@ -141,12 +140,6 @@ class ChatHandler @Inject constructor(
     private fun showNotification(
         unSavedUsersId: ArrayList<String>,
         locallySaved: ArrayList<String>) {
-        /*   val ignoreNoti=(isFirstTime && unSavedUsersId.isEmpty())
-           if (ignoreNoti) {
-               isFirstTime=false
-               return
-           }
-   */
 
         if (unSavedUsersId.isEmpty() && locallySaved.isEmpty()) {
 //            Utils.removeNotification(context)
@@ -155,17 +148,15 @@ class ChatHandler @Inject constructor(
             //unsaved new user
             for (userId in unSavedUsersId) {
                 val util = ChatUserUtil(dbRepository, usersCollection, null)
+                val unreadCount = messagesList.getUnreadCount(userId)
                 util.queryNewUserProfile(
                     context,
                     userId,
-                    listOfDoc.firstOrNull { it.contains(userId) })
+                    listOfDoc.firstOrNull { it.contains(userId) },unreadCount)
             }
             //unsaved in mobile contacts and already saved in local
             for (userId in locallySaved) {
-                val unreadCount = messagesList.filter {
-                    it.from == it.chatUserId &&
-                            it.status < 3
-                }.size
+                val unreadCount = messagesList.getUnreadCount(userId)
                 val util = ChatUserUtil(dbRepository, usersCollection, null)
                 util.queryNewUserProfile(
                     context,
@@ -175,32 +166,5 @@ class ChatHandler @Inject constructor(
                 )
             }
         }
-//        if (listenerDoc2==null){
-//            Timber.v("listenerDoc2 is null")
-//            listenerDoc2= messageCollectionGroup.whereEqualTo("to",fromUser)
-//                .addSnapshotListener { snapShots, error ->
-//                    if (error==null){
-//                        messagesList.clear()
-//                        listOfDoc.clear()
-//                        val listOfIds=ArrayList<String>()
-//                        snapShots?.forEach { doc->
-//                            val parentDoc=doc.reference.parent.parent?.id!!
-//                            val message= doc.data.toDataClass<Message>()
-//                            message.chatUserId =if (message.from != fromUser) message.from else message.to
-//                            if (isNotOnlineUser(message)){
-//                                messagesList.add(message)
-//                                if (!listOfDoc.contains(parentDoc)){
-//                                    listOfDoc.add(doc.reference.parent.parent?.id.toString())
-//                                    listOfIds.add(message.chatUserId!!)
-//                                }}
-//                            else
-//                                Timber.i("Online User ${preference.getOnlineUser()}")
-//                        }
-//                        Timber.v("Messages ${messagesList.size}")
-//                        updateChatUserIdInMessage(listOfIds)
-//                    }else
-//                        Timber.v(error)
-//                }
-//        }
     }
 }

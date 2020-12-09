@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.gowtham.letschat.R
+import com.gowtham.letschat.db.data.Message
 import com.gowtham.letschat.views.CustomProgressView
 import timber.log.Timber
 
@@ -52,6 +53,11 @@ fun View.gone(){
 
 fun View.show(){
     this.visibility=View.VISIBLE
+}
+
+fun List<Message>.getUnreadCount(userId: String): Int {
+   return this.filter { it.from==userId &&
+            it.status<3 }.size
 }
 
 fun View.hide(){
