@@ -7,6 +7,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
+import androidx.datastore.preferences.core.Preferences
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -21,14 +22,9 @@ import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class FContacts : Fragment(), ItemClickListener {
-
-    @Inject
-    lateinit var preference: MPreference
-
-    @Inject
-    lateinit var chatUserDao: ChatUserDao
-
+class FContacts @Inject constructor(private val preference: MPreference,
+     private val chatUserDao: ChatUserDao) : Fragment(), ItemClickListener {
+ 
     private lateinit var binding: FContactsBinding
 
     private lateinit var context: Activity

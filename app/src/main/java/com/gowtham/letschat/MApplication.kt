@@ -65,7 +65,7 @@ class MApplication : Application(), LifecycleObserver,Configuration.Provider {
     private fun initTimber() {
         if (BuildConfig.DEBUG) {
             Timber.plant(object : Timber.DebugTree() {
-                override fun createStackElementTag(element: StackTraceElement): String? {
+                override fun createStackElementTag(element: StackTraceElement): String {
                     return "LetsChat/${element.fileName}:${element.lineNumber})#${element.methodName}"
                 }
             })

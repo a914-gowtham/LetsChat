@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.PhoneAuthProvider
+import com.gowtham.letschat.BuildConfig
 import com.gowtham.letschat.R
 import com.gowtham.letschat.databinding.FVerifyBinding
 import com.gowtham.letschat.utils.*
