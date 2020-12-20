@@ -50,7 +50,7 @@ class ChatUserDaoTest {
     }
 
     @Test
-    fun insertChatUser() = runBlockingTest {
+    fun insert_ChatUser() = runBlockingTest {
          val chatUser=ChatUser("testUser1","Gowtham", UserProfile("testUser1",13232113L,123321321L),)
          chatUserDao.insertUser(chatUser)
          val chatUsers=chatUserDao.getChatUserList()
@@ -58,7 +58,7 @@ class ChatUserDaoTest {
     }
 
     @Test
-    fun getChatUserById() = runBlockingTest {
+    fun get_ChatUser_ById() = runBlockingTest {
         val user=ChatUser("testId","Gowtham", UserProfile("testId",13232113L,123321321L),)
         chatUserDao.insertUser(user)
         val chatUser=chatUserDao.getChatUserById("testId")
@@ -66,7 +66,7 @@ class ChatUserDaoTest {
     }
 
     @Test
-    fun deleteUserById() = runBlockingTest {
+    fun delete_User_ById() = runBlockingTest {
         val user=ChatUser("testDeleteUserId","Gowtham", UserProfile("testDeleteUserId",13232113L,123321321L),)
         chatUserDao.insertUser(user)
         chatUserDao.deleteUserById("testDeleteUserId")

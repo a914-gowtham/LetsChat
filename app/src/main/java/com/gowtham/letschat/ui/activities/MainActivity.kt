@@ -11,10 +11,12 @@ import androidx.activity.viewModels
 import androidx.appcompat.widget.SearchView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.FragmentNavigator
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
@@ -27,6 +29,7 @@ import com.gowtham.letschat.db.data.Group
 import com.gowtham.letschat.fragments.single_chat_home.FSingleChatHomeDirections
 import com.gowtham.letschat.utils.*
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -74,7 +77,7 @@ class MainActivity : ActBase() {
         val groupChatBadge = binding.bottomNav.getOrCreateBadge(R.id.nav_group)
         groupChatBadge.isVisible = false
         lifecycleScope.launch {
-            groupDao.getGroupWithMessages().collect { list ->
+            groupDao.getGroupWithMessages().conflate().collect { list ->
                 val count = list.filter { it.group.unRead != 0 }
                 groupChatBadge.isVisible = count.isNotEmpty() //hide if 0
                 groupChatBadge.number = count.size
@@ -82,7 +85,7 @@ class MainActivity : ActBase() {
         }
 
         lifecycleScope.launch {
-            chatUserDao.getChatUserWithMessages().collect { list ->
+            chatUserDao.getChatUserWithMessages().conflate().collect { list ->
                 val count = list.filter { it.user.unRead != 0 && it.messages.isNotEmpty() }
                 badge.isVisible = count.isNotEmpty() //hide if 0
                 badge.number = count.size

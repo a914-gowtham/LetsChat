@@ -5,7 +5,7 @@ import androidx.room.Embedded
 import androidx.room.Relation
 import kotlinx.android.parcel.Parcelize
 
-@Parcelize
+@kotlinx.parcelize.Parcelize
 class ChatUserWithMessages(
     @Embedded
     val user: ChatUser,

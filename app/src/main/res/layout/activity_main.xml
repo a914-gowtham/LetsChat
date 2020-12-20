@@ -26,7 +26,7 @@
 
                 <androidx.fragment.app.FragmentContainerView
                     android:id="@+id/nav_host_fragment"
-                    android:name="androidx.navigation.fragment.NavHostFragment"
+                    android:name="com.gowtham.letschat.views.MainNavHostFragment"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"

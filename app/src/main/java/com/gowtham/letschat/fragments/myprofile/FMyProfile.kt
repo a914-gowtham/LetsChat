@@ -11,8 +11,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.gowtham.letschat.R
+import com.gowtham.letschat.databinding.AlertLogoutBinding
 import com.gowtham.letschat.databinding.FMyProfileBinding
-import com.gowtham.letschat.databinding.ViewAlertBinding
 import com.gowtham.letschat.db.ChatUserDatabase
 import com.gowtham.letschat.utils.*
 import com.gowtham.letschat.views.CustomProgressView
@@ -61,12 +61,14 @@ class FMyProfile : Fragment(R.layout.f_my_profile) {
         }
         binding.btnSaveChanges.setOnClickListener {
             val newName = viewModel.userName.value
+            val about = viewModel.about.value
+            val image=viewModel.imageUrl.value
             when {
                 viewModel.isUploading.value!! -> context.toast("Profile picture is uploading!")
                 newName.isNullOrBlank() -> context.toast("User name can't be empty!")
                 else -> {
                     context.window.decorView.clearFocus()
-                    viewModel.saveChanges()
+                    viewModel.saveChanges(newName,about ?: "" ,image ?: "")
                 }
             }
         }
@@ -89,7 +91,7 @@ class FMyProfile : Fragment(R.layout.f_my_profile) {
     private fun initDialog() {
         try {
             dialog = Dialog(requireContext())
-            val layoutBinder = ViewAlertBinding.inflate(layoutInflater)
+            val layoutBinder = AlertLogoutBinding.inflate(layoutInflater)
             dialog.setContentView(layoutBinder.root)
             dialog.window?.setLayout(
                 ViewGroup.LayoutParams.MATCH_PARENT,

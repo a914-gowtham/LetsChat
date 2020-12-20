@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
 
 @IgnoreExtraProperties
 @Serializable
-@Parcelize
+@kotlinx.parcelize.Parcelize
 @Entity
 data class GroupMessage(@PrimaryKey
                         val createdAt: Long, var groupId: String,

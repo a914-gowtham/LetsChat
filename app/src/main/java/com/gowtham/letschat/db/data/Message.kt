@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
 
 @IgnoreExtraProperties
 @Serializable
-@Parcelize
+@kotlinx.parcelize.Parcelize
 @Entity
 data class Message(
     @PrimaryKey
@@ -31,22 +31,22 @@ data class Message(
                    var chatUserId: String?=null): Parcelable
 
 @Serializable
-@Parcelize
+@kotlinx.parcelize.Parcelize
 data class TextMessage(val text: String?=null): Parcelable
 
 @Serializable
-@Parcelize
+@kotlinx.parcelize.Parcelize
 data class AudioMessage(var uri: String?=null,val duration: Int=0): Parcelable
 
 @Serializable
-@Parcelize
+@kotlinx.parcelize.Parcelize
 data class ImageMessage(var uri: String?=null,var imageType: String="image"): Parcelable
 
 @Serializable
-@Parcelize
+@kotlinx.parcelize.Parcelize
 data class VideoMessage(val uri: String?=null,val duration: Int=0): Parcelable
 
 @Serializable
-@Parcelize
+@kotlinx.parcelize.Parcelize
 data class FileMessage(val name: String?=null,
                        val uri: String?=null,val duration: Int=0): Parcelable

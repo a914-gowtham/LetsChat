@@ -7,9 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.SetOptions
-import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
 import com.gowtham.letschat.utils.LoadState
 import com.gowtham.letschat.utils.MPreference
@@ -21,8 +19,7 @@ import java.util.*
 
 class FMyProfileViewModel @ViewModelInject constructor(
     @ApplicationContext private val context: Context,
-    private val preference: MPreference,private val usersCollection: CollectionReference
-) : ViewModel() {
+    private val preference: MPreference,private val usersCollection: CollectionReference) : ViewModel() {
 
     private var userProfile = preference.getUserProfile()
 
@@ -73,21 +70,18 @@ class FMyProfileViewModel @ViewModelInject constructor(
         }
     }
 
-    fun saveChanges() {
-        try {
-            profileUpdateState.value=LoadState.OnLoading
-            updateProfileData()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+    fun saveChanges(name: String,strAbout: String, image: String) {
+        name.toLowerCase(Locale.getDefault())
+        updateProfileData(name,strAbout,image)
     }
 
-    private fun updateProfileData() {
+    private fun updateProfileData(name: String, strAbout: String, image: String) {
         try {
+            profileUpdateState.value=LoadState.OnLoading
             val profile=userProfile!!
-            profile.userName = userName.value!!.toLowerCase(Locale.getDefault())
-            profile.about =about.value!!
-            profile.image =imageUrl.value!!
+            profile.userName = name
+            profile.about =strAbout
+            profile.image =image
             profile.updatedAt=System.currentTimeMillis()
             docuRef.set(profile, SetOptions.merge()).addOnSuccessListener {
                 context.toast("Profile updated!")

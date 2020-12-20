@@ -22,8 +22,7 @@ import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class FContacts @Inject constructor(private val preference: MPreference,
-     private val chatUserDao: ChatUserDao) : Fragment(), ItemClickListener {
+class FContacts @Inject constructor(private val preference: MPreference) : Fragment(), ItemClickListener {
  
     private lateinit var binding: FContactsBinding
 

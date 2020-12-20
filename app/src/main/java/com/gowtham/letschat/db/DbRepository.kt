@@ -25,8 +25,35 @@ class DbRepository @Inject constructor(
     private val preference: MPreference,
     private val groupDao: GroupDao,
     private val groupMsgDao: GroupMessageDao,
-    private val messageDao: MessageDao) {
+    private val messageDao: MessageDao) : DefaultDbRepo {
 
+    override fun insertUser(user: ChatUser) {
+        CoroutineScope(Dispatchers.IO).launch {
+            userDao.insertUser(user)
+        }
+    }
+
+    override fun insertMultipleUser(users: List<ChatUser>) {
+        CoroutineScope(Dispatchers.IO).launch {
+            userDao.insertMultipleUser(users)
+        }
+    }
+
+    override fun getChatUserWithMessages() = userDao.getChatUserWithMessages()
+
+    override fun getChatUserList() = userDao.getChatUserList()
+
+    override fun getChatUserWithMessagesList() = userDao.getChatUserWithMessagesList()
+
+    override fun getChatUserById(id: String) = userDao.getChatUserById(id)
+
+    override fun getAllChatUser() = userDao.getAllChatUser()
+
+    override fun nukeTable() {
+    }
+
+    override fun deleteUserById(userId: String) {
+    }
 
     fun insertMultipleUser(finalList: ArrayList<ChatUser>) {
         CoroutineScope(Dispatchers.IO).launch {
@@ -52,11 +79,6 @@ class DbRepository @Inject constructor(
         }
     }
 
-    fun insertUser(chatUser: ChatUser) {
-        CoroutineScope(Dispatchers.IO).launch {
-            userDao.insertUser(chatUser)
-        }
-    }
 
     fun insertMessage(message: Message) {
         CoroutineScope(Dispatchers.IO).launch {
@@ -82,26 +104,15 @@ class DbRepository @Inject constructor(
 
     fun getChatsOfFriend(toUser: String) = messageDao.getChatsOfFriend(toUser)
 
-    fun getChatUserWithMessages() = userDao.getChatUserWithMessages()
-
-    fun getChatUserList() = userDao.getChatUserList()
-
-    fun getAllChatUser() = userDao.getAllChatUser()
-
     fun getGroupById(groupId: String) = groupDao.getGroupById(groupId)
 
     fun getChatsOfGroupList(groupId: String) = groupMsgDao.getChatsOfGroupList(groupId)
 
     fun getChatsOfGroup(groupId: String) = groupMsgDao.getChatsOfGroup(groupId)
 
-    fun getChatUserWithMessagesList() = userDao.getChatUserWithMessagesList()
-
     fun getGroupWithMessagesList() = groupDao.getGroupWithMessagesList()
-
-    fun getChatUserById(chatUserId: String) = userDao.getChatUserById(chatUserId)
 
     fun getMessageList() = messageDao.getMessageList()
 
     fun getGroupList() = groupDao.getGroupList()
-
 }

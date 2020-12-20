@@ -1,43 +1,25 @@
 package com.gowtham.letschat.fragments.single_chat_home
 
-import android.content.Context
 import androidx.hilt.lifecycle.ViewModelInject
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.firebase.firestore.CollectionReference
 import com.gowtham.letschat.db.DbRepository
-import com.gowtham.letschat.db.daos.ChatUserDao
-import com.gowtham.letschat.db.data.ChatUserWithMessages
-import com.gowtham.letschat.db.data.Message
-import com.gowtham.letschat.di.MessageCollection
+import com.gowtham.letschat.db.DefaultDbRepo
+import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.utils.LogMessage
 import com.gowtham.letschat.utils.MPreference
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
 
 class SingleChatHomeViewModel  @ViewModelInject
-constructor(@ApplicationContext private val context: Context,
-            private val dbRepo: DbRepository,
-            @MessageCollection
-            private val messageCollection: CollectionReference,
+constructor(private val dbRepo: DbRepository,
             private val preference: MPreference): ViewModel() {
-
-    private val messagesList: MutableList<Message> by lazy { mutableListOf() }
-
-    val messagesMutableLiveData = MutableLiveData<List<Message>>()
-
-    private val toUser=preference.getOnlineUser()
 
     private val fromUser=preference.getUid()
 
     val message= MutableLiveData<String>()
 
-    private val configChanged= MutableLiveData(0)
-
     init {
-        LogMessage.v("SingleChatHomeVModel init $toUser")
+        LogMessage.v("SingleChatHomeVModel init")
     }
 
     fun getChatUsers() = dbRepo.getChatUserWithMessages()
@@ -46,7 +28,6 @@ constructor(@ApplicationContext private val context: Context,
 
     override fun onCleared() {
         LogMessage.v("SingleChatHOME cleared")
-        configChanged.value=0
         super.onCleared()
     }
 }
