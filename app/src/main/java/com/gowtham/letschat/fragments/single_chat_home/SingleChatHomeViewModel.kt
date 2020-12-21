@@ -11,15 +11,12 @@ import com.gowtham.letschat.utils.LogMessage
 import com.gowtham.letschat.utils.MPreference
 
 class SingleChatHomeViewModel  @ViewModelInject
-constructor(private val dbRepo: DbRepository,
-            private val preference: MPreference): ViewModel() {
-
-    private val fromUser=preference.getUid()
+constructor(private val dbRepo: DefaultDbRepo): ViewModel() {
 
     val message= MutableLiveData<String>()
 
     init {
-        LogMessage.v("SingleChatHomeVModel init")
+//        LogMessage.v("SingleChatHomeVModel init")
     }
 
     fun getChatUsers() = dbRepo.getChatUserWithMessages()
@@ -27,7 +24,16 @@ constructor(private val dbRepo: DbRepository,
     fun getChatUsersAsList() = dbRepo.getChatUserWithMessagesList()
 
     override fun onCleared() {
-        LogMessage.v("SingleChatHOME cleared")
+//        LogMessage.v("SingleChatHOME cleared")
         super.onCleared()
     }
+
+    fun insertChatUser(chatUser: ChatUser) = dbRepo.insertUser(chatUser)
+
+    fun insertMultipleChatUser(users : List<ChatUser>) = dbRepo.insertMultipleUser(users)
+
+    fun getAllChatUser() = dbRepo.getAllChatUser()
+
+    fun deleteUser(userId: String) = dbRepo.deleteUserById(userId)
+
 }

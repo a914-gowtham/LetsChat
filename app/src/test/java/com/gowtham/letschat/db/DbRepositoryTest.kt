@@ -35,7 +35,7 @@ class DbRepositoryTest : DefaultDbRepo {
             return users.firstOrNull { it.id==id }
     }
 
-    override suspend fun deleteUserById(userId: String) {
+    override fun deleteUserById(userId: String) {
           users.removeIf { it.id==userId }
           chatUserList.value=users
     }
