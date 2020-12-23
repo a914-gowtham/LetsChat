@@ -46,6 +46,7 @@ import timber.log.Timber
 import java.io.IOException
 import java.util.*
 import javax.inject.Inject
+import kotlin.collections.ArrayList
 
 
 @AndroidEntryPoint
@@ -157,9 +158,11 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
                     requireContext().toast("Nothing is recorded!")
                     return@setOnClickListener
                 }
-                val msg=createMessage()
-                msg.type="audio"
-                msg.audioMessage= AudioMessage(lastAudioFile,duration)
+                val msg=createMessage().apply {
+                    type="audio"
+                    audioMessage= AudioMessage(lastAudioFile,duration)
+                    chatUsers= ArrayList()
+                }
                 viewModel.uploadToCloud(msg,lastAudioFile)
             }
         }
@@ -264,12 +267,14 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
     }
 
     private fun sendMessage() {
-        val msg =Utils.edtValue(binding.viewChatBtm.edtMsg)
+        val msg = edtValue(binding.viewChatBtm.edtMsg)
         if (msg.isEmpty())
             return
         binding.viewChatBtm.lottieSend.playAnimation()
-        val message = createMessage()
-        message.textMessage=TextMessage(msg)
+        val message = createMessage().apply {
+            textMessage=TextMessage(msg)
+            chatUsers= ArrayList()
+        }
         viewModel.sendMessage(message)
         binding.viewChatBtm.edtMsg.setText("")
     }
@@ -347,9 +352,11 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
         try {
             val imagePath: Uri? = ImageUtils.getCroppedImage(data)
             if (imagePath!=null){
-                val message=createMessage()
-                message.type="image"
-                message.imageMessage=ImageMessage(imagePath.toString())
+                val message=createMessage().apply {
+                    type="image"
+                    imageMessage=ImageMessage(imagePath.toString())
+                    chatUsers= ArrayList()
+                }
                 viewModel.uploadToCloud(message,imagePath.toString())
             }
         } catch (e: Exception) {
@@ -379,6 +386,7 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
         imageMsg.apply {
             type="image"
             imageMessage=image
+            chatUsers= ArrayList()
         }
         viewModel.uploadToCloud(imageMsg,image.toString())
     }

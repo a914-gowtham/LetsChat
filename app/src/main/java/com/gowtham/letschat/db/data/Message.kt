@@ -14,8 +14,8 @@ import kotlinx.serialization.Serializable
 @Entity
 data class Message(
     @PrimaryKey
-    val createdAt: Long, var deliveryTime: Long?=null,
-    var seenTime: Long?=null,
+    val createdAt: Long, var deliveryTime: Long=0L,
+    var seenTime: Long=0L,
     val from: String, val to: String,
     val senderName: String,
     val senderImage: String,
@@ -28,7 +28,7 @@ data class Message(
     var fileMessage: FileMessage?=null,
     var chatUsers: ArrayList<String>?=null,
     @set:Exclude @get:Exclude
-                   var chatUserId: String?=null): Parcelable
+    var chatUserId: String?=null): Parcelable
 
 @Serializable
 @kotlinx.parcelize.Parcelize

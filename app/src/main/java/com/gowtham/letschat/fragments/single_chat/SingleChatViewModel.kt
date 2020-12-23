@@ -7,6 +7,7 @@ import android.os.Looper
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -220,17 +221,6 @@ constructor(
 
     fun setChatsOfThisUser(list: MutableList<Message>) {
         chatsFromRoom = list as ArrayList<Message>
-        /*   val filterList = chatsFromRoom
-               .filter { it.status != 3 && it.from != fromUser }
-               .map { it.status = 3
-                   it
-               }
-           if (filterList.isNotEmpty()) {
-               Timber.v("Seen updated locally")
-               CoroutineScope(Dispatchers.IO).launch {
-                   messageDao.insertMultipleMessage(filterList)
-               }
-           }*/
         if (!statusUpdated) {
             statusUpdated = true
             setSeenAllMessage()  //one time only
@@ -243,33 +233,9 @@ constructor(
 
     fun getCanScroll() = canScroll
 
-    private fun updateMessageStatus(message: Message) {
-        if (isOnlineStatus) { //update message status to seen
-            message.status = 3
-            val seenTime = System.currentTimeMillis()
-            message.deliveryTime = message.deliveryTime ?: seenTime
-            message.seenTime = seenTime
-        } else {    //update message status to delivered
-            message.status = 2
-            message.deliveryTime = System.currentTimeMillis()
-        }
-    }
-
     fun setOnline(online: Boolean) {
         isOnlineStatus = online
     }
-
-
-/*    private fun updateMsgReceivedStatus(messagesList: List<Message>, document: String) {
-        LogMessage.v("Message status update called")
-        messageCollection.document(document).set(
-            mapOf("messages" to messagesList),
-        ).addOnSuccessListener {
-            LogMessage.v("Message status updated successfully")
-        }.addOnFailureListener {
-            LogMessage.v("Message status update failed reason ${it.message}")
-        }
-    }*/
 
     fun getMessagesByChatUserId(chatUserId: String) =
         dbRepository.getMessagesByChatUserId(chatUserId)
@@ -321,7 +287,7 @@ constructor(
         override fun onSuccess(message: Message) {
             LogMessage.v("messageListener OnSuccess ${message.textMessage?.text}")
             dbRepository.insertMessage(message)
-            if (!chatUser.user.token.isEmpty())
+            if (chatUser.user.token.isNotEmpty())
                 UserUtils.sendPush(
                     context,
                     TYPE_NEW_MESSAGE,

@@ -3,6 +3,7 @@ package com.gowtham.letschat.db.daos
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.gowtham.letschat.db.data.Message
+import com.gowtham.letschat.utils.LogMessage
 import kotlinx.coroutines.flow.Flow
 
 @Dao

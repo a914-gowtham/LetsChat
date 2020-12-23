@@ -9,6 +9,7 @@ import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.data.Group
 import com.gowtham.letschat.db.data.GroupMessage
 import com.gowtham.letschat.db.data.Message
+import com.gowtham.letschat.utils.LogMessage
 import com.gowtham.letschat.utils.MPreference
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -82,7 +83,10 @@ class DbRepository @Inject constructor(
 
     fun insertMessage(message: Message) {
         CoroutineScope(Dispatchers.IO).launch {
+            val size=messageDao.getMessageList().size
+            LogMessage.e("Size before $size")
             messageDao.insertMessage(message)
+            LogMessage.e("Size afte")
         }
     }
 
