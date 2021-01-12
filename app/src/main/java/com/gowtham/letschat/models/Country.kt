@@ -1,8 +1,9 @@
 package com.gowtham.letschat.models
 
+import android.os.Parcel
 import android.os.Parcelable
-import androidx.annotation.Keep
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parceler
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 @Serializable

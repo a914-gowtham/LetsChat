@@ -206,7 +206,6 @@ class MainActivity : ActBase() {
         sharedViewModel.getState().observe(this, { state ->
             if (state is ScreenState.SearchState && searchView.isIconified) {
                 searchItem.expandActionView()
-                val list=sharedViewModel.listOfQuery
                 searchView.setQuery(sharedViewModel.getLastQuery().value, false)
             }
         })

@@ -6,7 +6,6 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.fcmsender.FCMSender
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
 import com.google.firebase.firestore.FirebaseFirestore
@@ -18,7 +17,6 @@ import com.gowtham.letschat.models.UserProfile
 import com.gowtham.letschat.utils.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ActivityScoped
-import org.json.JSONObject
 import timber.log.Timber
 import java.util.*
 import javax.inject.Singleton

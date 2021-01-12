@@ -4,14 +4,14 @@ import android.content.Context
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.google.firebase.firestore.CollectionReference
 import com.gowtham.letschat.core.QueryCompleteListener
 import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.data.ChatUser
-import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.models.UserProfile
-import com.gowtham.letschat.utils.*
+import com.gowtham.letschat.utils.LoadState
+import com.gowtham.letschat.utils.LogMessage
+import com.gowtham.letschat.utils.UserUtils
+import com.gowtham.letschat.utils.toast
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,16 +21,13 @@ import timber.log.Timber
 
 class ContactsViewModel @ViewModelInject constructor(
     @ApplicationContext private val context: Context,
-    private val dbRepo: DbRepository,
-    private val preference: MPreference) : ViewModel() {
+    private val dbRepo: DbRepository) : ViewModel() {
 
     val queryState = MutableLiveData<LoadState>()
 
     val list= MutableLiveData<ArrayList<ChatUser>>()
 
     val contactsCount = MutableLiveData("0 Contacts")
-
-    private val uId=preference.getUid()
 
     private lateinit var chatUsers: List<ChatUser>
 
@@ -64,10 +61,10 @@ class ContactsViewModel @ViewModelInject constructor(
                 LogMessage.v("Query Completed ${UserUtils.queriedList.size}")
                 val localContacts=UserUtils.fetchContacts(context)
                 val finalList = ArrayList<ChatUser>()
-                val queriedList=UserUtils.queriedList
+                val list=UserUtils.queriedList
 
                 //set localsaved name to queried users
-                for(doc in queriedList){
+                for(doc in list){
                     val savedNumber=localContacts.firstOrNull { it.mobile == doc.mobile?.number }
                     if(savedNumber!=null){
                         val chatUser= UserUtils.getChatUser(doc, chatUsers, savedNumber.name)

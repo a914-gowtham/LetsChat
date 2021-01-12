@@ -3,9 +3,7 @@ package com.gowtham.letschat.db.data
 import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
-import kotlinx.android.parcel.Parcelize
 import kotlinx.serialization.Serializable
 
 @IgnoreExtraProperties

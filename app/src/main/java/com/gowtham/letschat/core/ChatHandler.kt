@@ -1,7 +1,6 @@
 package com.gowtham.letschat.core
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ListenerRegistration
@@ -9,9 +8,7 @@ import com.google.firebase.firestore.Query
 import com.gowtham.letschat.FirebasePush
 import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.data.ChatUser
-import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.data.Message
-import com.gowtham.letschat.db.daos.MessageDao
 import com.gowtham.letschat.di.MessageCollection
 import com.gowtham.letschat.fragments.single_chat.toDataClass
 import com.gowtham.letschat.utils.MPreference
@@ -20,7 +17,6 @@ import com.gowtham.letschat.utils.getUnreadCount
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import timber.log.Timber
-import java.util.logging.Handler
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -143,7 +139,10 @@ class ChatHandler @Inject constructor(
 
         if (unSavedUsersId.isEmpty() && locallySaved.isEmpty()) {
 //            Utils.removeNotification(context)
-            FirebasePush.showNotification(context, dbRepository)
+               val lastMsgId= messagesList.maxOf { it.createdAt }
+               val msg=messagesList.find { it.createdAt==lastMsgId }
+             if (msg!=null && msg.from !=fromUser)
+                FirebasePush.showNotification(context, dbRepository)
         } else {
             //unsaved new user
             for (userId in unSavedUsersId) {

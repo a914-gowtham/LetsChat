@@ -59,8 +59,8 @@ class LoginRepo @Inject constructor(@ActivityRetainedScoped val actContxt: MainA
     }
 
     override fun onVerificationFailed(exp: FirebaseException) {
-        failedState.value = LogInFailedState.Verification
         "onVerficationFailed:: ${exp.message}".printMeD()
+        failedState.value = LogInFailedState.Verification
         when (exp) {
             is FirebaseAuthInvalidCredentialsException ->
                 context.toast("Invalid Request")

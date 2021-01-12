@@ -6,7 +6,6 @@ import androidx.room.PrimaryKey
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
 import com.gowtham.letschat.models.UserProfile
-import kotlinx.android.parcel.Parcelize
 import kotlinx.serialization.Serializable
 
 @IgnoreExtraProperties

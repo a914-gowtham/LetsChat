@@ -99,7 +99,6 @@ open class ActBase : AppCompatActivity() {
       if (event.status=="online")
           updateStatus()
         else{
-          val lastOnlineRef = database.getReference("/Users/${preference.getUid()}/last_seen")
           val status = database.getReference("/Users/${preference.getUid()}/status")
           status.setValue("offline")
         }

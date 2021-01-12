@@ -14,7 +14,7 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.google.firebase.iid.FirebaseInstanceId
+import com.google.firebase.installations.FirebaseInstallations
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
@@ -22,30 +22,25 @@ import com.gowtham.letschat.MApplication
 import com.gowtham.letschat.core.*
 import com.gowtham.letschat.db.ChatUserDatabase
 import com.gowtham.letschat.db.DbRepository
-import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.daos.GroupDao
 import com.gowtham.letschat.db.daos.GroupMessageDao
-import com.gowtham.letschat.db.daos.MessageDao
 import com.gowtham.letschat.db.data.*
-import com.gowtham.letschat.fragments.contacts.AdContact
 import com.gowtham.letschat.fragments.group_chat_home.AdGroupChatHome
 import com.gowtham.letschat.fragments.single_chat_home.AdSingleChatHome
 import com.gowtham.letschat.models.Contact
 import com.gowtham.letschat.models.ModelDeviceDetails
 import com.gowtham.letschat.models.UserProfile
 import com.gowtham.letschat.models.UserStatus
-import com.gowtham.letschat.services.UploadWorker
 import com.gowtham.letschat.ui.activities.ActSplash
-import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import timber.log.Timber
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.greenrobot.eventbus.EventBus
+import org.json.JSONObject
+import timber.log.Timber
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -64,7 +59,7 @@ object UserUtils {
     fun updatePushToken(context: Context,userCollection: CollectionReference, isSave: Boolean) {
         try {
             if (Utils.isNetConnected(context)) {
-                FirebaseInstanceId.getInstance().instanceId.addOnSuccessListener { result ->
+                FirebaseInstallations.getInstance().getToken(false).addOnSuccessListener { result->
                     MPreference(context).updatePushToken(result.token)
                     if (isSave)
                         updateDeviceDetails(context,userCollection)
@@ -112,22 +107,6 @@ object UserUtils {
         return db.collection("Users").document(preference.getUid()!!)
     }
 
-    fun getMessageCollectionRef(): CollectionReference {
-        val db = FirebaseFirestore.getInstance()
-        return db.collection("Messages")
-    }
-
-
-    fun getGroupCollectionRef(): CollectionReference {
-        val db = FirebaseFirestore.getInstance()
-        return db.collection("Groups")
-    }
-
-    fun getGroupSubCollectionRef(): Query {
-        val db = FirebaseFirestore.getInstance()
-        return db.collectionGroup("group_messages")
-    }
-
     fun getMessageSubCollectionRef(): Query {
         val db = FirebaseFirestore.getInstance()
         return db.collectionGroup("messages")
@@ -143,16 +122,16 @@ object UserUtils {
         val numbers = ArrayList<String>()
         val contacts=ArrayList<Contact>()
         val uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
-        val projectionn = arrayOf(
+        val projection = arrayOf(
             ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
             ContactsContract.CommonDataKinds.Phone.NUMBER
         )
         val selection: String? =
             null //it's like a where concept in mysql
         val selectionArgs: Array<String>? = null
-        val sortorder: String? = null
-        val resolver = context.contentResolver;
-        val cursor = resolver.query(uri, projectionn, selection, selectionArgs, sortorder)
+        val sortOrder: String? = null
+        val resolver = context.contentResolver
+        val cursor = resolver.query(uri, projection, selection, selectionArgs, sortOrder)
         while (cursor!!.moveToNext()) {
             val name =
                 cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
@@ -185,12 +164,12 @@ object UserUtils {
                     break
                 }
             }
-            hashMap.put(mobile.replace(" ", ""), contact.name)
+            hashMap[mobile.replace(" ", "")] = contact.name
         }
         return hashMap
     }
 
-    public fun getDeviceInfo(context: Context): JSONObject {
+    fun getDeviceInfo(context: Context): JSONObject {
         try {
             val deviceInfo = JSONObject()
             deviceInfo.put("device_id", getDeviceId(context))
@@ -209,7 +188,7 @@ object UserUtils {
     }
 
     @SuppressLint("HardwareIds")
-    public fun getDeviceId(context: Context): String? {
+    fun getDeviceId(context: Context): String? {
         return Settings.Secure.getString(
             context.contentResolver,
             Settings.Secure.ANDROID_ID

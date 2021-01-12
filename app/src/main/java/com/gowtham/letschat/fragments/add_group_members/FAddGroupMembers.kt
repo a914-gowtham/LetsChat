@@ -42,7 +42,7 @@ class FAddGroupMembers : Fragment(), ItemClickListener {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FAddGroupMembersBinding.inflate(layoutInflater, container, false)
         binding.lifecycleOwner = viewLifecycleOwner
         setHasOptionsMenu(true)
@@ -127,7 +127,7 @@ class FAddGroupMembers : Fragment(), ItemClickListener {
             searchView.isEnabled = it !is LoadState.OnLoading
             when (it) {
                 is LoadState.OnSuccess -> {
-                    val emptyList = it.data as ArrayList<ChatUser>
+                    val emptyList = it.data as ArrayList<*>
                     if (emptyList.isEmpty()) {
                         binding.viewEmpty.show()
                         binding.progress.hide()

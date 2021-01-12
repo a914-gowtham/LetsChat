@@ -6,15 +6,10 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import com.gowtham.letschat.FirebasePush
 import com.gowtham.letschat.db.DbRepository
-import com.gowtham.letschat.db.daos.ChatUserDao
-import com.gowtham.letschat.db.daos.GroupDao
-import com.gowtham.letschat.db.daos.GroupMessageDao
-import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.data.Group
 import com.gowtham.letschat.db.data.GroupMessage
 import com.gowtham.letschat.di.GroupCollection
 import com.gowtham.letschat.fragments.single_chat.toDataClass
-import com.gowtham.letschat.utils.LogMessage
 import com.gowtham.letschat.utils.MPreference
 import com.gowtham.letschat.utils.UserUtils
 import com.gowtham.letschat.utils.Utils
@@ -44,12 +39,8 @@ class GroupChatHandler @Inject constructor(
 
     private val listOfGroup = ArrayList<String>()
 
-    private lateinit var chatUsers: List<ChatUser>
-
     companion object{
-
         private var groupListener: ListenerRegistration?=null
-
         private var myProfileListener: ListenerRegistration?=null
         private var instanceCreated=false
 

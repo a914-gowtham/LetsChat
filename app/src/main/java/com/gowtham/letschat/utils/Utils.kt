@@ -5,7 +5,6 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.Resources
 import android.graphics.Color
 import android.media.AudioAttributes
 import android.media.RingtoneManager
@@ -28,25 +27,24 @@ import com.gowtham.letschat.db.ChatUserDatabase
 import com.gowtham.letschat.db.data.GroupMessage
 import com.gowtham.letschat.models.Country
 import com.gowtham.letschat.models.UserStatus
-import com.gowtham.letschat.ui.activities.ActSplash
-import com.gowtham.letschat.views.CustomEditText
 import java.text.SimpleDateFormat
 
 object Utils {
 
-    const val PERMISSION_REQ_CODE = 114
+    private const val PERMISSION_REQ_CODE = 114
 
-    private const val MIN: Long=1000 * 60
+  /*  private const val MIN: Long=1000 * 60
     private const val HOUR= MIN * 60
     private const val DAY= HOUR* 24
     private const val WEEK= DAY * 7
     private const val MONTH= WEEK * 4
-    private const val YEAR= MONTH * 12
+    private const val YEAR= MONTH * 12*/
 
     fun getDefaultCountry() = Country("IN", "India", "+91", "INR")
 
     fun clearNull(str: String?) = str?.trim() ?: ""
 
+    @Suppress("DEPRECATION")
     fun isNetConnected(context: Context): Boolean {
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -89,9 +87,9 @@ object Utils {
         return GsonBuilder().create()
     }
 
-    fun <T> fromGson(json: String?, className: Class<T>?): T {
+/*    fun <T> fromGson(json: String?, className: Class<T>?): T {
         return getGSONObj().fromJson(json, className)
-    }
+    }*/
 
     fun isPermissionOk(vararg results: Int): Boolean {
         var isAllGranted = true
@@ -150,10 +148,10 @@ object Utils {
         }
     }
 
-    fun dpToPx(dp: Int): Int {
+   /* fun dpToPx(dp: Int): Int {
         return (dp * Resources.getSystem().displayMetrics.density).toInt()
     }
-
+*/
     fun setOnlineStatus(txtView: TextView, status: UserStatus, uId: String) {
         txtView.visibility= View.VISIBLE
         txtView.text= when {
@@ -171,35 +169,6 @@ object Utils {
             }
         }
     }
-
-
-    fun publishPush(context: Context, intent: Intent, title: String?, message: String?) {
-        val manager: NotificationManagerCompat? = returnNManager(context)
-        manager?.let {
-            val builder = createBuilder(context, manager)
-            builder.setContentTitle(title)
-            builder.setContentText(message)
-            builder.setCategory(NotificationCompat.CATEGORY_MESSAGE)
-            val parentIntent = Intent(context, ActSplash::class.java)
-            parentIntent.flags = (Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    or Intent.FLAG_ACTIVITY_NEW_TASK)
-//            val intents = intent?.let { arrayOf(parentIntent, it) } ?: arrayOf(parentIntent)
-            val pIntent = PendingIntent.getActivity(
-                context, 0,
-                intent,
-                PendingIntent.FLAG_ONE_SHOT or
-                        PendingIntent.FLAG_UPDATE_CURRENT
-            )
-            builder.setContentIntent(pIntent)
-
-            val textStyle = NotificationCompat.BigTextStyle()
-            textStyle.setBigContentTitle(title)
-            textStyle.bigText(message)
-            builder.setStyle(textStyle)
-            manager.notify(UserUtils.NOTIFICATION_ID, builder.build())
-        }
-    }
-
 
     fun createBuilder(
         context: Context,
@@ -259,7 +228,7 @@ object Utils {
         val view=activity.currentFocus
         val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         view?.let {
-            imm.hideSoftInputFromWindow(it.getWindowToken(), 0)
+            imm.hideSoftInputFromWindow(it.windowToken, 0)
         }
     }
 

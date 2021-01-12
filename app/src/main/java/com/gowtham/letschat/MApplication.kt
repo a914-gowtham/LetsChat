@@ -1,10 +1,9 @@
 package com.gowtham.letschat
 
-import android.app.Application
 import android.content.Context
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.multidex.MultiDexApplication
 import androidx.work.Configuration
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.CollectionReference
@@ -19,7 +18,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltAndroidApp
-class MApplication : Application(), LifecycleObserver,Configuration.Provider {
+class MApplication : MultiDexApplication(), LifecycleObserver,Configuration.Provider {
 
     @Inject
     lateinit var preference: MPreference

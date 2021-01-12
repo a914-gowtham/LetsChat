@@ -1,13 +1,11 @@
 package com.gowtham.letschat.fragments.single_chat
 
 import android.content.Context
-import android.media.MediaPlayer
 import android.os.Handler
 import android.os.Looper
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -22,9 +20,7 @@ import com.gowtham.letschat.core.MessageStatusUpdater
 import com.gowtham.letschat.core.OnMessageResponse
 import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.data.ChatUser
-import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.data.Message
-import com.gowtham.letschat.db.daos.MessageDao
 import com.gowtham.letschat.di.MessageCollection
 import com.gowtham.letschat.models.UserStatus
 import com.gowtham.letschat.services.UploadWorker
@@ -37,10 +33,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
-import timber.log.Timber
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import timber.log.Timber
+
 class SingleChatViewModel @ViewModelInject
 constructor(
     @ApplicationContext private val context: Context,
@@ -94,8 +90,6 @@ constructor(
 
     private var chatUserOnline = false
 
-    private var mediaPlayer=MediaPlayer()
-
     init {
         LogMessage.v("SingleChatViewModel init Doc1 $doc1")
         LogMessage.v("SingleChatViewModel init Doc2 $doc2")
@@ -130,7 +124,7 @@ constructor(
                         Timber.v("Check state one")
                         dbRepository.insertMultipleMessage(messagesList)
                         dbRepository.insertUser(chatUser)
-                        updateMessagesStatus();
+                        updateMessagesStatus()
                     }
                 }
             }
@@ -166,7 +160,7 @@ constructor(
                         Timber.v("Check state two")
                         dbRepository.insertMultipleMessage(messagesList)
                         dbRepository.insertUser(chatUser)
-                        updateMessagesStatus();
+                        updateMessagesStatus()
                     }
                 }
             }
@@ -201,7 +195,7 @@ constructor(
                         chatUser.documentId = doc //
                         dbRepository.insertMultipleMessage(messagesList)
                         dbRepository.insertUser(chatUser)
-                        updateMessagesStatus();
+                        updateMessagesStatus()
                     }
                 }
             }
@@ -239,10 +233,6 @@ constructor(
 
     fun getMessagesByChatUserId(chatUserId: String) =
         dbRepository.getMessagesByChatUserId(chatUserId)
-
-    fun insertMultiMessage(list: MutableList<Message>){
-        dbRepository.insertMultipleMessage(list)
-    }
 
     fun sendMessage(message: Message) {
         Handler(Looper.getMainLooper()).postDelayed({
@@ -365,8 +355,8 @@ constructor(
                         setSeenAllMessage()
                     } else {
                         messageCollection.document("${toUser}_${fromUser}").get()
-                            .addOnSuccessListener { documentSnapshot ->
-                                if (documentSnapshot.exists()) {
+                            .addOnSuccessListener { docSnap ->
+                                if (docSnap.exists()) {
                                     chatUser.documentId = "${toUser}_${fromUser}"
                                     dbRepository.insertUser(chatUser)
                                     setSeenAllMessage()

@@ -7,7 +7,6 @@ import androidx.annotation.CallSuper
 import androidx.core.app.RemoteInput
 import com.google.firebase.firestore.CollectionReference
 import com.gowtham.letschat.KEY_TEXT_REPLY
-import com.gowtham.letschat.MApplication
 import com.gowtham.letschat.TYPE_NEW_MESSAGE
 import com.gowtham.letschat.core.MessageSender
 import com.gowtham.letschat.core.MessageStatusUpdater
@@ -25,9 +24,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
+
 abstract class HiltBroadcastReceiver : BroadcastReceiver(){
     @CallSuper
-    override fun onReceive(p0: Context?, p1: Intent?) { }
+    override fun onReceive(context: Context?, intent: Intent?) { }
 }
 
 @AndroidEntryPoint
@@ -79,7 +79,7 @@ class NActionReceiver : HiltBroadcastReceiver(), OnMessageResponse {
                 updateOnDb()
             } else if (intent.action == ACTION_REPLY) {
                 val reply = getMessageText(intent)
-                if (!reply.isNullOrBlank()) {
+                if (reply.isNotBlank()) {
                     val message = createMessage(reply, myUserId, chatUserId)
                     message.chatUserId=chatUserId
                     val messageSender = MessageSender(messageCollection,
@@ -114,13 +114,13 @@ class NActionReceiver : HiltBroadcastReceiver(), OnMessageResponse {
             from = myUserId,
             to = chatUserId,
             senderName = profile.userName,
-            senderImage = profile.image ?: "",
+            senderImage = profile.image,
             textMessage = txtMessage,
             status = 0
         )
     }
 
-    private fun getMessageText(intent: Intent): String? {
+    private fun getMessageText(intent: Intent): String {
         return RemoteInput.getResultsFromIntent(intent)?.getCharSequence(KEY_TEXT_REPLY).toString()
     }
 
