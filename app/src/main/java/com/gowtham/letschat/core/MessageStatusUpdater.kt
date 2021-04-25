@@ -4,25 +4,13 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.data.Message
+import com.gowtham.letschat.fragments.single_chat.asMap
 import com.gowtham.letschat.fragments.single_chat.serializeToMap
 import com.gowtham.letschat.utils.LogMessage
 import timber.log.Timber
 
 class MessageStatusUpdater(private val msgCollection: CollectionReference) {
 
-    fun updateSingleMsgStatus(isDelivery: Boolean,fromUser: String,docId: String,message: Message){
-        val msgSubCollection=msgCollection.document(docId).collection("messages")
-        if (message.to ==fromUser){
-            message.chatUserId=null
-            message.status=if (isDelivery) 2 else 3  //changing status to delivered
-            val currentTime = System.currentTimeMillis()
-            message.deliveryTime = message.deliveryTime ?: currentTime
-            if (isDelivery)
-             message.seenTime = currentTime
-            msgSubCollection.document(message.createdAt.toString()).update(message.serializeToMap())
-        }
-    }
-    
     fun updateToDelivery(myUserId: String, messageList: List<Message>, vararg chatUsers: ChatUser) {
         val batch= FirebaseFirestore.getInstance().batch()
         for (chatUser in chatUsers){

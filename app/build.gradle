@@ -97,9 +97,6 @@ dependencies {
     implementation "androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha02"
     kapt "androidx.hilt:hilt-compiler:1.0.0-alpha02"
 
-    //Flexbox
-    implementation 'com.google.android:flexbox:2.0.1'
-
     //event bus
     implementation 'org.greenrobot:eventbus:3.2.0'
 

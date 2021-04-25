@@ -21,6 +21,9 @@ import com.gowtham.letschat.utils.Constants.ACTION_MARK_AS_READ
 import com.gowtham.letschat.utils.Constants.ACTION_REPLY
 import com.gowtham.letschat.utils.Constants.CHAT_DATA
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
@@ -102,7 +105,11 @@ class NActionReceiver : HiltBroadcastReceiver(), OnMessageResponse {
         }
         //seen message other message of this user
         UserUtils.setUnReadCountZero(dbRepo, chatUser.user)
-        dbRepo.insertMultipleMessage(list.toMutableList())
+        chatUser.user.unRead=0
+        dbRepo.insertUser(chatUser.user)
+        CoroutineScope(Dispatchers.IO).launch {
+            dbRepo.insertMultipleMessage(list.toMutableList())
+        }
     }
 
     private fun createMessage(reply: String, myUserId: String,

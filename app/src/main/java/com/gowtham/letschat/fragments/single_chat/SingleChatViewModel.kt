@@ -13,6 +13,7 @@ import androidx.work.WorkRequest
 import com.google.firebase.database.*
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.gowtham.letschat.TYPE_NEW_MESSAGE
 import com.gowtham.letschat.core.MessageSender
@@ -36,6 +37,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import timber.log.Timber
+import kotlin.reflect.full.memberProperties
 
 class SingleChatViewModel @ViewModelInject
 constructor(
@@ -122,8 +124,6 @@ constructor(
                     if (!messagesList.isNullOrEmpty()) {
                         chatUser.documentId = doc1
                         Timber.v("Check state one")
-                        dbRepository.insertMultipleMessage(messagesList)
-                        dbRepository.insertUser(chatUser)
                         updateMessagesStatus()
                     }
                 }
@@ -158,8 +158,6 @@ constructor(
                     if (!messagesList.isNullOrEmpty()) {
                         chatUser.documentId = doc2
                         Timber.v("Check state two")
-                        dbRepository.insertMultipleMessage(messagesList)
-                        dbRepository.insertUser(chatUser)
                         updateMessagesStatus()
                     }
                 }
@@ -193,8 +191,6 @@ constructor(
 
                     if (!messagesList.isNullOrEmpty()) {
                         chatUser.documentId = doc //
-                        dbRepository.insertMultipleMessage(messagesList)
-                        dbRepository.insertUser(chatUser)
                         updateMessagesStatus()
                     }
                 }
@@ -206,6 +202,10 @@ constructor(
             val updateToSeen = MessageStatusUpdater(messageCollection)
             updateToSeen.updateToSeen(fromUser!!, toUser, chatUser.documentId!!, messagesList)
         }
+        CoroutineScope(Dispatchers.IO).launch{
+            dbRepository.insertMultipleMessage(messagesList)
+        }
+        dbRepository.insertUser(chatUser)
     }
 
     fun setChatUser(chatUser: ChatUser) {
@@ -414,4 +414,9 @@ inline fun <reified T> Map<String, Any>.toDataClass(): T {
 inline fun <I, reified O> I.convert(): O {
     val json = Utils.getGSONObj().toJson(this)
     return Utils.getGSONObj().fromJson(json, object : TypeToken<O>() {}.type)
+}
+
+inline fun <reified T : Any> T.asMap() : Map<String, Any?> {
+    val props = T::class.memberProperties.associateBy { it.name }
+    return props.keys.associateWith { props[it]?.get(this) }
 }

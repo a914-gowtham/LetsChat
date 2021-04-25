@@ -113,9 +113,7 @@ class ChatHandler @Inject constructor(
                 dbRepository.insertMultipleMessage(messagesList)
                 dbRepository.insertMultipleUser(list)
                 delay(500)
-                withContext(Dispatchers.Main){
-                    updateOnDb(list,unSavedUsersId,locallySaved)
-                }
+                updateOnDb(list,unSavedUsersId,locallySaved)
             }
         }
     }

@@ -10,6 +10,7 @@ import com.gowtham.letschat.db.data.Group
 import com.gowtham.letschat.db.data.GroupMessage
 import com.gowtham.letschat.di.GroupCollection
 import com.gowtham.letschat.fragments.single_chat.toDataClass
+import com.gowtham.letschat.utils.LogMessage
 import com.gowtham.letschat.utils.MPreference
 import com.gowtham.letschat.utils.UserUtils
 import com.gowtham.letschat.utils.Utils
@@ -35,9 +36,11 @@ class GroupChatHandler @Inject constructor(
 
     private lateinit var messageCollectionGroup: Query
 
-    private val messagesList: MutableList<GroupMessage> by lazy { mutableListOf() }
+    private val messagesList= mutableListOf<GroupMessage>()
 
     private val listOfGroup = ArrayList<String>()
+
+    private lateinit var groupMsgStatusUpdater: GroupMsgStatusUpdater
 
     companion object{
         private var groupListener: ListenerRegistration?=null
@@ -57,6 +60,7 @@ class GroupChatHandler @Inject constructor(
         else
             instanceCreated=true
         userId = preference.getUid()
+        groupMsgStatusUpdater=GroupMsgStatusUpdater(groupCollection)
         Timber.v("GroupChatHandler init")
         preference.clearCurrentGroup()
         messageCollectionGroup = UserUtils.getGroupMsgSubCollectionRef()
@@ -65,25 +69,30 @@ class GroupChatHandler @Inject constructor(
     }
 
     private fun addGroupMsgListener() {
-       groupListener= messageCollectionGroup.whereArrayContains("to", userId!!)
-            .addSnapshotListener { snapshots, error ->
-                if (error == null) {
-                    messagesList.clear()
-                    listOfGroup.clear()
-                    if(snapshots==null)
-                        return@addSnapshotListener
-                    for (msgDoc in snapshots) {
-                        val message = msgDoc.data.toDataClass<GroupMessage>()
-                        if (message.groupId == preference.getOnlineGroup())  //would be updated by snapshot listener
-                            continue
-                        if (!listOfGroup.contains(message.groupId))
-                            listOfGroup.add(message.groupId)
-                        messagesList.add(message)
-                    }
-                    updateGroupUnReadCount()
-                }else
-                    Timber.v(error)
-            }
+        try {
+            groupListener= messageCollectionGroup.whereArrayContains("to", userId!!)
+                .addSnapshotListener { snapshots, error ->
+                    if (error == null) {
+                        messagesList.clear()
+                        listOfGroup.clear()
+                        if(snapshots==null)
+                            return@addSnapshotListener
+                        for (msgDoc in snapshots) {
+                            val message = msgDoc.data.toDataClass<GroupMessage>()
+                            if (message.groupId == preference.getOnlineGroup())  //would be updated by snapshot listener
+                                continue
+                            if (!listOfGroup.contains(message.groupId))
+                                listOfGroup.add(message.groupId)
+                            messagesList.add(message)
+                        }
+                            updateGroupUnReadCount()
+                    }else
+                        LogMessage.v("Error $error")
+                }
+        }catch (e: Exception){
+            e.printStackTrace()
+        }
+
     }
 
     private fun updateGroupUnReadCount() {
@@ -96,6 +105,8 @@ class GroupChatHandler @Inject constructor(
                     it.groupId==group.id && myStatus<3
                 }.size
             }
+            dbRepository.insertMultipleGroupMessage(messagesList)
+            dbRepository.insertMultipleGroup(groups)
             updateInLocal(groups)
         }
 
@@ -104,8 +115,6 @@ class GroupChatHandler @Inject constructor(
     private fun updateInLocal(groups: List<Group>) {
         val updateToSeen = GroupMsgStatusUpdater(groupCollection)
         updateToSeen.updateToDelivery(userId!!, messagesList, *listOfGroup.toTypedArray())
-            dbRepository.insertMultipleGroupMessage(messagesList)
-            dbRepository.insertMultipleGroup(groups)
         if (groups.isNotEmpty())
             FirebasePush.showGroupNotification(context, dbRepository)
     }
@@ -119,9 +128,7 @@ class GroupChatHandler @Inject constructor(
                     val alreadySavedGroup = dbRepository.getGroupList().map { it.id }
                     val removedGroups = alreadySavedGroup.toSet().minus(listOfGroup.toSet())
                     val newGroups = listOfGroup.toSet().minus(alreadySavedGroup.toSet())
-                    withContext(Dispatchers.Main) {
-                        queryNewGroups(newGroups)
-                    }
+                    queryNewGroups(newGroups)
                 }
             }
         }

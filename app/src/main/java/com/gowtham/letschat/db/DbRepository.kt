@@ -68,17 +68,13 @@ class DbRepository @Inject constructor(
         }
     }
 
-    fun insertMultipleMessage(messagesList: MutableList<Message>) {
-        CoroutineScope(Dispatchers.IO).launch {
+    suspend fun insertMultipleMessage(messagesList: MutableList<Message>) =
             messageDao.insertMultipleMessage(messagesList)
-        }
-    }
 
-    fun insertMultipleGroupMessage(messagesList: MutableList<GroupMessage>) {
-        CoroutineScope(Dispatchers.IO).launch {
+
+    suspend fun insertMultipleGroupMessage(messagesList: List<GroupMessage>) =
             groupMsgDao.insertMultipleMessage(messagesList)
-        }
-    }
+
 
 
     fun insertMessage(message: Message) {
@@ -96,11 +92,9 @@ class DbRepository @Inject constructor(
         }
     }
 
-    fun insertMultipleGroup(groups: List<Group>) {
-        CoroutineScope(Dispatchers.IO).launch {
+   suspend fun insertMultipleGroup(groups: List<Group>) =
             groupDao.insertMultipleGroup(groups)
-        }
-    }
+
 
     fun getGroupWithMessages() = groupDao.getGroupWithMessages()
 

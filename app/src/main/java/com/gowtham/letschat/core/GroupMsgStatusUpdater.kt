@@ -4,6 +4,7 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.gowtham.letschat.db.data.Group
 import com.gowtham.letschat.db.data.GroupMessage
+import com.gowtham.letschat.fragments.single_chat.asMap
 import com.gowtham.letschat.fragments.single_chat.serializeToMap
 import com.gowtham.letschat.utils.LogMessage
 import com.gowtham.letschat.utils.Utils.myIndexOfStatus
@@ -11,30 +12,34 @@ import com.gowtham.letschat.utils.Utils.myMsgStatus
 
 class GroupMsgStatusUpdater(private val groupCollection: CollectionReference) {
 
-    fun updateToDelivery(myUserId: String, messageList: List<GroupMessage>, vararg groupId: String){
-        val batch= FirebaseFirestore.getInstance().batch()
-        for (id in groupId){
-            val msgSubCollection=groupCollection.document(id).collection("group_messages")
-            val filterList=  messageList
-                .filter { it.from!=myUserId && myMsgStatus(myUserId,it)==0 && it.groupId==id }
-                .map {
-                    val myIndex=myIndexOfStatus(myUserId,it)
-                    it.status[myIndex]=2
-                    it.deliveryTime[myIndex]=System.currentTimeMillis()
-                    it
-                }
+    private var firebaseStore = FirebaseFirestore.getInstance()
 
-            if (filterList.isNotEmpty()){
-                for (msg in filterList){
-                    batch.update(msgSubCollection
-                        .document(msg.createdAt.toString()),msg.serializeToMap())
-                }
+    fun updateToDelivery(myUserId: String, messageList: List<GroupMessage>, vararg groupId: String){
+        try {
+            val batch= firebaseStore.batch()
+            for (id in groupId){
+                val msgSubCollection=groupCollection.document(id).collection("group_messages")
+                val filterList=  messageList
+                    .filter { it.from!=myUserId && myMsgStatus(myUserId,it)==0 && it.groupId==id }
+                    .map {
+                        val myIndex=myIndexOfStatus(myUserId,it)
+                        it.status[myIndex]=2
+                        it.deliveryTime[myIndex]=System.currentTimeMillis()
+                        it
+                    }
+                    for (msg in filterList){
+                        LogMessage.v("message date ${msg.deliveryTime}")
+                        batch.update(msgSubCollection
+                            .document(msg.createdAt.toString()),msg.asMap())
+                    }
             }
-        }
-        batch.commit().addOnSuccessListener {
-            LogMessage.v("Batch update success from group")
-        }.addOnFailureListener {
-            LogMessage.v("Batch update failure ${it.message} from group")
+            batch.commit().addOnSuccessListener {
+                LogMessage.v("Batch update success from group")
+            }.addOnFailureListener {
+                LogMessage.v("Batch update failure ${it.message} from group")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
