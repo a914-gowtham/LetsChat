@@ -14,6 +14,7 @@ import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.gowtham.letschat.core.ChatUserUtil
@@ -78,6 +79,9 @@ class FirebasePush : FirebaseMessagingService(),OnSuccessListener {
     @MessageCollection
     @Inject
     lateinit var messageCollection: CollectionReference
+
+    @Inject
+    lateinit var messageStatusUpdater: MessageStatusUpdater
 
     @GroupCollection
     @Inject
@@ -196,8 +200,7 @@ class FirebasePush : FirebaseMessagingService(),OnSuccessListener {
                 withContext(Dispatchers.Main){
                     showNotification(this@FirebasePush, dbRepository)
                     //update delivery status
-                    val statusUpdater= MessageStatusUpdater(messageCollection)
-                    statusUpdater.updateToDelivery(messagesOfChatUser, chatUser)
+                    messageStatusUpdater.updateToDelivery(messagesOfChatUser, chatUser)
                 }
             } else{
                 withContext(Dispatchers.Main){
@@ -324,8 +327,7 @@ class FirebasePush : FirebaseMessagingService(),OnSuccessListener {
 
     override fun onResult(success: Boolean, data: Any?) {
         if(success){
-            val statusUpdater= MessageStatusUpdater(messageCollection)
-            statusUpdater.updateToDelivery(messagesOfChatUser,data as ChatUser)
+            messageStatusUpdater.updateToDelivery(messagesOfChatUser,data as ChatUser)
         }
     }
 }

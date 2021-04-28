@@ -26,9 +26,8 @@ class ChatHandler @Inject constructor(
     @ApplicationContext private val context: Context,
     private val dbRepository: DbRepository,
     private val usersCollection: CollectionReference,
-    @MessageCollection
-    private val messageCollection: CollectionReference,
-    private val preference: MPreference
+    private val preference: MPreference,
+    private val messageStatusUpdater: MessageStatusUpdater
 ) {
 
     private val messagesList: MutableList<Message> by lazy { mutableListOf() }
@@ -43,10 +42,7 @@ class ChatHandler @Inject constructor(
 
     private lateinit var messageCollectionGroup: Query
 
-    private var messageStatusUpdater=MessageStatusUpdater(messageCollection)
-
     private val chatUserUtil = ChatUserUtil(dbRepository, usersCollection, null)
-
 
     companion object {
 
@@ -142,8 +138,10 @@ class ChatHandler @Inject constructor(
                 it.chatUserId != currentChatUser.id
             }
             messageStatusUpdater.updateToDelivery(otherUserMsgs, *chatUsers.toTypedArray())
+            LogMessage.v("AAAA ${currentChatUser.documentId!!}")
+
             messageStatusUpdater.updateToSeen(
-                currentChatUser.id, currentChatUser.documentId.toString(), currentUserMsgs
+                currentChatUser.id, currentChatUser.documentId!!, currentUserMsgs
             )
         } else {
             messageStatusUpdater.updateToDelivery(messagesList, *chatUsers.toTypedArray())

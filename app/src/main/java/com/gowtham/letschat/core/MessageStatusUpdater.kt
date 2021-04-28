@@ -8,10 +8,12 @@ import com.gowtham.letschat.fragments.single_chat.asMap
 import com.gowtham.letschat.fragments.single_chat.serializeToMap
 import com.gowtham.letschat.utils.LogMessage
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class MessageStatusUpdater(private val msgCollection: CollectionReference) {
-
-    private val firebaseFirestore=FirebaseFirestore.getInstance()
+@Singleton
+class MessageStatusUpdater @Inject constructor(private val msgCollection: CollectionReference,
+          private val firebaseFirestore: FirebaseFirestore) {
 
     fun updateToDelivery(messageList: List<Message>, vararg chatUsers: ChatUser) {
         val batch= firebaseFirestore.batch()

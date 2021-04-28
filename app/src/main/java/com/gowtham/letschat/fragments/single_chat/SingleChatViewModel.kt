@@ -48,7 +48,8 @@ constructor(
     private val dbRepository: DbRepository,
     @MessageCollection
     private val messageCollection: CollectionReference,
-    private val preference: MPreference
+    private val preference: MPreference,
+    private val messageStatusUpdater: MessageStatusUpdater
 ) : ViewModel() {
 
     private val database = FirebaseDatabase.getInstance()
@@ -176,11 +177,13 @@ constructor(
         LogMessage.v("SetSeenAllMessage called")
         if (this::chatUser.isInitialized) {
             chatUser.unRead = 0
+            dbRepository.insertUser(chatUser)
+            LogMessage.v("AAAA ${chatUser.documentId!!}")
             viewModelScope.launch(Dispatchers.IO) {
-                dbRepository.insertUser2(chatUser)
                 val messageList = dbRepository.getChatsOfFriend(chatUser.id)
-                val updateToSeen = MessageStatusUpdater(messageCollection)
-                updateToSeen.updateToSeen(toUser, chatUser.documentId!!, messageList)
+                withContext(Dispatchers.Main){
+                    messageStatusUpdater.updateToSeen(toUser, chatUser.documentId!!, messageList)
+                }
             }
         }
     }

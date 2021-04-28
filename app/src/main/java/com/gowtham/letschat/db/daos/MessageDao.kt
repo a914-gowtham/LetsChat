@@ -24,6 +24,9 @@ interface MessageDao {
     @Query("SELECT * FROM Message WHERE `chatUserId`=:chatUserId")
     fun getChatsOfFriend(chatUserId: String): List<Message>
 
+    @Query("SELECT * FROM Message WHERE `chatUserId`=:chatUserId")
+    suspend fun getChatsOfFriend2(chatUserId: String): List<Message>
+
     @Query("SELECT * FROM Message WHERE `to`=:chatUserId OR `from`=:chatUserId")
     fun getMessagesByChatUserId(chatUserId: String): Flow<List<Message>>
 
