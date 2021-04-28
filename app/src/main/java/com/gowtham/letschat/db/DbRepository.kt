@@ -64,6 +64,10 @@ class DbRepository @Inject constructor(
         }
     }
 
+   suspend fun insertMultipleUsers(users: ArrayList<ChatUser>){
+       userDao.insertMultipleUser(users)
+   }
+
     fun insertGroup(group: Group) {
         CoroutineScope(Dispatchers.IO).launch {
             groupDao.insertGroup(group)

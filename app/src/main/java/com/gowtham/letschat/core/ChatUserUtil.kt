@@ -15,7 +15,8 @@ class ChatUserUtil(private val dbRepository: DbRepository,
                    private val usersCollection: CollectionReference,
                    private val listener: OnSuccessListener?) {
 
-    fun queryNewUserProfile(context: Context,chatUserId: String,docId: String?, unReadCount: Int=1) {
+    fun queryNewUserProfile(context: Context,chatUserId: String,docId: String?, unReadCount: Int=1,
+                            showNotification: Boolean=false) {
         try {
             usersCollection.document(chatUserId)
                 .get().addOnSuccessListener { profile ->
@@ -34,9 +35,9 @@ class ChatUserUtil(private val dbRepository: DbRepository,
                                 chatUser.locallySaved=true
                             }
                         }
-                        dbRepository.insertUser(chatUser)
                         listener?.onResult(true,chatUser)
-//                      Utils.removeNotification(context)
+                        dbRepository.insertUser(chatUser)
+                        if(showNotification)
                         FirebasePush.showNotification(context,dbRepository)
                     }
                 }

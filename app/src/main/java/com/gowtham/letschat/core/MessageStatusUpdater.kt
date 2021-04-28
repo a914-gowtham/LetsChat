@@ -11,14 +11,16 @@ import timber.log.Timber
 
 class MessageStatusUpdater(private val msgCollection: CollectionReference) {
 
-    fun updateToDelivery(myUserId: String, messageList: List<Message>, vararg chatUsers: ChatUser) {
-        val batch= FirebaseFirestore.getInstance().batch()
+    private val firebaseFirestore=FirebaseFirestore.getInstance()
+
+    fun updateToDelivery(messageList: List<Message>, vararg chatUsers: ChatUser) {
+        val batch= firebaseFirestore.batch()
         for (chatUser in chatUsers){
             if (chatUser.documentId.isNullOrBlank())
                 continue
             val msgSubCollection=msgCollection.document(chatUser.documentId!!).collection("messages")
         val filterList=  messageList
-            .filter { msg-> msg.to==myUserId && msg.status==1 && msg.from==chatUser.id}
+            .filter { msg-> msg.status==1 && msg.from==chatUser.id}
             .map {
                 it.chatUserId=null
                 it.status=2
@@ -38,16 +40,16 @@ class MessageStatusUpdater(private val msgCollection: CollectionReference) {
         }
     }
 
-    fun updateToSeen(fromUser: String,toUser: String,docId: String, messageList: List<Message>) {
+    fun updateToSeen(toUser: String,docId: String, messageList: List<Message>) {
         val msgSubCollection = msgCollection.document(docId).collection("messages")
-        val batch = FirebaseFirestore.getInstance().batch()
+        val batch = firebaseFirestore.batch()
         val currentTime = System.currentTimeMillis()
         val filterList=  messageList
-            .filter { msg-> msg.to == fromUser && msg.from==toUser && msg.status != 3 }
+            .filter { msg->  msg.from==toUser && msg.status != 3 }
             .map {
             it.status=3
             it.chatUserId=null
-            it.deliveryTime = it.deliveryTime ?: currentTime
+            it.deliveryTime = it.deliveryTime
             it.seenTime = currentTime
             it
         }

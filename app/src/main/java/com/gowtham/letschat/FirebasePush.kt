@@ -197,13 +197,13 @@ class FirebasePush : FirebaseMessagingService(),OnSuccessListener {
                     showNotification(this@FirebasePush, dbRepository)
                     //update delivery status
                     val statusUpdater= MessageStatusUpdater(messageCollection)
-                    statusUpdater.updateToDelivery(userId!!,messagesOfChatUser, chatUser)
+                    statusUpdater.updateToDelivery(messagesOfChatUser, chatUser)
                 }
             } else{
                 withContext(Dispatchers.Main){
                     //update delivery status in listener
                     val util= ChatUserUtil(dbRepository, usersCollection,this@FirebasePush)
-                    util.queryNewUserProfile(this@FirebasePush, chatUserId,null)
+                    util.queryNewUserProfile(this@FirebasePush, chatUserId,null,showNotification = true)
                 }
             }
         }
@@ -274,15 +274,20 @@ class FirebasePush : FirebaseMessagingService(),OnSuccessListener {
             if (groupNotifications.size>1)
                 manager.notify(SUMMARY_ID, summaryNotification)
         }
+
         private fun checkMessages(
             context: Context,
             chatUserWithMessages: List<ChatUserWithMessages>) {
+
+            if(chatUserWithMessages.isNullOrEmpty())
+                return
+
             messageCount=0
             personCount=0
+            val notifications=ArrayList<Notification>()
             val myUserId=MPreference(context).getUid().toString()
             val manager: NotificationManagerCompat = Utils.returnNManager(context)
-            val notifications=ArrayList<Notification>()
-            if (!chatUserWithMessages.isNullOrEmpty()) {
+
                 for (user in chatUserWithMessages) {
                     val messages=user.messages.filter { it.status<3 && it.from!=myUserId}
                     if(messages.isNullOrEmpty())
@@ -302,7 +307,6 @@ class FirebasePush : FirebaseMessagingService(),OnSuccessListener {
                     val notification=builder.build()
                     notifications.add(notification)
                 }
-            }
 
             val summaryNotification =NotificationUtils.getSummaryNotification(context,manager)
             for ((index, notification) in notifications.withIndex()) {
@@ -321,7 +325,7 @@ class FirebasePush : FirebaseMessagingService(),OnSuccessListener {
     override fun onResult(success: Boolean, data: Any?) {
         if(success){
             val statusUpdater= MessageStatusUpdater(messageCollection)
-            statusUpdater.updateToDelivery(userId!!,messagesOfChatUser,data as ChatUser)
+            statusUpdater.updateToDelivery(messagesOfChatUser,data as ChatUser)
         }
     }
 }

@@ -75,7 +75,6 @@ class NActionReceiver : HiltBroadcastReceiver(), OnMessageResponse {
                 chatUser.messages.let {
                     val updateToSeen = MessageStatusUpdater(messageCollection)
                     updateToSeen.updateToSeen(
-                        myUserId,
                         chatUserId,chatUser.user.documentId!!,it)
                 }
                 Utils.removeNotificationById(context, notificationId)
@@ -137,7 +136,6 @@ class NActionReceiver : HiltBroadcastReceiver(), OnMessageResponse {
         chatUser.messages.let {
             val updateToSeen = MessageStatusUpdater(messageCollection)
             updateToSeen.updateToSeen(
-                myUserId,
                 chatUserId,chatUser.user.documentId!!,it)
         }
         updateOnDb()
