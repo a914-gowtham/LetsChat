@@ -31,6 +31,14 @@
           }
         },
         {
+          "client_id": "713876726773-n8oqdoievdudn72eulv0t5ebqv8mah61.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gowtham.letschat",
+            "certificate_hash": "542c95c560a25358c37923ddd271a737c730c131"
+          }
+        },
+        {
           "client_id": "713876726773-0clemuuk99ed2clrqjor4u6s8jkgl98h.apps.googleusercontent.com",
           "client_type": 3
         }

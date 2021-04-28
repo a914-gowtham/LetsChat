@@ -2,26 +2,27 @@ package com.gowtham.letschat.fragments.profile
 
 import android.content.Context
 import android.net.Uri
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.SetOptions
-import com.google.firebase.storage.StorageReference
 import com.gowtham.letschat.models.ModelDeviceDetails
 import com.gowtham.letschat.models.UserProfile
 import com.gowtham.letschat.utils.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.util.*
+import javax.inject.Inject
 
-class ProfileViewModel @ViewModelInject
+@HiltViewModel
+class ProfileViewModel @Inject
 constructor(
     @ApplicationContext private val context: Context,
-    private val preference: MPreference,private val usersCollection: CollectionReference) : ViewModel() {
+    private val preference: MPreference
+) : ViewModel() {
 
     val progressProPic = MutableLiveData(false)
 
@@ -31,9 +32,9 @@ constructor(
 
     val name = MutableLiveData("")
 
-    private val storageRef=UserUtils.getStorageRef(context)
+    private val storageRef = UserUtils.getStorageRef(context)
 
-    private val docuRef=UserUtils.getDocumentRef(context)
+    private val docuRef = UserUtils.getDocumentRef(context)
 
     val profilePicUrl = MutableLiveData("")
 
@@ -80,17 +81,26 @@ constructor(
         try {
             profileUpdateState.value = LoadState.OnLoading
             val profile = UserProfile(
-                preference.getUid()!!, createdAt, System.currentTimeMillis(),
-                profilePicUrl.value!!,name.value!!.toLowerCase(Locale.getDefault()), about, mobile = preference.getMobile(),token = preference.getPushToken().toString(),
-             deviceDetails =
-             Json.decodeFromString<ModelDeviceDetails>(UserUtils.getDeviceInfo(context).toString()))
+                preference.getUid()!!,
+                createdAt,
+                System.currentTimeMillis(),
+                profilePicUrl.value!!,
+                name.value!!.toLowerCase(Locale.getDefault()),
+                about,
+                mobile = preference.getMobile(),
+                token = preference.getPushToken().toString(),
+                deviceDetails =
+                Json.decodeFromString<ModelDeviceDetails>(
+                    UserUtils.getDeviceInfo(context).toString()
+                )
+            )
             docuRef.set(profile, SetOptions.merge()).addOnSuccessListener {
                 preference.saveProfile(profile)
                 profileUpdateState.value = LoadState.OnSuccess()
             }.addOnFailureListener { e ->
-                    context.toast(e.message.toString())
-                    profileUpdateState.value = LoadState.OnFailure(e)
-                }
+                context.toast(e.message.toString())
+                profileUpdateState.value = LoadState.OnFailure(e)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }

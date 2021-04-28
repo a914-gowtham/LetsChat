@@ -1,26 +1,23 @@
 package com.gowtham.letschat.ui.activities
 
-import android.content.Context
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.models.Country
-import com.gowtham.letschat.utils.*
-import dagger.hilt.android.qualifiers.ApplicationContext
+import com.gowtham.letschat.utils.MPreference
+import com.gowtham.letschat.utils.ScreenState
+import com.gowtham.letschat.utils.printMeD
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.scopes.ActivityScoped
 import timber.log.Timber
 import java.util.*
+import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.concurrent.schedule
 
-@ActivityScoped
-@Singleton
-class SharedViewModel @ViewModelInject
-constructor(@ApplicationContext private val context: Context,
-            private val userDao: ChatUserDao,
-            private val preference: MPreference) : ViewModel() {
+@HiltViewModel
+class SharedViewModel @Inject constructor() : ViewModel() {
 
     val country = MutableLiveData<Country>()
 
@@ -30,9 +27,7 @@ constructor(@ApplicationContext private val context: Context,
 
     val lastQuery = MutableLiveData<String>()
 
-    val submittedQuery = MutableLiveData<String>()
-
-    val listOfQuery= arrayListOf<String>("")
+    val listOfQuery = arrayListOf("")
 
     private var timer: TimerTask? = null
 
@@ -50,12 +45,12 @@ constructor(@ApplicationContext private val context: Context,
         lastQuery.value = query
     }
 
-    fun setState(state: ScreenState){
+    fun setState(state: ScreenState) {
         Timber.v("State $state")
-        _state.value=state
+        _state.value = state
     }
 
-    fun getState() : LiveData<ScreenState>{
+    fun getState(): LiveData<ScreenState> {
         return _state
     }
 
@@ -67,7 +62,7 @@ constructor(@ApplicationContext private val context: Context,
     fun onFromSplash() {
         if (timer == null) {
             timer = Timer().schedule(2000) {
-              openMainAct.postValue(true)
+                openMainAct.postValue(true)
             }
         }
     }
@@ -77,7 +72,4 @@ constructor(@ApplicationContext private val context: Context,
         "onCleared SharedViewModel".printMeD()
     }
 
-    fun submittedQuery(query: String) {
-        submittedQuery.value=query
-    }
 }

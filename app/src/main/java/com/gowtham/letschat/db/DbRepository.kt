@@ -34,6 +34,8 @@ class DbRepository @Inject constructor(
         }
     }
 
+    suspend fun insertUser2(user: ChatUser) = userDao.insertUser(user)
+
     override fun insertMultipleUser(users: List<ChatUser>) {
         CoroutineScope(Dispatchers.IO).launch {
             userDao.insertMultipleUser(users)

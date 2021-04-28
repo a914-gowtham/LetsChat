@@ -4,16 +4,15 @@ import android.content.Context
 import androidx.room.Room
 import com.gowtham.letschat.db.ChatUserDatabase
 import com.gowtham.letschat.utils.Constants.CHAT_USER_DB_NAME
-import com.gowtham.letschat.utils.MPreference
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ApplicationComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 @Module
-@InstallIn(ApplicationComponent::class)
+@InstallIn(SingletonComponent::class)
 object DbModule {
 
     @Singleton

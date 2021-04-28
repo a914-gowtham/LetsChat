@@ -1,7 +1,6 @@
 package com.gowtham.letschat.fragments.contacts
 
 import android.content.Context
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.gowtham.letschat.core.QueryCompleteListener
@@ -12,15 +11,18 @@ import com.gowtham.letschat.utils.LoadState
 import com.gowtham.letschat.utils.LogMessage
 import com.gowtham.letschat.utils.UserUtils
 import com.gowtham.letschat.utils.toast
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 
-class ContactsViewModel @ViewModelInject constructor(
-    @ApplicationContext private val context: Context,
+@HiltViewModel
+class ContactsViewModel @Inject constructor(
+    @ApplicationContext context: Context,
     private val dbRepo: DbRepository) : ViewModel() {
 
     val queryState = MutableLiveData<LoadState>()

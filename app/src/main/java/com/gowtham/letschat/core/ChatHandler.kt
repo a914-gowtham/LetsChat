@@ -15,6 +15,7 @@ import com.gowtham.letschat.utils.MPreference
 import com.gowtham.letschat.utils.UserUtils
 import com.gowtham.letschat.utils.getUnreadCount
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.*
 import timber.log.Timber
 import javax.inject.Inject

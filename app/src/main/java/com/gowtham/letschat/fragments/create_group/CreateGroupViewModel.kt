@@ -2,7 +2,6 @@ package com.gowtham.letschat.fragments.create_group
 
 import android.content.Context
 import android.net.Uri
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.tasks.OnFailureListener
@@ -10,24 +9,22 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
-import com.google.firebase.storage.StorageReference
 import com.gowtham.letschat.TYPE_NEW_GROUP
 import com.gowtham.letschat.db.DbRepository
-import com.gowtham.letschat.db.daos.GroupDao
 import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.data.Group
 import com.gowtham.letschat.di.GroupCollection
 import com.gowtham.letschat.models.UserProfile
 import com.gowtham.letschat.utils.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import javax.inject.Inject
 import kotlin.random.Random
 
-class CreateGroupViewModel @ViewModelInject constructor(
+@HiltViewModel
+class CreateGroupViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val preference: MPreference,
     private val userCollection: CollectionReference,

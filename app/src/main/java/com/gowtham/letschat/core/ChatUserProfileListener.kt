@@ -21,7 +21,7 @@ import javax.inject.Singleton
 
 @Singleton
 class ChatUserProfileListener @Inject
-constructor( @ApplicationContext val context: Context,
+constructor(@ApplicationContext val context: Context,
              private val userCollectionRef: CollectionReference,
              private val preference: MPreference,
              private val dbRepository: DbRepository){

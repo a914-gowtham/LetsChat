@@ -3,8 +3,10 @@ package com.gowtham.letschat.db.data
 import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
+import com.google.firebase.firestore.ServerTimestamp
 import kotlinx.serialization.Serializable
 
 @IgnoreExtraProperties

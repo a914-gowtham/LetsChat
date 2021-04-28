@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.preferencesKey
-import androidx.datastore.preferences.createDataStore
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import com.gowtham.letschat.db.data.ChatUser
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -19,23 +19,22 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class DataStorePreference @Inject constructor(@ApplicationContext context: Context){
+class DataStorePreference @Inject constructor(@ApplicationContext private val context: Context){
 
-    val dataStore: DataStore<Preferences> =
-        context.createDataStore(name = "search_results")
+    val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "search_results")
 
     fun storeList(key: String,value: List<ChatUser>){
         CoroutineScope(Dispatchers.IO).launch {
-           val dataStoreKey= preferencesKey<String>(key)
-            dataStore.edit {
+           val dataStoreKey= stringPreferencesKey(key)
+            context.dataStore.edit {
                 it[dataStoreKey]=Json.encodeToString(value)
             }
         }
     }
 
     fun getList(): Flow<String>{
-        val listKey = preferencesKey<String>(Constants.KEY_LAST_QUERIED_LIST)
-        return dataStore.data
+        val listKey = stringPreferencesKey(Constants.KEY_LAST_QUERIED_LIST)
+        return context.dataStore.data
             .map { preferences ->
                 // No type safety.
                 preferences[listKey] ?: ""

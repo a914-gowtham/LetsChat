@@ -1,27 +1,26 @@
 package com.gowtham.letschat.fragments.add_group_members
 
 import android.content.Context
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gowtham.letschat.core.QueryCompleteListener
 import com.gowtham.letschat.db.DbRepository
-import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.models.UserProfile
 import com.gowtham.letschat.utils.LoadState
-import com.gowtham.letschat.utils.LogMessage
 import com.gowtham.letschat.utils.UserUtils
-import com.gowtham.letschat.utils.toast
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
-class AddGroupViewModel @ViewModelInject
+@HiltViewModel
+class AddGroupViewModel @Inject
 constructor(@ApplicationContext context: Context,
             private val dbRepository: DbRepository
 ) : ViewModel() {

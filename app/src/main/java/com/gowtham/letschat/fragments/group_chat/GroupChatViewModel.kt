@@ -4,9 +4,9 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -16,8 +16,6 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.storage.StorageReference
-import com.gowtham.letschat.TYPE_NEW_GROUP
 import com.gowtham.letschat.TYPE_NEW_GROUP_MESSAGE
 import com.gowtham.letschat.core.GroupMsgSender
 import com.gowtham.letschat.core.GroupMsgStatusUpdater
@@ -27,15 +25,14 @@ import com.gowtham.letschat.db.daos.GroupDao
 import com.gowtham.letschat.db.daos.GroupMessageDao
 import com.gowtham.letschat.db.data.Group
 import com.gowtham.letschat.db.data.GroupMessage
-import com.gowtham.letschat.db.data.Message
 import com.gowtham.letschat.di.GroupCollection
 import com.gowtham.letschat.fragments.single_chat.toDataClass
 import com.gowtham.letschat.services.GroupUploadWorker
-import com.gowtham.letschat.services.UploadWorker
 import com.gowtham.letschat.utils.Constants
 import com.gowtham.letschat.utils.LogMessage
 import com.gowtham.letschat.utils.MPreference
 import com.gowtham.letschat.utils.UserUtils
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,8 +41,10 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import timber.log.Timber
+import javax.inject.Inject
 
-class GroupChatViewModel @ViewModelInject constructor(
+@HiltViewModel
+class GroupChatViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val preference: MPreference,
     private val groupDao: GroupDao,
@@ -102,14 +101,10 @@ class GroupChatViewModel @ViewModelInject constructor(
                         return@addSnapshotListener
                     docs.forEach { doc ->
                         val message = doc.data?.toDataClass<GroupMessage>()
-                        if (doc.id.toLong() > preference.getLogInTime())
                             messagesList.add(message!!)
                     }
                     if (!messagesList.isNullOrEmpty()) {
                         Timber.v("Check state one")
-                        CoroutineScope(Dispatchers.IO).launch {
-                            groupMsgDao.insertMultipleMessage(messagesList)
-                        }
                         updateMessagesStatus()
                     }
                 }
@@ -145,6 +140,10 @@ class GroupChatViewModel @ViewModelInject constructor(
     }
 
     private fun updateMessagesStatus() {
+        LogMessage.v("Last Message is ${messagesList.last().textMessage?.text}")
+        viewModelScope.launch {
+            groupMsgDao.insertMultipleMessage(messagesList)
+        }
         if (isOnline) {
             val updateToSeen = GroupMsgStatusUpdater(groupCollection)
             updateToSeen.updateToSeen(fromUser!!, messagesList, currentGroup)

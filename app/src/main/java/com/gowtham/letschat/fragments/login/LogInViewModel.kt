@@ -2,12 +2,12 @@ package com.gowtham.letschat.fragments.login
 
 import android.content.Context
 import android.os.CountDownTimer
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.tasks.Task
-import com.google.firebase.auth.*
+import com.google.firebase.auth.AuthResult
+import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.firestore.FirebaseFirestore
 import com.gowtham.letschat.R
 import com.gowtham.letschat.TYPE_LOGGED_IN
@@ -15,16 +15,18 @@ import com.gowtham.letschat.models.Country
 import com.gowtham.letschat.models.ModelMobile
 import com.gowtham.letschat.models.UserProfile
 import com.gowtham.letschat.utils.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.android.scopes.ActivityRetainedScoped
 import dagger.hilt.android.scopes.ActivityScoped
 import timber.log.Timber
 import java.util.*
+import javax.inject.Inject
 import javax.inject.Singleton
 
 
-@ActivityScoped
-@Singleton
-class LogInViewModel @ViewModelInject
+@HiltViewModel
+class LogInViewModel @Inject
 constructor(@ApplicationContext private val context: Context,
             private val logInRepo: LoginRepo, private val preference: MPreference) :
     ViewModel() {

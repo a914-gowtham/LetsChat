@@ -2,11 +2,7 @@ package com.gowtham.letschat.di
 
 import android.content.Context
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.ktx.storage
 import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.DefaultDbRepo
 import com.gowtham.letschat.db.daos.ChatUserDao
@@ -18,9 +14,9 @@ import com.gowtham.letschat.utils.MPreference
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ApplicationComponent
+import dagger.hilt.android.internal.managers.ApplicationComponentManager
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.android.scopes.FragmentScoped
+import dagger.hilt.components.SingletonComponent
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -33,7 +29,7 @@ annotation class MessageCollection
 annotation class GroupCollection
 
 @Module
-@InstallIn(ApplicationComponent::class)
+@InstallIn(SingletonComponent::class)
 object AppModule {
 
     @Singleton
@@ -73,6 +69,8 @@ object AppModule {
                              messageDao: MessageDao): DefaultDbRepo {
         return DbRepository(context, userDao, preference, groupDao, groupMsgDao, messageDao)
     }
+
+
 
 
 }

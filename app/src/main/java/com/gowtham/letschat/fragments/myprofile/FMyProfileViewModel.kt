@@ -2,7 +2,6 @@ package com.gowtham.letschat.fragments.myprofile
 
 import android.content.Context
 import android.net.Uri
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.tasks.OnFailureListener
@@ -13,13 +12,17 @@ import com.gowtham.letschat.utils.LoadState
 import com.gowtham.letschat.utils.MPreference
 import com.gowtham.letschat.utils.UserUtils
 import com.gowtham.letschat.utils.toast
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
 import java.util.*
+import javax.inject.Inject
 
-class FMyProfileViewModel @ViewModelInject constructor(
+@HiltViewModel
+class FMyProfileViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val preference: MPreference,private val usersCollection: CollectionReference) : ViewModel() {
+    private val preference: MPreference
+) : ViewModel() {
 
     private var userProfile = preference.getUserProfile()
 
@@ -33,9 +36,9 @@ class FMyProfileViewModel @ViewModelInject constructor(
 
     private val mobileData = userProfile?.mobile
 
-    private val storageRef= UserUtils.getStorageRef(context)
+    private val storageRef = UserUtils.getStorageRef(context)
 
-    private val docuRef= UserUtils.getDocumentRef(context)
+    private val docuRef = UserUtils.getDocumentRef(context)
 
     val mobile = MutableLiveData("${mobileData?.country} ${mobileData?.number}")
 
@@ -70,22 +73,22 @@ class FMyProfileViewModel @ViewModelInject constructor(
         }
     }
 
-    fun saveChanges(name: String,strAbout: String, image: String) {
+    fun saveChanges(name: String, strAbout: String, image: String) {
         name.toLowerCase(Locale.getDefault())
-        updateProfileData(name,strAbout,image)
+        updateProfileData(name, strAbout, image)
     }
 
     private fun updateProfileData(name: String, strAbout: String, image: String) {
         try {
-            profileUpdateState.value=LoadState.OnLoading
-            val profile=userProfile!!
+            profileUpdateState.value = LoadState.OnLoading
+            val profile = userProfile!!
             profile.userName = name
-            profile.about =strAbout
-            profile.image =image
-            profile.updatedAt=System.currentTimeMillis()
+            profile.about = strAbout
+            profile.image = image
+            profile.updatedAt = System.currentTimeMillis()
             docuRef.set(profile, SetOptions.merge()).addOnSuccessListener {
                 context.toast("Profile updated!")
-                userProfile=profile
+                userProfile = profile
                 preference.saveProfile(profile)
                 profileUpdateState.value = LoadState.OnSuccess()
             }.addOnFailureListener { e ->

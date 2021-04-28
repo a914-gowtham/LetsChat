@@ -3,9 +3,9 @@ package com.gowtham.letschat.fragments.single_chat
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -13,7 +13,9 @@ import androidx.work.WorkRequest
 import com.google.firebase.database.*
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.gson.GsonBuilder
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 import com.google.gson.reflect.TypeToken
 import com.gowtham.letschat.TYPE_NEW_MESSAGE
 import com.gowtham.letschat.core.MessageSender
@@ -29,6 +31,7 @@ import com.gowtham.letschat.utils.*
 import com.gowtham.letschat.utils.Constants.CHAT_USER_DATA
 import com.gowtham.letschat.utils.Constants.MESSAGE_DATA
 import com.gowtham.letschat.utils.Constants.MESSAGE_FILE_URI
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,9 +40,11 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import timber.log.Timber
+import javax.inject.Inject
 import kotlin.reflect.full.memberProperties
 
-class SingleChatViewModel @ViewModelInject
+@HiltViewModel
+class SingleChatViewModel @Inject
 constructor(
     @ApplicationContext private val context: Context,
     private val dbRepository: DbRepository,
@@ -110,7 +115,7 @@ constructor(
                     }
                     return@addSnapshotListener
                 }
-                if (error == null) {
+                else if (error == null) {
                     messagesList.clear()
                     if (docs.isNullOrEmpty())
                         return@addSnapshotListener
@@ -118,7 +123,6 @@ constructor(
                         val message = doc.data?.toDataClass<Message>()
                         message?.chatUserId =
                             if (message?.from != fromUser) message?.from else message?.to
-                        if (doc.id.toLong() > preference.getLogInTime())
                             messagesList.add(message!!)
                     }
                     if (!messagesList.isNullOrEmpty()) {
@@ -143,16 +147,18 @@ constructor(
                     }
                     return@addSnapshotListener
                 }
-                if (error == null) {
+                else if (error == null) {
                     messagesList.clear()
                     if (docs.isNullOrEmpty()) {
                         return@addSnapshotListener
                     }
                     docs.forEach { doc ->
                         val message = doc.data?.toDataClass<Message>()
+                        LogMessage.v("Message ${message?.createdAt}")
                         message?.chatUserId =
                             if (message?.from != fromUser) message?.from else message?.to
-                        if (doc.id.toLong() > preference.getLogInTime())
+                        LogMessage.v("DocIddd ${doc.id.toLong()}")
+                        LogMessage.v("loginTime ${preference.getLogInTime()}")
                             messagesList.add(message!!)
                     }
                     if (!messagesList.isNullOrEmpty()) {
@@ -257,7 +263,8 @@ constructor(
 
     private suspend fun updateCacheMessges(listOfMessage: List<Message>) {
         withContext(Dispatchers.Main) {
-            val nonSendMsgs = listOfMessage.filter { it.from == fromUser && it.status == 0 && it.type=="text"}
+            val nonSendMsgs =
+                listOfMessage.filter { it.from == fromUser && it.status == 0 && it.type == "text" }
             LogMessage.v("nonSendMsgs Size ${nonSendMsgs.size}")
             if (nonSendMsgs.isNotEmpty()) {
                 for (cachedMsg in nonSendMsgs) {
@@ -370,23 +377,23 @@ constructor(
     }
 
     fun setUnReadCountZero(chatUser: ChatUser) {
-        UserUtils.setUnReadCountZero(dbRepository,chatUser)
+        UserUtils.setUnReadCountZero(dbRepository, chatUser)
     }
 
     fun insertUser(chatUser: ChatUser) {
         dbRepository.insertUser(chatUser)
     }
 
-    fun uploadToCloud(message: Message,fileUri: String){
+    fun uploadToCloud(message: Message, fileUri: String) {
         try {
             dbRepository.insertMessage(message)
             removeTypingCallbacks()
-            val messageData=Json.encodeToString(message)
-            val chatUserData=Json.encodeToString(chatUser)
-            val data= Data.Builder()
-                .putString(MESSAGE_FILE_URI,fileUri)
-                .putString(MESSAGE_DATA,messageData)
-                .putString(CHAT_USER_DATA,chatUserData)
+            val messageData = Json.encodeToString(message)
+            val chatUserData = Json.encodeToString(chatUser)
+            val data = Data.Builder()
+                .putString(MESSAGE_FILE_URI, fileUri)
+                .putString(MESSAGE_DATA, messageData)
+                .putString(CHAT_USER_DATA, chatUserData)
                 .build()
             val uploadWorkRequest: WorkRequest =
                 OneTimeWorkRequestBuilder<UploadWorker>()
@@ -416,7 +423,7 @@ inline fun <I, reified O> I.convert(): O {
     return Utils.getGSONObj().fromJson(json, object : TypeToken<O>() {}.type)
 }
 
-inline fun <reified T : Any> T.asMap() : Map<String, Any?> {
+inline fun <reified T : Any> T.asMap(): Map<String, Any?> {
     val props = T::class.memberProperties.associateBy { it.name }
     return props.keys.associateWith { props[it]?.get(this) }
 }

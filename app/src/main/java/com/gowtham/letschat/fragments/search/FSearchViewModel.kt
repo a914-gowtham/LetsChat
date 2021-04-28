@@ -2,16 +2,20 @@ package com.gowtham.letschat.fragments.search
 
 import android.os.Handler
 import android.os.Looper
-import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import com.gowtham.letschat.utils.Constants
 import com.gowtham.letschat.utils.DataStorePreference
 import com.gowtham.letschat.utils.LoadState
 import com.gowtham.letschat.utils.LogMessage
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 
-class FSearchViewModel @ViewModelInject constructor(repository: SearchRepo,
-           private val dataStorePreference: DataStorePreference): ViewModel() {
+@HiltViewModel
+class FSearchViewModel @Inject constructor(repository: SearchRepo,
+                                               private val dataStorePreference: DataStorePreference): ViewModel() {
 
     private val searchHandler = Handler(Looper.getMainLooper())
 

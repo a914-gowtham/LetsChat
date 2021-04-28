@@ -72,50 +72,48 @@ android {
 }
 
 dependencies {
-    def work_version = "2.4.0"
+    def work_version = "2.5.0"
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.3.2'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'com.google.android.material:material:1.2.1'
+    implementation 'com.google.android.material:material:1.3.0'
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'com.googlecode.libphonenumber:libphonenumber:8.12.11'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     // Activity KTX for viewModels()
-    implementation "androidx.activity:activity-ktx:1.1.0"
+    implementation "androidx.activity:activity-ktx:1.2.2"
 
     //Databinding compiler
     kapt "com.android.databinding:compiler:3.1.4"
 
     //dagger-hilt
-    implementation "com.google.dagger:hilt-android:2.28.3-alpha" //don't upgrade unless same version of kapt availale
-    kapt "com.google.dagger:hilt-android-compiler:2.28.3-alpha"
-    implementation 'androidx.hilt:hilt-work:1.0.0-alpha02'
-    implementation "androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha02"
-    kapt "androidx.hilt:hilt-compiler:1.0.0-alpha02"
+    implementation "com.google.dagger:hilt-android:2.35" //don't upgrade unless same version of kapt availale
+    kapt "com.google.dagger:hilt-android-compiler:2.35"
+    implementation 'androidx.hilt:hilt-work:1.0.0-beta01'
+    kapt "androidx.hilt:hilt-compiler:1.0.0-beta01"
 
     //event bus
     implementation 'org.greenrobot:eventbus:3.2.0'
 
-    implementation "androidx.recyclerview:recyclerview:1.2.0-beta01"
+    implementation "androidx.recyclerview:recyclerview:1.2.0"
 
     //mvvm
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
 
     //Android Navigation Architecture
-    implementation "androidx.navigation:navigation-fragment-ktx:2.3.2"
-    implementation "androidx.navigation:navigation-ui-ktx:2.3.2"
+    implementation "androidx.navigation:navigation-fragment-ktx:2.3.5"
+    implementation "androidx.navigation:navigation-ui-ktx:2.3.5"
 
     // Room
-    implementation "androidx.room:room-runtime:2.3.0-alpha04"
-    kapt "androidx.room:room-compiler:2.3.0-alpha04"
+    implementation "androidx.room:room-runtime:2.4.0-alpha01"
+    kapt "androidx.room:room-compiler:2.4.0-alpha01"
 
     // Kotlin Extensions and Coroutines support for Room
-    implementation "androidx.room:room-ktx:2.3.0-alpha04"
+    implementation "androidx.room:room-ktx:2.4.0-alpha01"
 
     //For device to device notification sending
     implementation 'com.github.a914-gowtham:fcm-sender:1.0.2'
@@ -141,7 +139,7 @@ dependencies {
     //Image loader
     implementation("io.coil-kt:coil:1.0.0")
     implementation("io.coil-kt:coil-gif:1.0.0")
-    implementation 'com.theartofdev.edmodo:android-image-cropper:2.7.0'
+    implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
 
     //image zoom
     implementation 'com.github.stfalcon:stfalcon-imageviewer:1.0.0'
@@ -150,28 +148,28 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")
      // Work Manager
     implementation "androidx.work:work-runtime-ktx:$work_version"
-    implementation "androidx.datastore:datastore-preferences:1.0.0-alpha05"
+    implementation "androidx.datastore:datastore-preferences:1.0.0-beta01"
 
 
     // Local Unit Tests
     implementation "androidx.test:core:1.3.0"
-    testImplementation "junit:junit:4.13.1"
+    testImplementation "junit:junit:4.13.2"
     testImplementation "org.hamcrest:hamcrest-all:1.3"
     testImplementation "androidx.arch.core:core-testing:2.1.0"
     testImplementation "org.robolectric:robolectric:4.3.1"
-    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.2.1"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.3"
     testImplementation "com.google.truth:truth:1.0.1"
     testImplementation "org.mockito:mockito-core:2.21.0"
 
     // Instrumented Unit Tests
-    androidTestImplementation "junit:junit:4.13.1"
+    androidTestImplementation "junit:junit:4.13.2"
     androidTestImplementation "com.linkedin.dexmaker:dexmaker-mockito:2.12.1"
-    androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.2.1"
+    androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.3"
     androidTestImplementation "androidx.arch.core:core-testing:2.1.0"
     androidTestImplementation "com.google.truth:truth:1.0.1"
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     androidTestImplementation "org.mockito:mockito-core:2.21.0"
     androidTestImplementation 'com.google.dagger:hilt-android-testing:2.28-alpha'
-    kaptAndroidTest 'com.google.dagger:hilt-android-compiler:2.28.3-alpha'
+    kaptAndroidTest 'com.google.dagger:hilt-android-compiler:2.35'
 }

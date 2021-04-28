@@ -2,30 +2,21 @@ package com.gowtham.letschat.services
 
 import android.content.Context
 import android.net.Uri
-import androidx.hilt.Assisted
-import androidx.hilt.work.WorkerInject
+import androidx.hilt.work.HiltWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.UploadTask
 import com.gowtham.letschat.TYPE_NEW_GROUP_MESSAGE
-import com.gowtham.letschat.TYPE_NEW_MESSAGE
 import com.gowtham.letschat.core.GroupMsgSender
-import com.gowtham.letschat.core.MessageSender
 import com.gowtham.letschat.core.OnGrpMessageResponse
-import com.gowtham.letschat.core.OnMessageResponse
 import com.gowtham.letschat.db.DbRepository
-import com.gowtham.letschat.db.daos.GroupDao
-import com.gowtham.letschat.db.daos.GroupMessageDao
-import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.data.Group
 import com.gowtham.letschat.db.data.GroupMessage
-import com.gowtham.letschat.db.data.Message
 import com.gowtham.letschat.di.GroupCollection
 import com.gowtham.letschat.utils.Constants
-import com.gowtham.letschat.utils.LogMessage
 import com.gowtham.letschat.utils.UserUtils
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -33,7 +24,8 @@ import timber.log.Timber
 import java.io.FileInputStream
 import java.util.concurrent.CountDownLatch
 
-class GroupUploadWorker @WorkerInject constructor(
+@HiltWorker
+class GroupUploadWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     @GroupCollection
