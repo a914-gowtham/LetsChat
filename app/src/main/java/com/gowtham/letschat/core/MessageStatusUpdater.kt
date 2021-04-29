@@ -79,35 +79,4 @@ class MessageStatusUpdater @Inject constructor(
         } else
             LogMessage.v("All message already seen")
     }
-
-
-    fun updateToSeen2(toUser: String, docId: String, messageList: List<Message>) {
-        val msgSubCollection = msgCollection.document(docId).collection("messages")
-        val batch = firebaseFirestore.batch()
-        val currentTime = System.currentTimeMillis()
-        val filterList = messageList
-            .filter { msg -> msg.from == toUser && msg.status != 3 }
-            .map {
-                it.status = 3
-                it.chatUserId = null
-                it.deliveryTime = it.deliveryTime
-                it.seenTime = currentTime
-                it
-            }
-        if (filterList.isNotEmpty()) {
-            Timber.v("Size of list ${filterList.last().createdAt}")
-            for (message in filterList) {
-                batch.update(
-                    msgSubCollection
-                        .document(message.createdAt.toString()), message.serializeToMap()
-                )
-            }
-            batch.commit().addOnSuccessListener {
-                LogMessage.v("All Message Seen Batch update success")
-            }.addOnFailureListener {
-                LogMessage.v("All Message Seen Batch update failure ${it.message}")
-            }
-        } else
-            LogMessage.v("All message already seen")
-    }
 }

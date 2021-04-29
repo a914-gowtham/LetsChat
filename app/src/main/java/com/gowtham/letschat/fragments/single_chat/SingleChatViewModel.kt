@@ -12,6 +12,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import com.google.firebase.database.*
 import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.reflect.TypeToken
 import com.gowtham.letschat.TYPE_NEW_MESSAGE
 import com.gowtham.letschat.core.MessageSender
@@ -49,8 +50,8 @@ constructor(
     @MessageCollection
     private val messageCollection: CollectionReference,
     private val preference: MPreference,
-    private val messageStatusUpdater: MessageStatusUpdater
-) : ViewModel() {
+    private val firebaseFirestore: FirebaseFirestore,
+    ) : ViewModel() {
 
     private val database = FirebaseDatabase.getInstance()
 
@@ -65,6 +66,8 @@ constructor(
     private var statusListener: ValueEventListener? = null
 
     val chatUserOnlineStatus = MutableLiveData(UserStatus())
+
+    private val messageStatusUpdater=MessageStatusUpdater(messageCollection,firebaseFirestore)
 
     private lateinit var chatUser: ChatUser
 
@@ -178,11 +181,10 @@ constructor(
         if (this::chatUser.isInitialized) {
             chatUser.unRead = 0
             dbRepository.insertUser(chatUser)
-            LogMessage.v("AAAA ${chatUser.documentId!!}")
             viewModelScope.launch(Dispatchers.IO) {
                 val messageList = dbRepository.getChatsOfFriend(chatUser.id)
                 withContext(Dispatchers.Main){
-                    messageStatusUpdater.updateToSeen2(toUser, chatUser.documentId!!, messageList)
+                    messageStatusUpdater.updateToSeen(toUser, chatUser.documentId!!, messageList)
                 }
             }
         }

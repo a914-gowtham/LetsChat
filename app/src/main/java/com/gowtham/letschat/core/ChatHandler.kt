@@ -3,6 +3,7 @@ package com.gowtham.letschat.core
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import com.gowtham.letschat.FirebasePush
@@ -59,36 +60,12 @@ class ChatHandler @Inject constructor(
     fun initHandler() {
         if (instanceCreated)
             return
-        else
-            instanceCreated = true
+        instanceCreated = true
         fromUser = preference.getUid()
         Timber.v("ChatHandler init")
         messageCollectionGroup = UserUtils.getMessageSubCollectionRef()
         preference.clearCurrentUser()
 
-        listenerDoc1 = messageCollectionGroup.whereArrayContains("chatUsers", fromUser!!)
-            .addSnapshotListener { snapShots, error ->
-                if (snapShots?.metadata?.isFromCache == true || error != null) {
-                    LogMessage.v("Error ${error?.localizedMessage}")
-                    return@addSnapshotListener
-                }
-                messagesList.clear()
-                listOfDocs.clear()
-                val listOfIds = ArrayList<String>()
-                snapShots?.forEach { doc ->
-                    val parentDoc = doc.reference.parent.parent?.id!!
-                    val message = doc.data.toDataClass<Message>()
-                    message.chatUserId =
-                        if (message.from != fromUser) message.from else message.to
-                    messagesList.add(message)
-                    if (!listOfDocs.contains(parentDoc)) {
-                        listOfDocs.add(doc.reference.parent.parent?.id.toString())
-                        listOfIds.add(message.chatUserId!!)
-                    }
-                }
-                if (!messagesList.isNullOrEmpty())
-                    insertMessageOnDb(listOfIds)
-            }
     }
 
     private fun insertMessageOnDb(listOfIds: ArrayList<String>) {
@@ -97,6 +74,7 @@ class ChatHandler @Inject constructor(
             val newContactIds =
                 ArrayList<String>()  //message from new user not saved in localdb yet
             chatUsers = dbRepository.getChatUserList()
+            dbRepository.insertMultipleMessage(messagesList)
             for ((index, doc) in listOfDocs.withIndex()) {
                 val chatUser = chatUsers.firstOrNull { it.id == listOfIds[index] }
                 if (chatUser == null) {
@@ -104,16 +82,15 @@ class ChatHandler @Inject constructor(
                     //message from unsaved user
                 } else {
                     chatUser.unRead = if (preference.getOnlineUser() == chatUser.id) 0 else
-                        messagesList.getUnreadCount(chatUser.id)
+                        dbRepository.getChatsOfFriend(chatUser.id).getUnreadCount(chatUser.id)
                     chatUser.documentId = doc
                     Timber.v("UserId ${chatUser.id}  count ${chatUser.unRead}")
                     contacts.add(chatUser)
                 }
             }
-            dbRepository.insertMultipleMessage(messagesList)
             dbRepository.insertMultipleUsers(contacts)
             val currentChatUser = if (preference.getOnlineUser().isNotEmpty())
-                dbRepository.getChatUserById(preference.getOnlineUser())
+                contacts.firstOrNull { it.id==preference.getOnlineUser() }
             else null
             withContext(Dispatchers.Main) {
                 updateMsgStatus(newContactIds, currentChatUser)
@@ -127,9 +104,6 @@ class ChatHandler @Inject constructor(
         currentChatUser: ChatUser?
     ) {
         showNotification(newContactIds)
-        LogMessage.v("Currnet online contact ${preference.getOnlineUser()}")
-        LogMessage.v("Currnet chat user $currentChatUser")
-
         if (isSingleChatOpen && currentChatUser != null) {
             val currentUserMsgs = messagesList.filter {
                 it.chatUserId == currentChatUser.id
@@ -138,7 +112,6 @@ class ChatHandler @Inject constructor(
                 it.chatUserId != currentChatUser.id
             }
             messageStatusUpdater.updateToDelivery(otherUserMsgs, *chatUsers.toTypedArray())
-
             messageStatusUpdater.updateToSeen(
                 currentChatUser.id, currentChatUser.documentId!!, currentUserMsgs
             )
