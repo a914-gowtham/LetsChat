@@ -182,7 +182,7 @@ constructor(
             viewModelScope.launch(Dispatchers.IO) {
                 val messageList = dbRepository.getChatsOfFriend(chatUser.id)
                 withContext(Dispatchers.Main){
-                    messageStatusUpdater.updateToSeen(toUser, chatUser.documentId!!, messageList)
+                    messageStatusUpdater.updateToSeen2(toUser, chatUser.documentId!!, messageList)
                 }
             }
         }

@@ -80,7 +80,6 @@ class DbRepository @Inject constructor(
             groupMsgDao.insertMultipleMessage(messagesList)
 
 
-
     fun insertMessage(message: Message) {
         CoroutineScope(Dispatchers.IO).launch {
             val size=messageDao.getMessageList().size

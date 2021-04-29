@@ -6,7 +6,6 @@ import android.content.Intent
 import androidx.annotation.CallSuper
 import androidx.core.app.RemoteInput
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.FirebaseFirestore
 import com.gowtham.letschat.KEY_TEXT_REPLY
 import com.gowtham.letschat.TYPE_NEW_MESSAGE
 import com.gowtham.letschat.core.MessageSender

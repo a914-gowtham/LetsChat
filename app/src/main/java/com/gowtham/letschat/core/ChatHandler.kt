@@ -138,7 +138,6 @@ class ChatHandler @Inject constructor(
                 it.chatUserId != currentChatUser.id
             }
             messageStatusUpdater.updateToDelivery(otherUserMsgs, *chatUsers.toTypedArray())
-            LogMessage.v("AAAA ${currentChatUser.documentId!!}")
 
             messageStatusUpdater.updateToSeen(
                 currentChatUser.id, currentChatUser.documentId!!, currentUserMsgs
