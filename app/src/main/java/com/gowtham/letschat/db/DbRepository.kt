@@ -79,13 +79,12 @@ class DbRepository @Inject constructor(
     suspend fun insertMultipleGroupMessage(messagesList: List<GroupMessage>) =
             groupMsgDao.insertMultipleMessage(messagesList)
 
+    fun getAllNonSeenMessage() =
+        messageDao.getAllNotSeenMessages()
 
     fun insertMessage(message: Message) {
         CoroutineScope(Dispatchers.IO).launch {
-            val size=messageDao.getMessageList().size
-            LogMessage.e("Size before $size")
             messageDao.insertMessage(message)
-            LogMessage.e("Size afte")
         }
     }
 

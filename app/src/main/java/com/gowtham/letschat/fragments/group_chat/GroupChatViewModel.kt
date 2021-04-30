@@ -47,13 +47,11 @@ import javax.inject.Inject
 class GroupChatViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val preference: MPreference,
-    private val groupDao: GroupDao,
     private val groupMsgDao: GroupMessageDao,
     private val chatUserDao: ChatUserDao,
     @GroupCollection
-    private val groupCollection: CollectionReference) : ViewModel() {
-
-    private val messagesList: MutableList<GroupMessage> by lazy { mutableListOf() }
+    private val groupCollection: CollectionReference
+) : ViewModel() {
 
     val message = MutableLiveData<String>()
 
@@ -71,54 +69,23 @@ class GroupChatViewModel @Inject constructor(
 
     private val typingHandler = Handler(Looper.getMainLooper())
 
-    private var chatsFromRoom = ArrayList<GroupMessage>()
-
     private var canScroll = false
-
-    private var statusUpdated = false
-
-    private var isOnline = true
 
     private var cleared = false
 
     private lateinit var group: Group
 
-    private val statusRef: DatabaseReference = database.getReference("Groups/$currentGroup")
-
     init {
-        groupListener?.remove()
-        groupListener = groupCollection.document(currentGroup)
-            .collection("group_messages").addSnapshotListener { snapshot, error ->
-                if (cleared)
-                    return@addSnapshotListener
-                val docs = snapshot?.documents
-                if (snapshot?.metadata?.isFromCache!!)
-                    return@addSnapshotListener
-
-                if (error == null) {
-                    messagesList.clear()
-                    if (docs.isNullOrEmpty())
-                        return@addSnapshotListener
-                    docs.forEach { doc ->
-                        val message = doc.data?.toDataClass<GroupMessage>()
-                            messagesList.add(message!!)
-                    }
-                    if (!messagesList.isNullOrEmpty()) {
-                        Timber.v("Check state one")
-                        updateMessagesStatus()
-                    }
-                }
-            }
-
         groupCollection.document(currentGroup).addSnapshotListener { value, error ->
             try {
                 if (error == null) {
                     val list = value?.get("typing_users")
-                    var users =if (list == null) ArrayList()
-                               else list as ArrayList<String>
-                    val names=group.members?.filter { users.contains(it.id) && it.id!=fromUser }?.map { //get locally saved name
-                        it.localName +" is typing..."
-                    }
+                    val users = if (list == null) ArrayList()
+                    else list as ArrayList<String>
+                    val names = group.members?.filter { users.contains(it.id) && it.id != fromUser }
+                        ?.map { //get locally saved name
+                            it.localName + " is typing..."
+                        }
                     if (users.isNullOrEmpty())
                         typingUsers.postValue("")
                     else
@@ -139,46 +106,11 @@ class GroupChatViewModel @Inject constructor(
             this.group = group
     }
 
-    private fun updateMessagesStatus() {
-        LogMessage.v("Last Message is ${messagesList.last().textMessage?.text}")
-        viewModelScope.launch {
-            groupMsgDao.insertMultipleMessage(messagesList)
-        }
-        if (isOnline) {
-            val updateToSeen = GroupMsgStatusUpdater(groupCollection)
-            updateToSeen.updateToSeen(fromUser!!, messagesList, currentGroup)
-        }
-    }
-
-    fun setChatsOfThisUser(list: MutableList<GroupMessage>) {
-        chatsFromRoom = list as ArrayList<GroupMessage>
-        if (!statusUpdated) {
-            statusUpdated = true
-            setSeenAllMessage()  //one time only
-        }
-    }
-
-    fun setSeenAllMessage() {
-        if (!messagesList.isNullOrEmpty() && isOnline) {
-            val updateToSeen = GroupMsgStatusUpdater(groupCollection)
-            updateToSeen.updateToSeen(fromUser!!, messagesList, currentGroup)
-        } else if (!chatsFromRoom.isNullOrEmpty() && isOnline) {
-            val updateToSeen = GroupMsgStatusUpdater(groupCollection)
-            updateToSeen.updateToSeen(fromUser!!, chatsFromRoom, currentGroup)
-        }
-        if (isOnline)
-            UserUtils.setUnReadCountGroup(groupDao, group)
-    }
-
     fun canScroll(can: Boolean) {
         canScroll = can
     }
 
     fun getCanScroll() = canScroll
-
-    fun setOnline(online: Boolean) {
-        isOnline = online
-    }
 
     fun sendTyping(edtValue: String) {
         if (edtValue.isEmpty()) {
@@ -195,7 +127,8 @@ class GroupChatViewModel @Inject constructor(
 
     private fun sendTypingStatus(
         isTyping: Boolean,
-        fromUser: String, currentGroup: String) {
+        fromUser: String, currentGroup: String
+    ) {
         val value =
             if (isTyping) FieldValue.arrayUnion(fromUser) else FieldValue.arrayRemove(fromUser)
         groupCollection.document(currentGroup).update("typing_users", value)
@@ -219,8 +152,10 @@ class GroupChatViewModel @Inject constructor(
 
     private suspend fun updateCacheMessges(chatsOfGroup: List<GroupMessage>) {
         withContext(Dispatchers.Main) {
-            val nonSendMsgs = chatsOfGroup.filter { it.from == fromUser
-                    && it.status[0] == 0 && it.type=="text"}
+            val nonSendMsgs = chatsOfGroup.filter {
+                it.from == fromUser
+                        && it.status[0] == 0 && it.type == "text"
+            }
             LogMessage.v("nonSendMsgs Group Size ${nonSendMsgs.size}")
             for (cachedMsg in nonSendMsgs) {
                 val messageSender = GroupMsgSender(groupCollection)
@@ -243,16 +178,16 @@ class GroupChatViewModel @Inject constructor(
         UserUtils.insertGroupMsg(groupMsgDao, message)
     }
 
-    fun uploadToCloud(message: GroupMessage, fileUri: String){
+    fun uploadToCloud(message: GroupMessage, fileUri: String) {
         try {
             UserUtils.insertGroupMsg(groupMsgDao, message)
             removeTypingCallbacks()
-            val messageData=Json.encodeToString(message)
-            val groupData=Json.encodeToString(group)
-            val data= Data.Builder()
-                .putString(Constants.MESSAGE_FILE_URI,fileUri)
-                .putString(Constants.MESSAGE_DATA,messageData)
-                .putString(Constants.GROUP_DATA,groupData)
+            val messageData = Json.encodeToString(message)
+            val groupData = Json.encodeToString(group)
+            val data = Data.Builder()
+                .putString(Constants.MESSAGE_FILE_URI, fileUri)
+                .putString(Constants.MESSAGE_DATA, messageData)
+                .putString(Constants.GROUP_DATA, groupData)
                 .build()
             val uploadWorkRequest: WorkRequest =
                 OneTimeWorkRequestBuilder<GroupUploadWorker>()
@@ -269,7 +204,7 @@ class GroupChatViewModel @Inject constructor(
         override fun onSuccess(message: GroupMessage) {
             LogMessage.v("messageListener OnSuccess ${message.textMessage?.text}")
             UserUtils.insertGroupMsg(groupMsgDao, message)
-            val users = group.members?.filter { !it.user.token.isEmpty() }?.map {
+            val users = group.members?.filter { it.user.token.isNotEmpty() }?.map {
                 it.user.token
                 it
             }

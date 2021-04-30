@@ -76,12 +76,11 @@ class FirebasePush : FirebaseMessagingService(), OnSuccessListener {
     @Inject
     lateinit var usersCollection: CollectionReference
 
-    @MessageCollection
-    @Inject
-    lateinit var messageCollection: CollectionReference
-
     @Inject
     lateinit var messageStatusUpdater: MessageStatusUpdater
+
+    @Inject
+    lateinit var groupMessageStatusUpdater: GroupMsgStatusUpdater
 
     @GroupCollection
     @Inject
@@ -164,8 +163,7 @@ class FirebasePush : FirebaseMessagingService(), OnSuccessListener {
                     withContext(Dispatchers.Main) {
                         showGroupNotification(this@FirebasePush, dbRepository)
                         //update delivery status
-                        val updateToSeen = GroupMsgStatusUpdater(groupCollection)
-                        updateToSeen.updateToDelivery(userId!!, messages, group.id)
+                        groupMessageStatusUpdater.updateToDelivery(userId!!, messages, group.id)
                     }
                 } else {
                     val groupQuery = GroupQuery(message.groupId, dbRepository, preference)

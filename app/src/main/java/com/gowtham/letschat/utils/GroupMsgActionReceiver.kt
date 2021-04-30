@@ -41,6 +41,9 @@ class GroupMsgActionReceiver : HiltGroupBroadcastReceiver(), OnGrpMessageRespons
     lateinit var groupDao: GroupDao
 
     @Inject
+    lateinit var groupMsgStatusUpdater: GroupMsgStatusUpdater
+
+    @Inject
     lateinit var groupMsgDao: GroupMessageDao
 
     lateinit var groupWithMsg: GroupWithMessages
@@ -67,8 +70,7 @@ class GroupMsgActionReceiver : HiltGroupBroadcastReceiver(), OnGrpMessageRespons
         notificationId= notiIdString.substring(notiIdString.length - 4)
             .toInt()
         if (intent.action == Constants.ACTION_MARK_AS_READ) {
-            val updateToSeen = GroupMsgStatusUpdater(grpCollection)
-            updateToSeen.updateToSeen(myUserId, groupWithMsg.messages, group.id)
+            groupMsgStatusUpdater.updateToSeen(myUserId, groupWithMsg.messages, group.id)
             Utils.removeNotificationById(context, notificationId)
             updateOnDb()
         }else{
@@ -116,13 +118,12 @@ class GroupMsgActionReceiver : HiltGroupBroadcastReceiver(), OnGrpMessageRespons
     override fun onSuccess(message: GroupMessage) {
         Utils.removeNotificationById(context, notificationId)
         //update to seen status
-        val updateToSeen = GroupMsgStatusUpdater(grpCollection)
-        updateToSeen.updateToSeen(myUserId, groupWithMsg.messages,group.id)
+        groupMsgStatusUpdater.updateToSeen(myUserId, groupWithMsg.messages,group.id)
         updateOnDb()
         UserUtils.insertGroupMsg(groupMsgDao,message)
         for (user in group.members!!) {
             val token = user.user.token
-            if (!token.isNullOrEmpty())
+            if (token.isNotEmpty())
                 UserUtils.sendPush(context, TYPE_NEW_GROUP_MESSAGE,
                     Json.encodeToString(message), token, user.id)
         }

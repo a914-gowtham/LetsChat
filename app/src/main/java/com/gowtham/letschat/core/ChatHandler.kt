@@ -66,6 +66,35 @@ class ChatHandler @Inject constructor(
         messageCollectionGroup = UserUtils.getMessageSubCollectionRef()
         preference.clearCurrentUser()
 
+        listenerDoc1 = messageCollectionGroup.whereArrayContains("chatUsers", fromUser!!)
+            .addSnapshotListener { snapShots, error ->
+                if (error != null || snapShots==null || snapShots.metadata.isFromCache) {
+                    LogMessage.v("Error ${error?.localizedMessage}")
+                    return@addSnapshotListener
+                }
+                messagesList.clear()
+                listOfDocs.clear()
+                val listOfIds = ArrayList<String>()
+
+                for (shot in snapShots.documentChanges) {
+                    if (shot.type == DocumentChange.Type.ADDED ||
+                        shot.type == DocumentChange.Type.MODIFIED
+                    ) {
+                        val document = shot.document;
+                        val parentDoc = document.reference.parent.parent?.id!!
+                        val message = document.data.toDataClass<Message>()
+                        message.chatUserId =
+                            if (message.from != fromUser) message.from else message.to
+                        messagesList.add(message)
+                        if (!listOfDocs.contains(parentDoc)) {
+                            listOfDocs.add(document.reference.parent.parent?.id.toString())
+                            listOfIds.add(message.chatUserId!!)
+                        }
+                    }
+                }
+                if (!messagesList.isNullOrEmpty())
+                    insertMessageOnDb(listOfIds)
+            }
     }
 
     private fun insertMessageOnDb(listOfIds: ArrayList<String>) {
@@ -74,7 +103,6 @@ class ChatHandler @Inject constructor(
             val newContactIds =
                 ArrayList<String>()  //message from new user not saved in localdb yet
             chatUsers = dbRepository.getChatUserList()
-            dbRepository.insertMultipleMessage(messagesList)
             for ((index, doc) in listOfDocs.withIndex()) {
                 val chatUser = chatUsers.firstOrNull { it.id == listOfIds[index] }
                 if (chatUser == null) {
@@ -90,10 +118,11 @@ class ChatHandler @Inject constructor(
             }
             dbRepository.insertMultipleUsers(contacts)
             val currentChatUser = if (preference.getOnlineUser().isNotEmpty())
-                contacts.firstOrNull { it.id==preference.getOnlineUser() }
+                contacts.firstOrNull { it.id == preference.getOnlineUser() }
             else null
+            val allUnReadMsgs=dbRepository.getAllNonSeenMessage()
             withContext(Dispatchers.Main) {
-                updateMsgStatus(newContactIds, currentChatUser)
+                updateMsgStatus(newContactIds, currentChatUser,allUnReadMsgs)
             }
         }
 
@@ -101,14 +130,15 @@ class ChatHandler @Inject constructor(
 
     private fun updateMsgStatus(
         newContactIds: ArrayList<String>,
-        currentChatUser: ChatUser?
+        currentChatUser: ChatUser?,
+        allUnReadMsgs: List<Message>
     ) {
         showNotification(newContactIds)
         if (isSingleChatOpen && currentChatUser != null) {
-            val currentUserMsgs = messagesList.filter {
+            val currentUserMsgs = allUnReadMsgs.filter {
                 it.chatUserId == currentChatUser.id
             }
-            val otherUserMsgs = messagesList.filter {
+            val otherUserMsgs = allUnReadMsgs.filter {
                 it.chatUserId != currentChatUser.id
             }
             messageStatusUpdater.updateToDelivery(otherUserMsgs, *chatUsers.toTypedArray())
@@ -116,7 +146,7 @@ class ChatHandler @Inject constructor(
                 currentChatUser.id, currentChatUser.documentId!!, currentUserMsgs
             )
         } else {
-            messageStatusUpdater.updateToDelivery(messagesList, *chatUsers.toTypedArray())
+            messageStatusUpdater.updateToDelivery(allUnReadMsgs, *chatUsers.toTypedArray())
         }
     }
 

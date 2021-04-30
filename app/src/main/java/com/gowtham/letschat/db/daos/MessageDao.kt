@@ -33,6 +33,9 @@ interface MessageDao {
     @Query("SELECT * FROM Message  WHERE createdAt=:createdAt")
     suspend fun getMessageById(createdAt: Long): Message?
 
+    @Query("SELECT * FROM Message  WHERE status<3")
+    fun getAllNotSeenMessages() : List<Message>
+
     @Query("DELETE FROM Message  WHERE createdAt=:createdAt")
     suspend fun deleteMessageByCreatedAt(createdAt: Long)
 
