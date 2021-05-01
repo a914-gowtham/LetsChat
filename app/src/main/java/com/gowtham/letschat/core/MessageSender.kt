@@ -75,10 +75,10 @@ class MessageSender(private val msgCollection: CollectionReference,
                 SetOptions.merge()
             ).addOnSuccessListener {
                     LogMessage.v("Message sender Sucesss ${message.createdAt}")
-                   message.chatUserId=chatUserId
+                    message.chatUserId=chatUserId
                     listener.onSuccess(message)
                 }.addOnFailureListener {
-                   message.chatUserId=chatUserId
+                    message.chatUserId=chatUserId
                     message.status=4
                 LogMessage.v("Message sender Failed ${it.message}")
                     listener.onFailed(message)

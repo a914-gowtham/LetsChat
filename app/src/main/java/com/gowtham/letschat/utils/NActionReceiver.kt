@@ -43,6 +43,9 @@ class NActionReceiver : HiltBroadcastReceiver(), OnMessageResponse {
     lateinit var messageDao: MessageDao
 
     @Inject
+    lateinit var messageStatusUpdater: MessageStatusUpdater
+
+    @Inject
     lateinit var dbRepo: DbRepository
 
     @MessageCollection
@@ -73,9 +76,7 @@ class NActionReceiver : HiltBroadcastReceiver(), OnMessageResponse {
             chatUserId = UserUtils.getChatUserId(myUserId, chatUser.messages.last())
             if (intent.action == ACTION_MARK_AS_READ) {
                 chatUser.messages.let {
-                    val updateToSeen = MessageStatusUpdater(messageCollection)
-                    updateToSeen.updateToSeen(
-                        myUserId,
+                    messageStatusUpdater.updateToSeen(
                         chatUserId,chatUser.user.documentId!!,it)
                 }
                 Utils.removeNotificationById(context, notificationId)
@@ -135,9 +136,7 @@ class NActionReceiver : HiltBroadcastReceiver(), OnMessageResponse {
         Utils.removeNotificationById(context, notificationId)
         //update to seen status
         chatUser.messages.let {
-            val updateToSeen = MessageStatusUpdater(messageCollection)
-            updateToSeen.updateToSeen(
-                myUserId,
+            messageStatusUpdater.updateToSeen(
                 chatUserId,chatUser.user.documentId!!,it)
         }
         updateOnDb()

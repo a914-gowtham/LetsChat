@@ -24,11 +24,17 @@ interface MessageDao {
     @Query("SELECT * FROM Message WHERE `chatUserId`=:chatUserId")
     fun getChatsOfFriend(chatUserId: String): List<Message>
 
+    @Query("SELECT * FROM Message WHERE `chatUserId`=:chatUserId")
+    suspend fun getChatsOfFriend2(chatUserId: String): List<Message>
+
     @Query("SELECT * FROM Message WHERE `to`=:chatUserId OR `from`=:chatUserId")
     fun getMessagesByChatUserId(chatUserId: String): Flow<List<Message>>
 
     @Query("SELECT * FROM Message  WHERE createdAt=:createdAt")
     suspend fun getMessageById(createdAt: Long): Message?
+
+    @Query("SELECT * FROM Message  WHERE status<3")
+    fun getAllNotSeenMessages() : List<Message>
 
     @Query("DELETE FROM Message  WHERE createdAt=:createdAt")
     suspend fun deleteMessageByCreatedAt(createdAt: Long)

@@ -24,6 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.gowtham.letschat.core.ChatHandler
 import com.gowtham.letschat.databinding.FSingleChatBinding
 import com.gowtham.letschat.db.data.*
 import com.gowtham.letschat.fragments.FAttachment
@@ -128,7 +129,6 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
                 adChat.submitList(mMessagesList)
                 //scroll to last items in recycler (recent messages)
                 if (messageList.isNotEmpty()) {
-                    viewModel.setChatsOfThisUser(messageList)
                     if (viewModel.getCanScroll())  //scroll only if new message arrived
                         binding.listMessage.smoothScrollToPos(messageList.lastIndex)
                     else
@@ -459,9 +459,8 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
 
 
     override fun onResume() {
-        viewModel.setOnline(true)
-        preference.setCurrentUser(chatUserId)
         viewModel.setSeenAllMessage()
+        preference.setCurrentUser(chatUserId)
         viewModel.sendCachedTxtMesssages()
         Utils.removeNotification(requireContext())
         super.onResume()
@@ -475,7 +474,6 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
     override fun onStop() {
         super.onStop()
         preference.clearCurrentUser()
-        viewModel.setOnline(false)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

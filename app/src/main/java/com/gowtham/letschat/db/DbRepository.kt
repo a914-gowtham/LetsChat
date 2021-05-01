@@ -21,9 +21,7 @@ import javax.inject.Singleton
 
 @Singleton
 class DbRepository @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val userDao: ChatUserDao,
-    private val preference: MPreference,
     private val groupDao: GroupDao,
     private val groupMsgDao: GroupMessageDao,
     private val messageDao: MessageDao) : DefaultDbRepo {
@@ -33,8 +31,6 @@ class DbRepository @Inject constructor(
             userDao.insertUser(user)
         }
     }
-
-    suspend fun insertUser2(user: ChatUser) = userDao.insertUser(user)
 
     override fun insertMultipleUser(users: List<ChatUser>) {
         CoroutineScope(Dispatchers.IO).launch {
@@ -64,6 +60,10 @@ class DbRepository @Inject constructor(
         }
     }
 
+    suspend fun insertMultipleUsers(users: ArrayList<ChatUser>){
+       userDao.insertMultipleUser(users)
+   }
+
     fun insertGroup(group: Group) {
         CoroutineScope(Dispatchers.IO).launch {
             groupDao.insertGroup(group)
@@ -77,14 +77,12 @@ class DbRepository @Inject constructor(
     suspend fun insertMultipleGroupMessage(messagesList: List<GroupMessage>) =
             groupMsgDao.insertMultipleMessage(messagesList)
 
-
+    fun getAllNonSeenMessage() =
+        messageDao.getAllNotSeenMessages()
 
     fun insertMessage(message: Message) {
         CoroutineScope(Dispatchers.IO).launch {
-            val size=messageDao.getMessageList().size
-            LogMessage.e("Size before $size")
             messageDao.insertMessage(message)
-            LogMessage.e("Size afte")
         }
     }
 

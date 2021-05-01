@@ -4,19 +4,24 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.gowtham.letschat.db.data.Group
 import com.gowtham.letschat.db.data.GroupMessage
+import com.gowtham.letschat.di.GroupCollection
 import com.gowtham.letschat.fragments.single_chat.asMap
 import com.gowtham.letschat.fragments.single_chat.serializeToMap
 import com.gowtham.letschat.utils.LogMessage
 import com.gowtham.letschat.utils.Utils.myIndexOfStatus
 import com.gowtham.letschat.utils.Utils.myMsgStatus
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class GroupMsgStatusUpdater(private val groupCollection: CollectionReference) {
-
-    private var firebaseStore = FirebaseFirestore.getInstance()
+@Singleton
+class GroupMsgStatusUpdater @Inject constructor(
+    @GroupCollection
+    private val groupCollection: CollectionReference,
+     private val firestore: FirebaseFirestore) {
 
     fun updateToDelivery(myUserId: String, messageList: List<GroupMessage>, vararg groupId: String){
         try {
-            val batch= firebaseStore.batch()
+            val batch= firestore.batch()
             for (id in groupId){
                 val msgSubCollection=groupCollection.document(id).collection("group_messages")
                 val filterList=  messageList
@@ -44,7 +49,7 @@ class GroupMsgStatusUpdater(private val groupCollection: CollectionReference) {
     }
 
     fun updateToSeen(myUserId: String, messageList: List<GroupMessage>, groupId: String){
-        val batch= FirebaseFirestore.getInstance().batch()
+        val batch= firestore.batch()
         val currentTime = System.currentTimeMillis()
         val msgSubCollection=groupCollection.document(groupId).collection("group_messages")
             val filterList=  messageList

@@ -3,6 +3,7 @@ package com.gowtham.letschat.di
 import android.content.Context
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.gowtham.letschat.core.MessageStatusUpdater
 import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.DefaultDbRepo
 import com.gowtham.letschat.db.daos.ChatUserDao
@@ -34,25 +35,28 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideUsersCollectionRef(): CollectionReference {
-        val db = FirebaseFirestore.getInstance()
-        return db.collection("Users")
+    fun provideFireStoreInstance(): FirebaseFirestore {
+        return FirebaseFirestore.getInstance()
+    }
+
+    @Singleton
+    @Provides
+    fun provideUsersCollectionRef(firestore: FirebaseFirestore): CollectionReference {
+        return firestore.collection("Users")
     }
 
     @MessageCollection
     @Singleton
     @Provides
-    fun provideMessagesCollectionRef(): CollectionReference {
-        val db = FirebaseFirestore.getInstance()
-        return db.collection("Messages")
+    fun provideMessagesCollectionRef(firestore: FirebaseFirestore): CollectionReference {
+        return firestore.collection("Messages")
     }
 
     @GroupCollection
     @Singleton
     @Provides
-    fun provideGroupCollectionRef(): CollectionReference {
-        val db = FirebaseFirestore.getInstance()
-        return db.collection("Groups")
+    fun provideGroupCollectionRef(firestore: FirebaseFirestore): CollectionReference {
+        return firestore.collection("Groups")
     }
 
     @Provides
@@ -61,16 +65,11 @@ object AppModule {
     }
 
     @Provides
-    fun provideDefaultDbRepo(@ApplicationContext context: Context,
-                             userDao: ChatUserDao,
-                             preference: MPreference,
+    fun provideDefaultDbRepo(userDao: ChatUserDao,
                              groupDao: GroupDao,
                              groupMsgDao: GroupMessageDao,
                              messageDao: MessageDao): DefaultDbRepo {
-        return DbRepository(context, userDao, preference, groupDao, groupMsgDao, messageDao)
+        return DbRepository(userDao, groupDao, groupMsgDao, messageDao)
     }
-
-
-
 
 }

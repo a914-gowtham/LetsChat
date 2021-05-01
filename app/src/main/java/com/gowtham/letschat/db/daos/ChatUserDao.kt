@@ -24,6 +24,9 @@ interface ChatUserDao {
     @Query("SELECT * FROM ChatUser  WHERE id=:id")
     fun getChatUserById(id: String): ChatUser?
 
+    @Query("SELECT * FROM ChatUser  WHERE id=:id")
+    suspend fun getChatUserById2(id: String): ChatUser?
+
     @Query("DELETE FROM ChatUser WHERE id=:userId")
     suspend fun deleteUserById(userId: String)
 
