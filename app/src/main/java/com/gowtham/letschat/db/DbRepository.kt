@@ -21,9 +21,7 @@ import javax.inject.Singleton
 
 @Singleton
 class DbRepository @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val userDao: ChatUserDao,
-    private val preference: MPreference,
     private val groupDao: GroupDao,
     private val groupMsgDao: GroupMessageDao,
     private val messageDao: MessageDao) : DefaultDbRepo {

@@ -20,6 +20,7 @@ import com.gowtham.letschat.TYPE_NEW_GROUP_MESSAGE
 import com.gowtham.letschat.core.GroupMsgSender
 import com.gowtham.letschat.core.GroupMsgStatusUpdater
 import com.gowtham.letschat.core.OnGrpMessageResponse
+import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.daos.ChatUserDao
 import com.gowtham.letschat.db.daos.GroupDao
 import com.gowtham.letschat.db.daos.GroupMessageDao
@@ -49,6 +50,8 @@ class GroupChatViewModel @Inject constructor(
     private val preference: MPreference,
     private val groupMsgDao: GroupMessageDao,
     private val chatUserDao: ChatUserDao,
+    private val dbRepository: DbRepository,
+    private val groupMsgStatusUpdater: GroupMsgStatusUpdater,
     @GroupCollection
     private val groupCollection: CollectionReference
 ) : ViewModel() {
@@ -60,8 +63,6 @@ class GroupChatViewModel @Inject constructor(
     private val currentGroup = preference.getOnlineGroup()
 
     private val fromUser = preference.getUid()
-
-    private val database = FirebaseDatabase.getInstance()
 
     private var isTyping = false
 
@@ -102,8 +103,23 @@ class GroupChatViewModel @Inject constructor(
     fun getChatUsers() = chatUserDao.getAllChatUser()
 
     fun setGroup(group: Group) {
-        if (!this::group.isInitialized)
+        if (!this::group.isInitialized) {
             this.group = group
+            setSeenAllMessage()
+        }
+    }
+
+    private fun setSeenAllMessage() {
+        if (this::group.isInitialized) {
+            group.unRead=0
+            dbRepository.insertGroup(group)
+            viewModelScope.launch(Dispatchers.IO) {
+                val messageList = dbRepository.getChatsOfGroupList(group.id)
+                withContext(Dispatchers.Main){
+                    groupMsgStatusUpdater.updateToSeen(fromUser!!, messageList, group.id)
+                }
+            }
+        }
     }
 
     fun canScroll(can: Boolean) {

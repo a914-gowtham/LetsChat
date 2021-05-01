@@ -2,15 +2,11 @@ package com.gowtham.letschat.core
 
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
-import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.DocumentChange
-import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.*
 import com.gowtham.letschat.FirebasePush
 import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.data.ChatUser
 import com.gowtham.letschat.db.data.Message
-import com.gowtham.letschat.di.MessageCollection
 import com.gowtham.letschat.fragments.single_chat.toDataClass
 import com.gowtham.letschat.utils.LogMessage
 import com.gowtham.letschat.utils.MPreference
@@ -45,11 +41,12 @@ class ChatHandler @Inject constructor(
 
     private val chatUserUtil = ChatUserUtil(dbRepository, usersCollection, null)
 
+    private var isFirstQuery = false
+
     companion object {
 
         private var listenerDoc1: ListenerRegistration? = null
         private var instanceCreated = false
-        var isSingleChatOpen = true
 
         fun removeListeners() {
             instanceCreated = false
@@ -68,7 +65,7 @@ class ChatHandler @Inject constructor(
 
         listenerDoc1 = messageCollectionGroup.whereArrayContains("chatUsers", fromUser!!)
             .addSnapshotListener { snapShots, error ->
-                if (error != null || snapShots==null || snapShots.metadata.isFromCache) {
+                if (error != null || snapShots == null || snapShots.metadata.isFromCache) {
                     LogMessage.v("Error ${error?.localizedMessage}")
                     return@addSnapshotListener
                 }
@@ -76,24 +73,42 @@ class ChatHandler @Inject constructor(
                 listOfDocs.clear()
                 val listOfIds = ArrayList<String>()
 
-                for (shot in snapShots.documentChanges) {
-                    if (shot.type == DocumentChange.Type.ADDED ||
-                        shot.type == DocumentChange.Type.MODIFIED
-                    ) {
-                        val document = shot.document;
-                        val parentDoc = document.reference.parent.parent?.id!!
-                        val message = document.data.toDataClass<Message>()
-                        message.chatUserId =
-                            if (message.from != fromUser) message.from else message.to
-                        messagesList.add(message)
-                        if (!listOfDocs.contains(parentDoc)) {
-                            listOfDocs.add(document.reference.parent.parent?.id.toString())
-                            listOfIds.add(message.chatUserId!!)
-                        }
-                    }
-                }
+                onSnapShotChanged(snapShots, listOfIds)
                 if (!messagesList.isNullOrEmpty())
                     insertMessageOnDb(listOfIds)
+            }
+    }
+
+    private fun onSnapShotChanged(snapShots: QuerySnapshot, listOfIds: ArrayList<String>) {
+        if (isFirstQuery) {
+            snapShots.forEach { doc ->
+                val parentDoc = doc.reference.parent.parent?.id!!
+                val message = doc.data.toDataClass<Message>()
+                message.chatUserId =
+                    if (message.from != fromUser) message.from else message.to
+                messagesList.add(message)
+                if (!listOfDocs.contains(parentDoc)) {
+                    listOfDocs.add(doc.reference.parent.parent?.id.toString())
+                    listOfIds.add(message.chatUserId!!)
+                }
+            }
+            isFirstQuery=false
+        } else
+            for (shot in snapShots.documentChanges) {
+                if (shot.type == DocumentChange.Type.ADDED ||
+                    shot.type == DocumentChange.Type.MODIFIED
+                ) {
+                    val document = shot.document
+                    val parentDoc = document.reference.parent.parent?.id!!
+                    val message = document.data.toDataClass<Message>()
+                    message.chatUserId =
+                        if (message.from != fromUser) message.from else message.to
+                    messagesList.add(message)
+                    if (!listOfDocs.contains(parentDoc)) {
+                        listOfDocs.add(document.reference.parent.parent?.id.toString())
+                        listOfIds.add(message.chatUserId!!)
+                    }
+                }
             }
     }
 
@@ -102,6 +117,7 @@ class ChatHandler @Inject constructor(
             val contacts = ArrayList<ChatUser>()
             val newContactIds =
                 ArrayList<String>()  //message from new user not saved in localdb yet
+            dbRepository.insertMultipleMessage(messagesList)
             chatUsers = dbRepository.getChatUserList()
             for ((index, doc) in listOfDocs.withIndex()) {
                 val chatUser = chatUsers.firstOrNull { it.id == listOfIds[index] }
@@ -120,9 +136,9 @@ class ChatHandler @Inject constructor(
             val currentChatUser = if (preference.getOnlineUser().isNotEmpty())
                 contacts.firstOrNull { it.id == preference.getOnlineUser() }
             else null
-            val allUnReadMsgs=dbRepository.getAllNonSeenMessage()
+            val allUnReadMsgs = dbRepository.getAllNonSeenMessage()
             withContext(Dispatchers.Main) {
-                updateMsgStatus(newContactIds, currentChatUser,allUnReadMsgs)
+                updateMsgStatus(newContactIds, currentChatUser, allUnReadMsgs)
             }
         }
 
@@ -134,7 +150,7 @@ class ChatHandler @Inject constructor(
         allUnReadMsgs: List<Message>
     ) {
         showNotification(newContactIds)
-        if (isSingleChatOpen && currentChatUser != null) {
+        if (currentChatUser != null) {
             val currentUserMsgs = allUnReadMsgs.filter {
                 it.chatUserId == currentChatUser.id
             }

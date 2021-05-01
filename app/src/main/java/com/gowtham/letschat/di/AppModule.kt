@@ -65,13 +65,11 @@ object AppModule {
     }
 
     @Provides
-    fun provideDefaultDbRepo(@ApplicationContext context: Context,
-                             userDao: ChatUserDao,
-                             preference: MPreference,
+    fun provideDefaultDbRepo(userDao: ChatUserDao,
                              groupDao: GroupDao,
                              groupMsgDao: GroupMessageDao,
                              messageDao: MessageDao): DefaultDbRepo {
-        return DbRepository(context, userDao, preference, groupDao, groupMsgDao, messageDao)
+        return DbRepository(userDao, groupDao, groupMsgDao, messageDao)
     }
 
 }

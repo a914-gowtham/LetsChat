@@ -1,10 +1,7 @@
 package com.gowtham.letschat.core
 
 import android.content.Context
-import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.DocumentChange
-import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.*
 import com.gowtham.letschat.FirebasePush
 import com.gowtham.letschat.db.DbRepository
 import com.gowtham.letschat.db.data.Group
@@ -19,7 +16,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -43,6 +39,8 @@ class GroupChatHandler @Inject constructor(
 
     private val listOfGroup = ArrayList<String>()
 
+    private var isFirstQuery = false
+
     companion object {
         private var groupListener: ListenerRegistration? = null
         private var myProfileListener: ListenerRegistration? = null
@@ -53,8 +51,6 @@ class GroupChatHandler @Inject constructor(
             groupListener?.remove()
             myProfileListener?.remove()
         }
-
-        var isGroupOpen=false
     }
 
     fun initHandler() {
@@ -81,18 +77,8 @@ class GroupChatHandler @Inject constructor(
                     messagesList.clear()
                     listOfGroup.clear()
 
-                    for (shot in snapshots.documentChanges) {
-                        if (shot.type == DocumentChange.Type.ADDED ||
-                            shot.type == DocumentChange.Type.MODIFIED
-                        ) {
-                            val message = shot.document.data.toDataClass<GroupMessage>()
-                            if (message.groupId == preference.getOnlineGroup())  //would be updated by snapshot listener
-                                continue
-                            if (!listOfGroup.contains(message.groupId))
-                                listOfGroup.add(message.groupId)
-                            messagesList.add(message)
-                        }
-                    }
+                    onSnapShotChanged(snapshots)
+
                     if (messagesList.isNotEmpty())
                         updateGroupUnReadCount()
                 }
@@ -100,6 +86,29 @@ class GroupChatHandler @Inject constructor(
             e.printStackTrace()
         }
 
+    }
+
+    private fun onSnapShotChanged(snapshots: QuerySnapshot) {
+        if(isFirstQuery){
+            snapshots.forEach { doc->
+                val message = doc.data.toDataClass<GroupMessage>()
+                if (!listOfGroup.contains(message.groupId))
+                    listOfGroup.add(message.groupId)
+                messagesList.add(message)
+            }
+            isFirstQuery=false
+        }
+        else
+        for (shot in snapshots.documentChanges) {
+            if (shot.type == DocumentChange.Type.ADDED ||
+                shot.type == DocumentChange.Type.MODIFIED
+            ) {
+                val message = shot.document.data.toDataClass<GroupMessage>()
+                if (!listOfGroup.contains(message.groupId))
+                    listOfGroup.add(message.groupId)
+                messagesList.add(message)
+            }
+        }
     }
 
     private fun updateGroupUnReadCount() {
@@ -122,15 +131,15 @@ class GroupChatHandler @Inject constructor(
                 it.group
             }
             dbRepository.insertMultipleGroup(groups)
-            updateInLocal(groups)
+            changeMsgStatus(groups)
         }
     }
 
-    private fun updateInLocal(groups: List<Group>) {
+    private fun changeMsgStatus(groups: List<Group>) {
         if (groups.isNotEmpty())
             FirebasePush.showGroupNotification(context, dbRepository)
         val currentOnlineGroupId=preference.getOnlineGroup()
-        if(isGroupOpen && currentOnlineGroupId.isNotEmpty()){
+        if(currentOnlineGroupId.isNotEmpty()){
             val currentGroupMsgs = messagesList.filter {
                 it.groupId == currentOnlineGroupId
             }

@@ -459,8 +459,8 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
 
 
     override fun onResume() {
-        ChatHandler.isSingleChatOpen=true
         viewModel.setSeenAllMessage()
+        preference.setCurrentUser(chatUserId)
         viewModel.sendCachedTxtMesssages()
         Utils.removeNotification(requireContext())
         super.onResume()
@@ -474,7 +474,6 @@ class FSingleChat : Fragment(), ItemClickListener,CustomEditText.KeyBoardInputCa
     override fun onStop() {
         super.onStop()
         preference.clearCurrentUser()
-        ChatHandler.isSingleChatOpen=false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -304,7 +304,6 @@ class FGroupChat : Fragment(), ItemClickListener, CustomEditText.KeyBoardInputCa
     }
 
     override fun onResume() {
-        GroupChatHandler.isGroupOpen=false
         preference.setCurrentGroup(group.id)
         viewModel.sendCachedTxtMesssages()
         Utils.removeNotification(requireContext())
@@ -459,7 +458,6 @@ class FGroupChat : Fragment(), ItemClickListener, CustomEditText.KeyBoardInputCa
     override fun onStop() {
         super.onStop()
         preference.clearCurrentGroup()
-        GroupChatHandler.isGroupOpen=false
     }
 
     override fun onDestroy() {
