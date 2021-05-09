@@ -50,7 +50,7 @@ constructor(
     @MessageCollection
     private val messageCollection: CollectionReference,
     private val preference: MPreference,
-    private val firebaseFirestore: FirebaseFirestore,
+    private val firebaseFireStore: FirebaseFirestore,
     ) : ViewModel() {
 
     private val database = FirebaseDatabase.getInstance()
@@ -67,7 +67,7 @@ constructor(
 
     val chatUserOnlineStatus = MutableLiveData(UserStatus())
 
-    private val messageStatusUpdater=MessageStatusUpdater(messageCollection,firebaseFirestore)
+    private val messageStatusUpdater=MessageStatusUpdater(messageCollection,firebaseFireStore)
 
     private lateinit var chatUser: ChatUser
 
@@ -117,7 +117,7 @@ constructor(
                 messageListener
             )
             messageSender.checkAndSend(fromUser!!, toUser, message)
-        }, 300)
+        }, 400)
         dbRepository.insertMessage(message)
         removeTypingCallbacks()
     }
@@ -184,9 +184,16 @@ constructor(
             viewModelScope.launch(Dispatchers.IO) {
                 val messageList = dbRepository.getChatsOfFriend(chatUser.id)
                 withContext(Dispatchers.Main){
-                    messageStatusUpdater.updateToSeen(toUser, chatUser.documentId!!, messageList)
+                    if(messageList.isNotEmpty())
+                      updateToSeen(messageList)
                 }
             }
+        }
+    }
+
+    private fun updateToSeen(messageList: List<Message>) {
+        chatUser.documentId?.let {
+            messageStatusUpdater.updateToSeen(toUser, it, messageList)
         }
     }
 

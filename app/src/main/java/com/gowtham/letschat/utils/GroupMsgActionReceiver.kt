@@ -95,7 +95,7 @@ class GroupMsgActionReceiver : HiltGroupBroadcastReceiver(), OnGrpMessageRespons
             deliveryTimeList.add(0L)
         }
         return GroupMessage(System.currentTimeMillis(), group.id, from = myUserId,
-            to = toUsers, profile.userName, profile.image.toString(), statusList, deliveryTimeList,
+            to = toUsers, profile.userName, profile.image, statusList, deliveryTimeList,
             deliveryTimeList)
     }
 

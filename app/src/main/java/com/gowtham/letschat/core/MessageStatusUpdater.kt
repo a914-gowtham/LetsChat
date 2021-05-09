@@ -50,7 +50,9 @@ class MessageStatusUpdater @Inject constructor(
         }
     }
 
-     fun updateToSeen(toUser: String, docId: String, messageList: List<Message>) {
+     fun updateToSeen(toUser: String, docId: String?, messageList: List<Message>) {
+         if(docId==null)
+             return
         val msgSubCollection = msgCollection.document(docId).collection("messages")
         val batch = firebaseFirestore.batch()
         val currentTime = System.currentTimeMillis()

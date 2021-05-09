@@ -117,7 +117,6 @@ class ChatHandler @Inject constructor(
             val contacts = ArrayList<ChatUser>()
             val newContactIds =
                 ArrayList<String>()  //message from new user not saved in localdb yet
-            dbRepository.insertMultipleMessage(messagesList)
             chatUsers = dbRepository.getChatUserList()
             for ((index, doc) in listOfDocs.withIndex()) {
                 val chatUser = chatUsers.firstOrNull { it.id == listOfIds[index] }
@@ -133,6 +132,7 @@ class ChatHandler @Inject constructor(
                 }
             }
             dbRepository.insertMultipleUsers(contacts)
+            dbRepository.insertMultipleMessage(messagesList)
             val currentChatUser = if (preference.getOnlineUser().isNotEmpty())
                 contacts.firstOrNull { it.id == preference.getOnlineUser() }
             else null
