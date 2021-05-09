@@ -118,6 +118,7 @@ object UserUtils {
     }
 
     fun fetchContacts(context: Context): List<Contact> {
+        val preference=MPreference(context)
         val names = ArrayList<String>()
         val numbers = ArrayList<String>()
         val contacts=ArrayList<Contact>()
@@ -137,6 +138,8 @@ object UserUtils {
                 cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
             val number =
                 cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+            if(number.contains(preference.getMobile()!!.number))
+                continue
             names.add(name)
             numbers.add(number)
             contacts.add(Contact(name, number))
