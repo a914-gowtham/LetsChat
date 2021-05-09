@@ -105,7 +105,6 @@ class NActionReceiver : HiltBroadcastReceiver(), OnMessageResponse {
             it
         }
         //seen message other message of this user
-        UserUtils.setUnReadCountZero(dbRepo, chatUser.user)
         chatUser.user.unRead=0
         dbRepo.insertUser(chatUser.user)
         CoroutineScope(Dispatchers.IO).launch {

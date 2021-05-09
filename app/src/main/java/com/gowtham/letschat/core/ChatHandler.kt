@@ -66,20 +66,27 @@ class ChatHandler @Inject constructor(
         listenerDoc1 = messageCollectionGroup.whereArrayContains("chatUsers", fromUser!!)
             .addSnapshotListener { snapShots, error ->
                 if (error != null || snapShots == null || snapShots.metadata.isFromCache) {
-                    LogMessage.v("Error ${error?.localizedMessage}")
+                    LogMessage.v("Error ${snapShots?.metadata?.isFromCache}")
+                    if(snapShots?.metadata?.isFromCache == true)
+                        onFetchDocuments()
                     return@addSnapshotListener
-                }
-                messagesList.clear()
-                listOfDocs.clear()
-                val listOfIds = ArrayList<String>()
-
-                onSnapShotChanged(snapShots, listOfIds)
-                if (!messagesList.isNullOrEmpty())
-                    insertMessageOnDb(listOfIds)
+                }else
+                 onSnapShotChanged(snapShots)
             }
     }
 
-    private fun onSnapShotChanged(snapShots: QuerySnapshot, listOfIds: ArrayList<String>) {
+    private fun onFetchDocuments() {
+        messageCollectionGroup.whereArrayContains("chatUsers", fromUser!!).get().addOnSuccessListener {
+             isFirstQuery=true
+            onSnapShotChanged(it)
+        }
+    }
+
+    private fun onSnapShotChanged(snapShots: QuerySnapshot) {
+        messagesList.clear()
+        listOfDocs.clear()
+        val listOfIds = ArrayList<String>()
+
         if (isFirstQuery) {
             snapShots.forEach { doc ->
                 val parentDoc = doc.reference.parent.parent?.id!!
@@ -110,6 +117,8 @@ class ChatHandler @Inject constructor(
                     }
                 }
             }
+        if (!messagesList.isNullOrEmpty())
+            insertMessageOnDb(listOfIds)
     }
 
     private fun insertMessageOnDb(listOfIds: ArrayList<String>) {
@@ -118,6 +127,7 @@ class ChatHandler @Inject constructor(
             val newContactIds =
                 ArrayList<String>()  //message from new user not saved in localdb yet
             chatUsers = dbRepository.getChatUserList()
+            dbRepository.insertMultipleMessage(messagesList)
             for ((index, doc) in listOfDocs.withIndex()) {
                 val chatUser = chatUsers.firstOrNull { it.id == listOfIds[index] }
                 if (chatUser == null) {
@@ -132,7 +142,6 @@ class ChatHandler @Inject constructor(
                 }
             }
             dbRepository.insertMultipleUsers(contacts)
-            dbRepository.insertMultipleMessage(messagesList)
             val currentChatUser = if (preference.getOnlineUser().isNotEmpty())
                 contacts.firstOrNull { it.id == preference.getOnlineUser() }
             else null
