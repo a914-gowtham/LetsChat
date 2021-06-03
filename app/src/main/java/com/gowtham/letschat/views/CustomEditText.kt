@@ -37,7 +37,7 @@ class CustomEditText : AppCompatEditText {
     }
 
     override fun onCreateInputConnection(outAttrs: EditorInfo?): InputConnection {
-        val ic: InputConnection = super.onCreateInputConnection(outAttrs)
+        val ic: InputConnection = super.onCreateInputConnection(outAttrs)!!
         EditorInfoCompat.setContentMimeTypes(
             outAttrs!!,
             imgTypeString
