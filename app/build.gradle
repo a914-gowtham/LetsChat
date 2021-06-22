@@ -55,17 +55,6 @@ android {
         javaMaxHeapSize "4g"
     }
 
-    configurations {
-        all*.exclude group: 'commons-logging', module: 'commons-logging'
-        all*.exclude group: 'xpp3', module: 'xpp3'
-    }
-
-/*    lintOptions {
-        checkReleaseBuilds false
-        abortOnError false
-    }*/
-
-
 }
 
 dependencies {
@@ -96,7 +85,7 @@ dependencies {
     //event bus
     implementation 'org.greenrobot:eventbus:3.2.0'
 
-    implementation "androidx.recyclerview:recyclerview:1.2.0"
+    implementation "androidx.recyclerview:recyclerview:1.2.1"
 
     //mvvm
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
@@ -106,11 +95,11 @@ dependencies {
     implementation "androidx.navigation:navigation-ui-ktx:2.3.5"
 
     // Room
-    implementation "androidx.room:room-runtime:2.4.0-alpha02"
-    kapt "androidx.room:room-compiler:2.4.0-alpha02"
+    implementation "androidx.room:room-runtime:2.4.0-alpha03"
+    kapt "androidx.room:room-compiler:2.4.0-alpha03"
 
     // Kotlin Extensions and Coroutines support for Room
-    implementation "androidx.room:room-ktx:2.4.0-alpha02"
+    implementation "androidx.room:room-ktx:2.4.0-alpha03"
 
     //For device to device notification sending
     implementation 'com.github.a914-gowtham:fcm-sender:1.0.2'
