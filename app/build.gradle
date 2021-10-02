@@ -9,7 +9,7 @@ apply plugin: 'com.google.gms.google-services'
 apply plugin: 'kotlinx-serialization'
 android {
     compileSdkVersion 30
-    buildToolsVersion "29.0.3"
+    buildToolsVersion "30.0.3"
 
     buildFeatures{
         dataBinding = true
@@ -125,10 +125,10 @@ dependencies {
     //Image loader
     implementation("io.coil-kt:coil:1.2.1")
     implementation("io.coil-kt:coil-gif:1.0.0")
-    implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
+    implementation 'com.github.CanHub:Android-Image-Cropper:3.3.5'
 
     //image zoom
-    implementation 'com.github.stfalcon:stfalcon-imageviewer:1.0.0'
+    implementation 'com.github.stfalcon-studio:StfalconImageViewer:v1.0.1'
 
     //Kotlin seriler
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1")

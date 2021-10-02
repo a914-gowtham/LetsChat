@@ -10,13 +10,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.canhub.cropper.CropImage
 import com.gowtham.letschat.R
 import com.gowtham.letschat.databinding.AlertLogoutBinding
 import com.gowtham.letschat.databinding.FMyProfileBinding
 import com.gowtham.letschat.db.ChatUserDatabase
 import com.gowtham.letschat.utils.*
 import com.gowtham.letschat.views.CustomProgressView
-import com.theartofdev.edmodo.cropper.CropImage
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

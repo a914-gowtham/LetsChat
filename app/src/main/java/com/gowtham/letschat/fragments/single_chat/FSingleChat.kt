@@ -5,7 +5,6 @@ import android.animation.Animator
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Bundle
@@ -24,11 +23,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.gowtham.letschat.core.ChatHandler
+import com.canhub.cropper.CropImage
 import com.gowtham.letschat.databinding.FSingleChatBinding
 import com.gowtham.letschat.db.data.*
 import com.gowtham.letschat.fragments.FAttachment
-import com.gowtham.letschat.fragments.group_chat.AdGroupChat
 import com.gowtham.letschat.models.MyImage
 import com.gowtham.letschat.models.UserProfile
 import com.gowtham.letschat.utils.*
@@ -36,7 +34,6 @@ import com.gowtham.letschat.utils.Events.EventAudioMsg
 import com.gowtham.letschat.utils.Utils.edtValue
 import com.gowtham.letschat.views.CustomEditText
 import com.stfalcon.imageviewer.StfalconImageViewer
-import com.theartofdev.edmodo.cropper.CropImage
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch

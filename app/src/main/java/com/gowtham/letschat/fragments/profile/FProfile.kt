@@ -11,6 +11,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.canhub.cropper.CropImage
 import com.google.firebase.firestore.CollectionReference
 import com.gowtham.letschat.R
 import com.gowtham.letschat.databinding.FProfileBinding
@@ -19,7 +20,6 @@ import com.gowtham.letschat.models.UserStatus
 import com.gowtham.letschat.ui.activities.MainActivity
 import com.gowtham.letschat.utils.*
 import com.gowtham.letschat.views.CustomProgressView
-import com.theartofdev.edmodo.cropper.CropImage
 import dagger.hilt.android.AndroidEntryPoint
 import org.greenrobot.eventbus.EventBus
 import javax.inject.Inject

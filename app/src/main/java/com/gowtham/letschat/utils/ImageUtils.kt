@@ -18,11 +18,11 @@ import androidx.fragment.app.Fragment
 import coil.load
 import coil.request.CachePolicy
 import coil.transform.CircleCropTransformation
+import com.canhub.cropper.CropImage
+import com.canhub.cropper.CropImageView
 import com.gowtham.letschat.R
 import com.gowtham.letschat.fragments.FImageSrcSheet
 import com.gowtham.letschat.fragments.SheetListener
-import com.theartofdev.edmodo.cropper.CropImage
-import com.theartofdev.edmodo.cropper.CropImageView
 import java.io.*
 import kotlin.random.Random
 
@@ -128,7 +128,7 @@ object ImageUtils {
     fun getCroppedImage(data: Intent?): Uri? {
         try {
             val result = CropImage.getActivityResult(data)
-            return result?.uri
+            return result?.originalUri
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
         }

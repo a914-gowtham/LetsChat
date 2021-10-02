@@ -21,7 +21,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.gowtham.letschat.core.GroupChatHandler
+import com.canhub.cropper.CropImage
 import com.gowtham.letschat.databinding.FGroupChatBinding
 import com.gowtham.letschat.db.daos.GroupDao
 import com.gowtham.letschat.db.data.*
@@ -32,7 +32,6 @@ import com.gowtham.letschat.utils.*
 import com.gowtham.letschat.utils.Events.EventAudioMsg
 import com.gowtham.letschat.views.CustomEditText
 import com.stfalcon.imageviewer.StfalconImageViewer
-import com.theartofdev.edmodo.cropper.CropImage
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
