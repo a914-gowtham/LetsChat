@@ -34,7 +34,7 @@ LetsChat is a Sample Messaging Android application built to demonstrate the use 
   - [Cloud Messaging](https://firebase.google.com/products/cloud-messaging) - For Sending Notification to client app.
   - [Cloud Firestore](https://firebase.google.com/docs/firestore) - Flexible, scalable NoSQL cloud database to store and sync data.
   - [Cloud Storage](https://firebase.google.com/docs/storage) - For Store and serve user-generated content.
-  - [Authentication](https://firebase.google.com/docs/auth) - For Creating account with mobile number
+  - [Authentication](https://firebase.google.com/docs/auth) - For Creating account with mobile number.
 - [Kotlin Serializer](https://github.com/Kotlin/kotlinx.serialization) - Convert Specific Classes to and from JSON.Runtime library with core serialization API and support libraries with various serialization formats.
 - [Coil-kt](https://coil-kt.github.io/coil/) - An image loading library for Android backed by Kotlin Coroutines.
 
