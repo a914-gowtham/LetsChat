@@ -17,6 +17,18 @@ LetsChat is a Sample Messaging Android application built to demonstrate the use 
   <img src="demo_video.gif" />
 </p>
 
+## Features✨
+- One on one chat
+- Group Chat
+- Supported message types
+  - Text
+  - Voice
+  - Sticker and Gif
+- Attachments 
+  - Image
+  - Video - InProgress
+- Search users by username 
+
 ## Built With 🛠
 - [Kotlin](https://kotlinlang.org/) - First class and official programming language for Android development.
 - [Coroutines & Flow](https://kotlinlang.org/docs/reference/coroutines-overview.html) - For asynchronous and more..
