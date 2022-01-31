@@ -16,8 +16,8 @@ LetsChat is a Sample Messaging Android application built to demonstrate the use 
 <p float="center">
   <img src="demo_video.gif" />
 </p>
-
-## Features✨
+ 
+## Features ✨
 - One on one chat
 - Group Chat
 - Supported message types
