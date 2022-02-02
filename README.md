@@ -20,6 +20,7 @@ LetsChat is a Sample Messaging Android application built to demonstrate the use 
 ## Features ✨
 - One on one chat
 - Group Chat
+- Typing status for one on one and group chat
 - Supported message types
   - Text
   - Voice
@@ -27,6 +28,7 @@ LetsChat is a Sample Messaging Android application built to demonstrate the use 
 - Attachments 
   - Image
   - Video - InProgress
+- Notification actions for reply and mark as read
 - Search users by username 
 
 ## Built With 🛠
