@@ -21,6 +21,8 @@ LetsChat is a Sample Messaging Android application built to demonstrate the use 
 - One on one chat
 - Group Chat
 - Typing status for one on one and group chat
+- Unread messages count
+- Message status for failed,sent,delivered and seen
 - Supported message types
   - Text
   - Voice
